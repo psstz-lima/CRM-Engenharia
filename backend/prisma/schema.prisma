@@ -1,0 +1,415 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String      @id @default(uuid())
+  name      String
+  cnpj      String?     @unique
+  type      CompanyType
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  users     User[]
+  contracts Contract[]
+
+
+  @@map("companies")
+}
+
+enum CompanyType {
+  OWNER
+  CLIENT
+  PARTNER
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  permissions Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  email              String               @unique
+  password           String
+  fullName           String
+  profilePhoto       String?
+  companyId          String
+  roleId             String
+  isActive           Boolean              @default(true)
+  isMaster           Boolean              @default(false)
+  lastLogin          DateTime?
+  passwordChangedAt  DateTime?
+  mustChangePassword Boolean              @default(false)
+  loginAttempts      Int                  @default(0)
+  lockedUntil        DateTime?
+  preferences        Json?
+  // MFA Fields
+  mfaEnabled         Boolean              @default(false)
+  mfaSecret          String?
+  mfaRecoveryCodes   String[]             @default([])
+  // LGPD Fields
+  gdprConsent        Boolean              @default(false)
+  gdprConsentDate    DateTime?
+  dataRetentionExpiry DateTime?
+  anonymizedAt       DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  company            Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role               Role                 @relation(fields: [roleId], references: [id])
+  sessions           Session[]
+  passwordResets     PasswordReset[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  devices            Device[]
+  termsAcceptances   TermsAcceptance[]
+  dataDeletionRequests DataDeletionRequest[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  ipAddress    String?
+  userAgent    String?
+  deviceId     String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_resets")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  readAt    DateTime?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  CONTRACT_EXPIRING
+  MEASUREMENT_PENDING
+  ACTION_REQUIRED
+  SYSTEM_ALERT
+}
+
+model AuditLog {
+  id                String      @id @default(uuid())
+  userId            String?
+  action            String
+  module            String
+  entityId          String?
+  entityType        String?
+  ipAddress         String?
+  userAgent         String?
+  deviceFingerprint String?
+  status            AuditStatus
+  metadata          Json?
+  createdAt         DateTime    @default(now())
+  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+}
+
+model Device {
+  id          String   @id @default(uuid())
+  userId      String
+  fingerprint String
+  name        String?
+  trusted     Boolean  @default(false)
+  lastUsedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fingerprint])
+  @@index([userId])
+  @@map("devices")
+}
+
+model TermsAcceptance {
+  id           String   @id @default(uuid())
+  userId       String
+  termsVersion String
+  acceptedAt   DateTime @default(now())
+  ipAddress    String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("terms_acceptances")
+}
+
+model DataDeletionRequest {
+  id          String    @id @default(uuid())
+  userId      String
+  requestedAt DateTime  @default(now())
+  processedAt DateTime?
+  status      String    @default("PENDING") // PENDING, APPROVED, COMPLETED, REJECTED
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("data_deletion_requests")
+}
+
+model Contract {
+  id           String    @id @default(uuid())
+  number       String    @unique
+  object       String? // Objeto do contrato
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  startDate    DateTime
+  endDate      DateTime
+  totalValue   Decimal   @default(0.0) @db.Decimal(15, 2)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  items        ContractItem[]
+  addendums    ContractAddendum[]
+  measurements Measurement[]
+
+  @@map("contracts")
+}
+
+enum ContractItemType {
+  STAGE      // Etapa
+  SUBSTAGE   // Sub-etapa
+  LEVEL      // Nível
+  SUBLEVEL   // Sub-nível
+  GROUP      // Grupo
+  SUBGROUP   // Sub-grupo
+  ITEM       // Item
+}
+
+model ContractItem {
+  id             String           @id @default(uuid())
+  contractId     String
+  contract       Contract         @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  // Hierarchy
+  parentId       String?
+  parent         ContractItem?    @relation("ItemHierarchy", fields: [parentId], references: [id])
+  children       ContractItem[]   @relation("ItemHierarchy")
+  
+  type           ContractItemType
+  code           String?
+  description    String?
+  orderIndex     Int              @default(0)
+  techSpecs      String?          @map("tech_specs")
+  
+  // For SERVICES (Level 3)
+  costCenter     String?          
+  quantity       Decimal?         @db.Decimal(15, 3)
+  unit           String?          
+  unitPrice      Decimal?         @db.Decimal(15, 2)
+  totalValue     Decimal?         @default(0.0) @db.Decimal(15, 2)
+  
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  measurements   MeasurementItem[]
+  addendumOperations AddendumOperation[]
+
+  @@index([contractId])
+  @@index([parentId])
+  @@map("contract_items")
+}
+
+model MeasurementUnit {
+  id          String   @id @default(uuid())
+  code        String   @unique // m, m2, m3, un, kg
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@map("measurement_units")
+}
+
+// Tipos de operação do aditivo
+enum AddendumOperationType {
+  SUPPRESS      // Supressão total de item
+  ADD           // Adição de novo item
+  MODIFY_QTY    // Modificação de quantidade
+  MODIFY_PRICE  // Modificação de preço unitário
+  MODIFY_BOTH   // Modificação de quantidade e preço
+}
+
+model ContractAddendum {
+  id            String             @id @default(uuid())
+  contractId    String
+  contract      Contract           @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  
+  number        Int                // Número sequencial (1, 2, 3...)
+  description   String             // Descrição/justificativa
+  date          DateTime           // Data do aditivo
+  status        String             @default("DRAFT") // DRAFT, APPROVED, CANCELLED
+  
+  // Valores totais calculados
+  totalAddition    Decimal          @default(0) @db.Decimal(15, 2)
+  totalSuppression Decimal          @default(0) @db.Decimal(15, 2)
+  netValue         Decimal          @default(0) @db.Decimal(15, 2)
+  
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  
+  operations    AddendumOperation[]
+
+  @@map("contract_addendums")
+}
+
+model AddendumOperation {
+  id               String               @id @default(uuid())
+  addendumId       String
+  addendum         ContractAddendum     @relation(fields: [addendumId], references: [id], onDelete: Cascade)
+  
+  operationType    AddendumOperationType
+  
+  // Para MODIFY/SUPPRESS: referência ao item existente
+  contractItemId   String?
+  contractItem     ContractItem?        @relation(fields: [contractItemId], references: [id], onDelete: SetNull)
+  
+  // Para ADD: dados do novo item
+  newItemType      String?              // STAGE, SUBSTAGE, ITEM, etc.
+  newItemCode      String?
+  newItemDescription String?
+  newItemParentId  String?              // ID do pai para novos itens
+  newItemUnit      String?
+  
+  // Valores originais (snapshot no momento da criação)
+  originalQuantity Decimal?             @db.Decimal(15, 3)
+  originalPrice    Decimal?             @db.Decimal(15, 2)
+  
+  // Novos valores
+  newQuantity      Decimal?             @db.Decimal(15, 3)
+  newPrice         Decimal?             @db.Decimal(15, 2)
+  
+  // Valor calculado da operação (positivo=acréscimo, negativo=supressão)
+  operationValue   Decimal              @default(0) @db.Decimal(15, 2)
+  
+  createdAt        DateTime             @default(now())
+
+  @@map("addendum_operations")
+}
+
+model Measurement {
+  id          String            @id @default(uuid())
+  contractId  String
+  contract    Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  number      Int
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String            @default("DRAFT") // DRAFT, CLOSED
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  items       MeasurementItem[]
+
+  @@map("measurements")
+}
+
+model MeasurementItem {
+  id                  String       @id @default(uuid())
+  measurementId       String
+  measurement         Measurement  @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+  contractItemId      String
+  contractItem        ContractItem @relation(fields: [contractItemId], references: [id], onDelete: Cascade)
+  
+  measuredQuantity    Decimal      @db.Decimal(15, 3)
+  accumulatedQuantity Decimal      @db.Decimal(15, 3)
+  currentPrice        Decimal      @db.Decimal(15, 2)
+  
+  createdAt           DateTime     @default(now())
+  
+  memories            MeasurementMemory[]
+  photos              MeasurementPhoto[]
+  metadata            Json?
+
+  @@unique([measurementId, contractItemId])
+  @@map("measurement_items")
+}
+
+model MeasurementPhoto {
+  id                String          @id @default(uuid())
+  measurementItemId String
+  measurementItem   MeasurementItem @relation(fields: [measurementItemId], references: [id], onDelete: Cascade)
+  
+  filename          String          // Nome original do arquivo
+  path              String          // Caminho no servidor
+  mimeType          String          // image/jpeg, image/png, etc.
+  size              Int             // Tamanho em bytes
+  description       String?         // Descrição opcional
+  photoDate         DateTime?       // Data da foto
+  location          String?         // Local (estaca, km, ou texto livre)
+  
+  uploadedBy        String?         // ID do usuário que fez upload
+  createdAt         DateTime        @default(now())
+  
+  @@map("measurement_photos")
+}
+
+model MeasurementMemory {
+  id                String          @id @default(uuid())
+  measurementItemId String
+  measurementItem   MeasurementItem @relation(fields: [measurementItemId], references: [id], onDelete: Cascade)
+  description       String?         // trecho/eixo
+  startPoint        Decimal?        @db.Decimal(15, 3) // Estaca Inicial
+  endPoint          Decimal?        @db.Decimal(15, 3) // Estaca Final
+  length            Decimal?        @db.Decimal(15, 3) // Extensão
+  width             Decimal?        @db.Decimal(15, 3) // Largura
+  height            Decimal?        @db.Decimal(15, 3) // Altura/Espessura
+  quantity          Decimal         @db.Decimal(15, 3) // Result
+  
+  metadata          Json?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@map("measurement_memories")
+}
