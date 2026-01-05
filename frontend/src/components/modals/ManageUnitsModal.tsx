@@ -57,32 +57,27 @@ function SortableColumnItem({
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        display: 'grid',
-        gridTemplateColumns: 'auto 30px 1fr 100px 60px', // Drag, Check, Label, Unit, Actions
-        alignItems: 'center',
-        padding: '8px',
-        background: '#fff',
-        borderBottom: '1px solid #eee',
-        marginBottom: '0',
     };
-
-    const isProtected = ['stations', 'km', 'description'].includes(column.id) || column.id.startsWith('unit_');
 
     // Render operator differently
     if (column.type === 'operator') {
         return (
-            <div ref={setNodeRef} style={{ ...style, gridTemplateColumns: 'auto 1fr 60px', background: '#fef3c7', border: '1px dashed #f59e0b' }}>
-                <div {...attributes} {...listeners} style={{ cursor: 'grab', marginRight: '10px', color: '#f59e0b', display: 'flex', alignItems: 'center' }}>⋮⋮</div>
-                <span style={{ fontWeight: 'bold', fontSize: '1.2em', color: '#b45309' }}>
+            <div
+                ref={setNodeRef}
+                style={style}
+                className="grid grid-cols-[auto_1fr_60px] items-center p-2 mb-1 bg-yellow-900/10 border border-dashed border-yellow-600/50 rounded"
+            >
+                <div {...attributes} {...listeners} className="cursor-grab mr-2 text-yellow-600 flex items-center">⋮⋮</div>
+                <span className="font-bold text-yellow-500">
                     {column.operator === '+' && '➕ Adição'}
                     {column.operator === '-' && '➖ Subtração'}
                     {column.operator === '*' && '✖️ Multiplicação'}
                     {column.operator === '/' && '➗ Divisão'}
                 </span>
-                <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+                <div className="flex gap-2 justify-end">
                     <button
                         onClick={() => onDelete(column.id)}
-                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1.2em' }}
+                        className="text-red-400 hover:text-red-300 text-lg leading-none"
                         title="Remover"
                     >
                         &times;
@@ -93,18 +88,22 @@ function SortableColumnItem({
     }
 
     return (
-        <div ref={setNodeRef} style={style}>
-            <div {...attributes} {...listeners} style={{ cursor: 'grab', marginRight: '10px', color: '#999', display: 'flex', alignItems: 'center', width: '20px', fontSize: '1.2em' }}>⋮⋮</div>
+        <div
+            ref={setNodeRef}
+            style={style}
+            className="grid grid-cols-[auto_30px_1fr_100px_60px] items-center p-2 bg-dark-800 border-b border-dark-700 hover:bg-dark-700 transition-colors"
+        >
+            <div {...attributes} {...listeners} className="cursor-grab mr-2 text-gray-500 flex items-center w-5 text-lg">⋮⋮</div>
             <input
                 type="checkbox"
                 checked={column.visible}
                 onChange={() => onToggle(column.id)}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer accent-primary-600 w-4 h-4 rounded border-dark-600 bg-dark-700"
             />
-            <span style={{ paddingLeft: '10px' }}>{column.label}</span>
-            <span style={{ paddingLeft: '10px', color: '#666' }}>{column.unitLabel || ''}</span>
+            <span className="pl-2.5 text-gray-300 text-sm truncate">{column.label}</span>
+            <span className="pl-2.5 text-gray-500 text-xs">{column.unitLabel || ''}</span>
 
-            <div style={{ display: 'flex', gap: '5px', justifyContent: 'flex-end' }}>
+            <div className="flex gap-2 justify-end">
                 {!['description', 'stations', 'km', 'location'].includes(column.id) && (
                     <>
                         <button
@@ -114,10 +113,10 @@ function SortableColumnItem({
                                     onRename(column.id, newName.trim());
                                 }
                             }}
-                            style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#666', fontSize: '1.2em' }}
+                            className="text-gray-400 hover:text-white"
                             title="Editar"
                         >
-                            &#9998;
+                            ✎
                         </button>
                         <button
                             onClick={() => {
@@ -125,7 +124,7 @@ function SortableColumnItem({
                                     onDelete(column.id);
                                 }
                             }}
-                            style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1.2em' }}
+                            className="text-red-500 hover:text-red-400 text-lg leading-none"
                             title="Excluir"
                         >
                             &times;
@@ -207,51 +206,19 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
         setEditingUnitId(null);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Tem certeza que deseja excluir esta unidade?')) return;
-        try {
-            await api.delete(`/units/${id}`);
-            fetchUnits();
-            if (onUnitsChange) onUnitsChange();
-        } catch (err) {
-            console.error('Failed to delete unit', err);
-            setError('Erro ao excluir unidade');
-        }
-    };
-
-    const handleBulkDelete = async () => {
-        if (selectedUnits.length === 0) return;
-        if (!window.confirm(`Tem certeza que deseja excluir ${selectedUnits.length} unidades?`)) return;
-
-        try {
-            await Promise.all(selectedUnits.map(id => api.delete(`/units/${id}`)));
-            setSelectedUnits([]);
-            fetchUnits();
-            if (onUnitsChange) onUnitsChange();
-        } catch (err) {
-            console.error('Failed to delete units', err);
-            setError('Erro ao excluir unidades');
-        }
-    };
-
-    const toggleSelect = (id: string) => {
-        setSelectedUnits(prev =>
-            prev.includes(id) ? prev.filter(u => u !== id) : [...prev, id]
-        );
-    };
-
     return (
         <DraggableModal
             isOpen={open}
             onClose={onClose}
             title="Campos disponíveis"
+            className="w-[800px]" // Make it wider
         >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="flex flex-col gap-5">
 
                 {/* Settings Section (Sortable) */}
-                <div style={{ background: '#f0f9ff', padding: '15px', borderRadius: '6px', border: '1px solid #bae6fd' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <h4 style={{ margin: 0, fontSize: '0.9em', color: '#0369a1' }}>Campos disponíveis</h4>
+                <div className="bg-dark-800/50 p-4 rounded-lg border border-dark-700">
+                    <div className="flex justify-between items-center mb-3">
+                        <h4 className="m-0 text-sm font-bold text-gray-100">Campos disponíveis</h4>
                         <button
                             onClick={() => {
                                 if (confirm('Restaurar colunas padrão?')) {
@@ -266,31 +233,14 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                                     ]);
                                 }
                             }}
-                            style={{
-                                fontSize: '0.8em',
-                                color: '#0369a1',
-                                background: 'none',
-                                border: '1px solid #bae6fd',
-                                borderRadius: '4px',
-                                padding: '4px 8px',
-                                cursor: 'pointer'
-                            }}
+                            className="text-xs text-primary-400 hover:text-primary-300 border border-primary-500/30 hover:bg-primary-500/10 rounded px-2 py-1 transition-colors"
                         >
                             Restaurar Padrão
                         </button>
                     </div>
 
                     {/* Table Header */}
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'auto 30px 1fr 100px 60px',
-                        padding: '8px',
-                        background: '#f1f5f9',
-                        borderBottom: '1px solid #ddd',
-                        fontWeight: 'bold',
-                        fontSize: '0.9em',
-                        color: '#475569'
-                    }}>
+                    <div className="grid grid-cols-[auto_30px_1fr_100px_60px] p-2 bg-dark-700 text-gray-400 font-bold text-xs uppercase border-b border-dark-600 rounded-t">
                         <div></div>
                         <div></div>
                         <div>Descrição</div>
@@ -298,7 +248,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                         <div></div>
                     </div>
 
-                    <div style={{ border: '1px solid #eee', background: 'white', borderRadius: '4px' }}>
+                    <div className="border border-dark-700 bg-dark-900 rounded-b max-h-[400px] overflow-y-auto custom-scrollbar">
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -331,12 +281,10 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                                             );
                                             // Handle mutual exclusivity
                                             if (id === 'stations' && !col.visible) {
-                                                // If enabling stations, disable km
                                                 const kmIdx = newConfig.findIndex(c => c.id === 'km');
                                                 if (kmIdx !== -1) newConfig[kmIdx].visible = false;
                                             }
                                             if (id === 'km' && !col.visible) {
-                                                // If enabling km, disable stations
                                                 const stIdx = newConfig.findIndex(c => c.id === 'stations');
                                                 if (stIdx !== -1) newConfig[stIdx].visible = false;
                                             }
@@ -349,49 +297,43 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                     </div>
 
                     {/* Add New Field Form */}
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginTop: '10px' }}>
-                        <div style={{ flex: 2 }}>
-                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px', color: '#475569' }}>Descrição do Campo</label>
+                    <div className="flex gap-3 items-end mt-4 p-3 bg-dark-700/30 rounded border border-dark-700">
+                        <div className="flex-2">
+                            <label className="label">Descrição do Campo</label>
                             <input
                                 type="text"
                                 value={newUnitDesc}
                                 onChange={(e) => setNewUnitDesc(e.target.value)}
                                 placeholder="Ex: Comprimento"
-                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px' }}
+                                className="input"
                             />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px', color: '#475569' }}>Unidade</label>
+                        <div className="flex-1">
+                            <label className="label">Unidade</label>
                             <input
                                 type="text"
                                 value={newUnitCode}
                                 onChange={(e) => setNewUnitCode(e.target.value)}
                                 placeholder="Ex: m"
-                                style={{ width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: '4px' }}
+                                className="input"
                             />
                         </div>
                         <button
                             onClick={handleSaveUnit}
                             disabled={!newUnitCode}
-                            style={{
-                                padding: '8px 16px',
-                                background: !newUnitCode ? '#ccc' : '#2563eb',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: newUnitCode ? 'pointer' : 'not-allowed',
-                                height: '35px'
-                            }}
+                            className={`btn ${!newUnitCode ? 'bg-gray-600 cursor-not-allowed' : 'btn-primary'} h-[38px]`}
                         >
                             + Adicionar
                         </button>
                     </div>
-                    {error && <div style={{ color: 'red', marginTop: '10px', fontSize: '0.85em' }}>{error}</div>}
+                    {error && <div className="text-red-500 mt-2 text-sm">{error}</div>}
                 </div>
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                <button onClick={onClose} style={{ padding: '8px 16px', background: '#e5e7eb', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Fechar</button>
+            <div className="mt-5 text-right border-t border-dark-700 pt-3">
+                <button onClick={onClose} className="btn btn-secondary">
+                    Fechar
+                </button>
             </div>
         </DraggableModal >
     );

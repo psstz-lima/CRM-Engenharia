@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Helper to check if user has a specific permission
 const hasPermission = (user: any, permission: string): boolean => {
@@ -18,160 +19,121 @@ const hasAnyPermission = (user: any, permissions: string[]): boolean => {
 
 export function Sidebar() {
     const { user } = useAuth();
+    const { theme } = useTheme();
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-    const menuItemStyle = (path: string) => ({
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        padding: '12px 15px',
-        color: isActive(path) ? '#2563eb' : '#374151',
-        background: isActive(path) ? '#eff6ff' : 'transparent',
-        textDecoration: 'none',
-        borderRadius: '6px',
-        fontWeight: isActive(path) ? '600' : '400',
-        transition: 'all 0.2s'
-    });
+    const NavItem = ({ to, icon, label }: { to: string, icon: string, label: string }) => (
+        <li>
+            <Link
+                to={to}
+                className={`sidebar-item ${isActive(to) ? 'sidebar-item-active' : ''}`}
+            >
+                <span className="text-lg">{icon}</span>
+                <span>{label}</span>
+            </Link>
+        </li>
+    );
 
-    const sectionTitleStyle = {
-        padding: '15px 15px 8px',
-        fontSize: '0.75em',
-        fontWeight: '600',
-        color: '#9ca3af',
-        textTransform: 'uppercase' as const,
-        letterSpacing: '0.5px'
-    };
+    const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+        <div className="px-4 py-2 mt-6 mb-2 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-[0.15em]">
+            {children}
+        </div>
+    );
 
     return (
-        <aside style={{
-            width: '240px',
-            background: 'white',
-            borderRight: '1px solid #e5e7eb',
-            height: '100vh',
-            position: 'fixed',
-            left: 0,
-            top: 0,
-            display: 'flex',
-            flexDirection: 'column'
-        }}>
+        <aside className="sidebar fixed left-0 top-0 h-screen w-64 flex flex-col z-40">
             {/* Logo */}
-            <div style={{ padding: '20px 15px', borderBottom: '1px solid #e5e7eb' }}>
-                <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#1e40af' }}>🏗️ CRM Engenharia</span>
+            <div className="p-6 border-b border-[var(--border-subtle)]">
+                <span className="text-xl font-bold flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white text-sm shadow-lg">
+                        🏗️
+                    </span>
+                    <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
+                        CRM Engenharia
+                    </span>
+                </span>
             </div>
 
             {/* Menu */}
-            <nav style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
-                {/* Main */}
-                <div style={sectionTitleStyle}>Principal</div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    <li>
-                        <Link to="/" style={menuItemStyle('/')}>
-                            <span>📊</span>
-                            <span>Dashboard</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/profile" style={menuItemStyle('/profile')}>
-                            <span>👤</span>
-                            <span>Meu Perfil</span>
-                        </Link>
-                    </li>
+            <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin">
+                <SectionTitle>Principal</SectionTitle>
+                <ul className="space-y-1">
+                    <NavItem to="/" icon="📊" label="Dashboard" />
+                    <NavItem to="/profile" icon="👤" label="Meu Perfil" />
                 </ul>
 
-                {/* Contracts & Measurements - check if user has any contract/measurement permission */}
+                {/* Operations */}
                 {hasAnyPermission(user, ['contracts_view', 'contracts_create', 'measurements_view']) && (
                     <>
-                        <div style={sectionTitleStyle}>Operações</div>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <SectionTitle>Operações</SectionTitle>
+                        <ul className="space-y-1">
                             {hasPermission(user, 'contracts_view') && (
-                                <li>
-                                    <Link to="/contracts" style={menuItemStyle('/contracts')}>
-                                        <span>📄</span>
-                                        <span>Contratos</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/contracts" icon="📄" label="Contratos" />
                             )}
                             {hasPermission(user, 'measurements_view') && (
-                                <li>
-                                    <Link to="/measurements" style={menuItemStyle('/measurements')}>
-                                        <span>📏</span>
-                                        <span>Medições</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/measurements" icon="📏" label="Medições" />
                             )}
                         </ul>
                     </>
                 )}
 
-                {/* Companies - for users with companies permission or master */}
+                {/* Companies */}
                 {hasPermission(user, 'companies_view') && (
                     <>
-                        <div style={sectionTitleStyle}>Cadastros</div>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                            <li>
-                                <Link to="/companies" style={menuItemStyle('/companies')}>
-                                    <span>🏢</span>
-                                    <span>Empresas</span>
-                                </Link>
-                            </li>
+                        <SectionTitle>Cadastros</SectionTitle>
+                        <ul className="space-y-1">
+                            <NavItem to="/companies" icon="🏢" label="Empresas" />
                         </ul>
                     </>
                 )}
 
-                {/* Admin section - requires admin permissions or master */}
+                {/* Administration */}
                 {hasAnyPermission(user, ['users_view', 'users_manage', 'admin_roles', 'admin_audit']) && (
                     <>
-                        <div style={sectionTitleStyle}>Administração</div>
-                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                        <SectionTitle>Administração</SectionTitle>
+                        <ul className="space-y-1">
                             {hasAnyPermission(user, ['users_view', 'users_manage']) && (
-                                <li>
-                                    <Link to="/admin/users" style={menuItemStyle('/admin/users')}>
-                                        <span>👥</span>
-                                        <span>Usuários</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/admin/users" icon="👥" label="Usuários" />
                             )}
                             {hasPermission(user, 'companies_manage') && (
-                                <li>
-                                    <Link to="/admin/companies" style={menuItemStyle('/admin/companies')}>
-                                        <span>🏢</span>
-                                        <span>Empresas</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/admin/companies" icon="🏢" label="Empresas" />
                             )}
                             {hasPermission(user, 'admin_roles') && (
-                                <li>
-                                    <Link to="/admin/roles" style={menuItemStyle('/admin/roles')}>
-                                        <span>🔐</span>
-                                        <span>Perfis</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/admin/roles" icon="🔐" label="Perfis" />
                             )}
                             {hasPermission(user, 'admin_audit') && (
-                                <li>
-                                    <Link to="/admin/audit-logs" style={menuItemStyle('/admin/audit-logs')}>
-                                        <span>📋</span>
-                                        <span>Auditoria</span>
-                                    </Link>
-                                </li>
+                                <NavItem to="/admin/audit-logs" icon="📋" label="Auditoria" />
                             )}
                         </ul>
                     </>
                 )}
             </nav>
 
-            {/* User info at bottom */}
-            <div style={{
-                padding: '15px',
-                borderTop: '1px solid #e5e7eb',
-                background: '#f9fafb',
-                fontSize: '0.85em'
-            }}>
-                <div style={{ fontWeight: '500', color: '#374151' }}>{user?.fullName}</div>
-                <div style={{ color: '#9ca3af', fontSize: '0.9em' }}>
-                    {user?.isMaster ? '⭐ Master' : user?.role?.name || 'Sem perfil'}
+            {/* User info */}
+            <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white font-medium shadow-lg overflow-hidden">
+                        {user?.profilePhoto ? (
+                            <img
+                                src={user.profilePhoto}
+                                alt={user.fullName}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            user?.fullName?.charAt(0)?.toUpperCase() || 'U'
+                        )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">
+                            {user?.fullName}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] truncate flex items-center gap-1">
+                            {user?.isMaster && <span className="text-amber-400">⭐</span>}
+                            {user?.isMaster ? 'Master' : user?.role?.name || 'Sem perfil'}
+                        </div>
+                    </div>
                 </div>
             </div>
         </aside>

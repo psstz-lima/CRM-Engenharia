@@ -77,7 +77,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
 
     // Drawing states
     const [tool, setTool] = useState<ToolType>('freehand');
-    const [color, setColor] = useState('#ff0000');
+    const [color, setColor] = useState('#ef4444'); // red-500
     const [strokeWidth, setStrokeWidth] = useState(3);
     const [annotations, setAnnotations] = useState<Annotation[]>([]);
     const [currentAnnotation, setCurrentAnnotation] = useState<Annotation | null>(null);
@@ -503,52 +503,38 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
         { type: 'number', icon: '🔢', label: 'Numeração' },
     ];
 
-    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#000000'];
+    const colors = ['#ef4444', '#22c55e', '#3b82f6', '#eab308', '#d946ef', '#06b6d4', '#ffffff', '#000000'];
 
     if (!show) return null;
 
     return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1200
-            }}
-        >
+        <div className="fixed inset-0 z-[1200] bg-black/95 flex items-center justify-center p-4" onClick={onClose}>
             <div
+                className="bg-dark-900 border border-dark-700 rounded-lg w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                    background: '#1f2937', borderRadius: '12px', width: '95%', maxWidth: '900px',
-                    height: '90vh', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden'
-                }}
             >
                 {/* Header */}
-                <div style={{ padding: '12px 20px', borderBottom: '1px solid #374151', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, color: 'white', fontSize: '1.1em' }}>
-                        🎨 Editor de Imagens {mode === 'crop' && '- Modo Recorte'}
+                <div className="px-5 py-3 border-b border-dark-700 flex justify-between items-center bg-dark-800">
+                    <h3 className="text-white text-lg font-medium flex items-center gap-2">
+                        🎨 Editor de Imagens
+                        {mode === 'crop' && <span className="text-sm bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded border border-blue-500/20">Modo Recorte</span>}
                     </h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.5em', cursor: 'pointer' }}>×</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl transition-colors">×</button>
                 </div>
 
                 {/* Toolbar */}
-                <div style={{ padding: '10px 15px', background: '#111827', borderBottom: '1px solid #374151', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div className="p-3 bg-dark-950 border-b border-dark-800 flex gap-2 flex-wrap items-center justify-center">
                     {/* Crop button */}
                     <button
                         onClick={() => setMode(mode === 'crop' ? 'edit' : 'crop')}
                         title="Recortar"
-                        style={{
-                            padding: '8px 12px',
-                            background: mode === 'crop' ? '#16a34a' : '#374151',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '1.1em'
-                        }}
+                        className={`p-2 rounded transition-colors ${mode === 'crop'
+                                ? 'bg-green-600 text-white shadow-lg shadow-green-900/20'
+                                : 'bg-dark-700 text-gray-300 hover:bg-dark-600'
+                            }`}
                     >✂️</button>
 
-                    <div style={{ width: '1px', height: '30px', background: '#4b5563', margin: '0 5px' }} />
+                    <div className="w-px h-8 bg-dark-700 mx-2" />
 
                     {/* Drawing tools */}
                     {tools.map(t => (
@@ -556,118 +542,97 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                             key={t.type}
                             onClick={() => { setMode('edit'); setTool(t.type); }}
                             title={t.label}
-                            style={{
-                                padding: '8px 12px',
-                                background: mode === 'edit' && tool === t.type ? '#2563eb' : '#374151',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '1.1em',
-                                opacity: mode === 'crop' ? 0.5 : 1
-                            }}
                             disabled={mode === 'crop'}
+                            className={`p-2 rounded transition-all ${mode === 'edit' && tool === t.type
+                                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20'
+                                    : 'bg-dark-700 text-gray-300 hover:bg-dark-600'
+                                } ${mode === 'crop' ? 'opacity-30 cursor-not-allowed' : ''}`}
                         >
                             {t.icon}
                         </button>
                     ))}
 
-                    <div style={{ width: '1px', height: '30px', background: '#4b5563', margin: '0 5px' }} />
+                    <div className="w-px h-8 bg-dark-700 mx-2" />
 
                     {/* Transform tools */}
-                    <button onClick={handleRotateLeft} title="Girar Esquerda" style={{ padding: '8px 12px', background: '#374151', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1.1em' }}>↺</button>
-                    <button onClick={handleRotateRight} title="Girar Direita" style={{ padding: '8px 12px', background: '#374151', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1.1em' }}>↻</button>
-                    <button onClick={handleFlipHorizontal} title="Inverter Horizontal" style={{ padding: '8px 12px', background: flipH ? '#2563eb' : '#374151', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1.1em' }}>↔️</button>
-                    <button onClick={handleFlipVertical} title="Inverter Vertical" style={{ padding: '8px 12px', background: flipV ? '#2563eb' : '#374151', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1.1em' }}>↕️</button>
+                    <div className="flex bg-dark-800 rounded p-1 gap-1">
+                        <button onClick={handleRotateLeft} title="Girar Esquerda" className="p-1.5 rounded hover:bg-dark-600 text-gray-300">↺</button>
+                        <button onClick={handleRotateRight} title="Girar Direita" className="p-1.5 rounded hover:bg-dark-600 text-gray-300">↻</button>
+                        <button onClick={handleFlipHorizontal} title="Inverter Horizontal" className={`p-1.5 rounded hover:bg-dark-600 ${flipH ? 'text-primary-400 bg-primary-900/20' : 'text-gray-300'}`}>↔️</button>
+                        <button onClick={handleFlipVertical} title="Inverter Vertical" className={`p-1.5 rounded hover:bg-dark-600 ${flipV ? 'text-primary-400 bg-primary-900/20' : 'text-gray-300'}`}>↕️</button>
+                    </div>
 
-                    <div style={{ width: '1px', height: '30px', background: '#4b5563', margin: '0 5px' }} />
+                    <div className="w-px h-8 bg-dark-700 mx-2" />
 
                     {/* Colors */}
-                    {colors.map(c => (
-                        <button
-                            key={c}
-                            onClick={() => setColor(c)}
-                            style={{
-                                width: '28px',
-                                height: '28px',
-                                background: c,
-                                border: color === c ? '3px solid white' : '2px solid #4b5563',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                opacity: mode === 'crop' ? 0.5 : 1
-                            }}
-                            disabled={mode === 'crop'}
-                        />
-                    ))}
+                    <div className="flex gap-1 bg-dark-800 p-1 rounded">
+                        {colors.map(c => (
+                            <button
+                                key={c}
+                                onClick={() => setColor(c)}
+                                disabled={mode === 'crop'}
+                                className={`w-6 h-6 rounded-sm border-2 transition-transform ${color === c ? 'border-white scale-110 z-10' : 'border-transparent hover:scale-105'
+                                    } ${mode === 'crop' ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                style={{ backgroundColor: c }}
+                            />
+                        ))}
+                    </div>
 
-                    <div style={{ width: '1px', height: '30px', background: '#4b5563', margin: '0 5px' }} />
+                    <div className="w-px h-8 bg-dark-700 mx-2" />
 
                     {/* Stroke Width */}
-                    <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        Tamanho:
+                    <div className="flex items-center gap-2 bg-dark-800 px-3 py-1.5 rounded">
+                        <span className="text-xs text-gray-400">Espessura</span>
                         <input
                             type="range"
                             min="1"
                             max="10"
                             value={strokeWidth}
                             onChange={e => setStrokeWidth(Number(e.target.value))}
-                            style={{ width: '80px' }}
+                            className="w-20 accent-primary-500"
                             disabled={mode === 'crop'}
                         />
-                    </label>
+                    </div>
                 </div>
 
                 {/* Canvas Area / Crop Area */}
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '10px', background: '#0f172a', position: 'relative', minHeight: '450px' }}>
+                <div className="flex-1 overflow-hidden relative bg-[#0f172a] flex items-center justify-center p-4">
                     {mode === 'crop' ? (
-                        // Crop mode
                         <>
                             {/* Crop Type Toggle */}
-                            <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.7)', padding: '6px 12px', borderRadius: '6px', zIndex: 10 }}>
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1 bg-dark-800/90 p-1 rounded-lg backdrop-blur shadow-xl border border-dark-600 z-10">
                                 <button
                                     onClick={() => setCropType('selection')}
-                                    style={{
-                                        padding: '6px 12px',
-                                        background: cropType === 'selection' ? '#2563eb' : '#4b5563',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9em'
-                                    }}
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'selection' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
+                                        }`}
                                 >📐 Seleção</button>
                                 <button
                                     onClick={() => setCropType('zoom')}
-                                    style={{
-                                        padding: '6px 12px',
-                                        background: cropType === 'zoom' ? '#2563eb' : '#4b5563',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.9em'
-                                    }}
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'zoom' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
+                                        }`}
                                 >🔍 Zoom</button>
                             </div>
 
                             {cropType === 'zoom' ? (
-                                // Zoom mode with react-easy-crop
                                 <>
-                                    <Cropper
-                                        image={currentImageSrc}
-                                        crop={cropPosition}
-                                        zoom={cropZoom}
-                                        aspect={undefined}
-                                        onCropChange={setCropPosition}
-                                        onZoomChange={setCropZoom}
-                                        onCropComplete={onCropComplete}
-                                        style={{
-                                            containerStyle: { width: '100%', height: '100%' }
-                                        }}
-                                    />
+                                    <div className="w-full h-full relative">
+                                        <Cropper
+                                            image={currentImageSrc}
+                                            crop={cropPosition}
+                                            zoom={cropZoom}
+                                            aspect={undefined}
+                                            onCropChange={setCropPosition}
+                                            onZoomChange={setCropZoom}
+                                            onCropComplete={onCropComplete}
+                                            style={{
+                                                containerStyle: { width: '100%', height: '100%', background: 'transparent' },
+                                                mediaStyle: { boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }
+                                            }}
+                                        />
+                                    </div>
                                     {/* Zoom slider */}
-                                    <div style={{ position: 'absolute', bottom: '70px', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.7)', padding: '8px 15px', borderRadius: '6px', zIndex: 10 }}>
-                                        <span style={{ color: 'white', fontSize: '0.9em' }}>Zoom:</span>
+                                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-dark-800/90 px-4 py-2 rounded-lg backdrop-blur shadow-xl border border-dark-600 z-10">
+                                        <span className="text-gray-300 text-sm font-medium">Zoom</span>
                                         <input
                                             type="range"
                                             min="1"
@@ -675,68 +640,64 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                             step="0.1"
                                             value={cropZoom}
                                             onChange={e => setCropZoom(Number(e.target.value))}
-                                            style={{ width: '150px' }}
+                                            className="w-40 accent-primary-500"
                                         />
                                     </div>
                                 </>
                             ) : (
-                                // Selection mode with canvas
-                                <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
+                                <div className="relative w-full h-full flex items-center justify-center">
                                     <canvas
                                         ref={canvasRef}
                                         onMouseDown={handleCropMouseDown}
                                         onMouseMove={handleCropMouseMove}
                                         onMouseUp={handleCropMouseUp}
                                         onMouseLeave={handleCropMouseUp}
-                                        style={{ cursor: 'crosshair', borderRadius: '4px', maxWidth: '100%', maxHeight: '100%' }}
+                                        className="max-w-full max-h-full rounded shadow-2xl cursor-crosshair"
                                     />
                                     {/* Selection overlay */}
                                     {selectionStart && selectionEnd && (
                                         <div
+                                            className="absolute border-2 border-primary-500 bg-primary-500/20 pointer-events-none"
                                             style={{
-                                                position: 'absolute',
                                                 left: Math.min(selectionStart.x, selectionEnd.x) + (canvasRef.current ? (canvasRef.current.parentElement!.clientWidth - canvasRef.current.width) / 2 : 0),
                                                 top: Math.min(selectionStart.y, selectionEnd.y),
                                                 width: Math.abs(selectionEnd.x - selectionStart.x),
                                                 height: Math.abs(selectionEnd.y - selectionStart.y),
-                                                border: '2px dashed #2563eb',
-                                                background: 'rgba(37,99,235,0.2)',
-                                                pointerEvents: 'none'
                                             }}
                                         />
                                     )}
-                                    <p style={{ position: 'absolute', bottom: '70px', color: '#9ca3af', fontSize: '0.9em' }}>
+                                    <p className="absolute bottom-20 text-gray-400 text-sm bg-dark-900/50 px-3 py-1 rounded">
                                         Clique e arraste para selecionar a área de corte
                                     </p>
                                 </div>
                             )}
 
                             {/* Crop controls */}
-                            <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px', zIndex: 10 }}>
+                            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3 z-10">
                                 <button
                                     onClick={handleApplyCrop}
                                     disabled={cropType === 'selection' && (!selectionStart || !selectionEnd)}
-                                    style={{
-                                        padding: '10px 20px',
-                                        background: (cropType === 'selection' && (!selectionStart || !selectionEnd)) ? '#374151' : '#16a34a',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: (cropType === 'selection' && (!selectionStart || !selectionEnd)) ? 'not-allowed' : 'pointer',
-                                        fontSize: '1em',
-                                        fontWeight: 'bold'
-                                    }}
-                                >✓ Aplicar Recorte</button>
+                                    className={`px-5 py-2.5 rounded font-medium shadow-lg transition-all ${cropType === 'selection' && (!selectionStart || !selectionEnd)
+                                            ? 'bg-dark-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-green-600 hover:bg-green-500 text-white hover:scale-105'
+                                        }`}
+                                >
+                                    ✓ Aplicar Recorte
+                                </button>
                                 <button
                                     onClick={handleCancelCrop}
-                                    style={{ padding: '10px 20px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1em' }}
-                                >✗ Cancelar</button>
+                                    className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded font-medium shadow-lg hover:scale-105 transition-all"
+                                >
+                                    ✗ Cancelar
+                                </button>
                             </div>
                         </>
                     ) : (
-                        // Edit mode with canvas
                         !imageLoaded ? (
-                            <p style={{ color: '#9ca3af' }}>Carregando imagem...</p>
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+                                <p className="text-gray-400">Carregando imagem...</p>
+                            </div>
                         ) : (
                             <canvas
                                 ref={canvasRef}
@@ -744,53 +705,59 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                 onMouseMove={handleMouseMove}
                                 onMouseUp={handleMouseUp}
                                 onMouseLeave={handleMouseUp}
-                                style={{ cursor: tool === 'text' ? 'text' : 'crosshair', borderRadius: '4px', maxWidth: '100%', maxHeight: '100%' }}
+                                className={`max-w-full max-h-full rounded shadow-2xl ${tool === 'text' ? 'cursor-text' : 'cursor-crosshair'}`}
                             />
                         )
                     )}
                 </div>
 
-                {/* Text Input */}
+                {/* Text Input Overlay */}
                 {textPosition && mode === 'edit' && (
-                    <div style={{ padding: '10px 15px', background: '#111827', borderTop: '1px solid #374151', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div className="px-4 py-3 bg-dark-800 border-t border-dark-700 flex gap-3 items-center animate-slideUp">
+                        <span className="text-xl">📝</span>
                         <input
                             type="text"
                             value={textInput}
                             onChange={e => setTextInput(e.target.value)}
                             placeholder="Digite o texto..."
                             autoFocus
-                            style={{ flex: 1, padding: '8px', borderRadius: '4px', border: 'none', fontSize: '1em' }}
+                            className="flex-1 bg-dark-900 border border-dark-600 rounded px-3 py-2 text-white focus:border-primary-500 outline-none"
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleAddText(); }}
                         />
-                        <button onClick={handleAddText} style={{ padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Adicionar</button>
-                        <button onClick={() => setTextPosition(null)} style={{ padding: '8px 16px', background: '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
+                        <button onClick={handleAddText} className="btn btn-primary px-4 py-2">Adicionar</button>
+                        <button onClick={() => setTextPosition(null)} className="btn btn-secondary px-4 py-2">Cancelar</button>
                     </div>
                 )}
 
-                {/* Adjustments */}
+                {/* Adjustments Bar */}
                 {mode === 'edit' && (
-                    <div style={{ padding: '10px 15px', background: '#111827', borderTop: '1px solid #374151', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                        <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            ☀️ Brilho: {brightness}%
-                            <input type="range" min="50" max="150" value={brightness} onChange={e => setBrightness(Number(e.target.value))} style={{ width: '120px' }} />
+                    <div className="px-4 py-3 bg-dark-900 border-t border-dark-800 flex gap-6 overflow-x-auto items-center">
+                        <label className="flex items-center gap-2 text-xs text-gray-400 whitespace-nowrap">
+                            <span>☀️ Brilho</span>
+                            <span className="bg-dark-800 px-1.5 rounded min-w-[30px] text-center">{brightness}%</span>
+                            <input type="range" min="50" max="150" value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="w-24 accent-primary-500" />
                         </label>
-                        <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            🌗 Contraste: {contrast}%
-                            <input type="range" min="50" max="150" value={contrast} onChange={e => setContrast(Number(e.target.value))} style={{ width: '120px' }} />
+                        <label className="flex items-center gap-2 text-xs text-gray-400 whitespace-nowrap">
+                            <span>🌗 Contraste</span>
+                            <span className="bg-dark-800 px-1.5 rounded min-w-[30px] text-center">{contrast}%</span>
+                            <input type="range" min="50" max="150" value={contrast} onChange={e => setContrast(Number(e.target.value))} className="w-24 accent-primary-500" />
                         </label>
                     </div>
                 )}
 
-                {/* Footer */}
-                <div style={{ padding: '12px 20px', borderTop: '1px solid #374151', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={handleUndo} disabled={historyIndex === 0 || mode === 'crop'} title="Desfazer desenho" style={{ padding: '8px 12px', background: historyIndex === 0 ? '#374151' : '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: historyIndex === 0 ? 'not-allowed' : 'pointer' }}>↩️</button>
-                        <button onClick={handleRedo} disabled={historyIndex >= history.length - 1 || mode === 'crop'} title="Refazer desenho" style={{ padding: '8px 12px', background: historyIndex >= history.length - 1 ? '#374151' : '#4b5563', color: 'white', border: 'none', borderRadius: '4px', cursor: historyIndex >= history.length - 1 ? 'not-allowed' : 'pointer' }}>↪️</button>
-                        <button onClick={handleUndoCrop} disabled={imageHistory.length <= 1 || mode === 'crop'} title="Desfazer recorte" style={{ padding: '8px 12px', background: imageHistory.length <= 1 ? '#374151' : '#ca8a04', color: 'white', border: 'none', borderRadius: '4px', cursor: imageHistory.length <= 1 ? 'not-allowed' : 'pointer' }}>🔙</button>
-                        <button onClick={handleClear} disabled={mode === 'crop'} title="Limpar tudo" style={{ padding: '8px 12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>🗑️</button>
+                {/* Footer Controls */}
+                <div className="px-5 py-4 border-t border-dark-700 bg-dark-800 flex justify-between items-center">
+                    <div className="flex gap-2">
+                        <button onClick={handleUndo} disabled={historyIndex === 0 || mode === 'crop'} title="Desfazer desenho" className={`p-2 rounded ${historyIndex === 0 || mode === 'crop' ? 'bg-dark-700 text-gray-600 cursor-not-allowed' : 'bg-dark-600 text-white hover:bg-dark-500'}`}>↩️</button>
+                        <button onClick={handleRedo} disabled={historyIndex >= history.length - 1 || mode === 'crop'} title="Refazer desenho" className={`p-2 rounded ${historyIndex >= history.length - 1 || mode === 'crop' ? 'bg-dark-700 text-gray-600 cursor-not-allowed' : 'bg-dark-600 text-white hover:bg-dark-500'}`}>↪️</button>
+                        <div className="w-px h-8 bg-dark-700 mx-2" />
+                        <button onClick={handleUndoCrop} disabled={imageHistory.length <= 1 || mode === 'crop'} title="Desfazer recorte" className={`p-2 rounded flex items-center gap-2 ${imageHistory.length <= 1 || mode === 'crop' ? 'bg-dark-700 text-gray-600 cursor-not-allowed' : 'bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30'}`}>🔙 <span className="text-xs">Desfazer Crop</span></button>
+                        <button onClick={handleClear} disabled={mode === 'crop'} title="Limpar tudo" className={`p-2 rounded flex items-center gap-2 ${mode === 'crop' ? 'opacity-30' : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'}`}>🗑️ <span className="text-xs">Limpar</span></button>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button onClick={onClose} style={{ padding: '10px 20px', background: '#4b5563', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button>
-                        <button onClick={handleSave} disabled={mode === 'crop'} style={{ padding: '10px 20px', background: mode === 'crop' ? '#374151' : '#16a34a', color: 'white', border: 'none', borderRadius: '6px', cursor: mode === 'crop' ? 'not-allowed' : 'pointer' }}>💾 Salvar</button>
+
+                    <div className="flex gap-3">
+                        <button onClick={onClose} className="btn btn-secondary px-5">Cancelar</button>
+                        <button onClick={handleSave} disabled={mode === 'crop'} className={`btn btn-primary px-5 ${mode === 'crop' ? 'opacity-50 cursor-not-allowed' : ''}`}>💾 Salvar Edição</button>
                     </div>
                 </div>
             </div>

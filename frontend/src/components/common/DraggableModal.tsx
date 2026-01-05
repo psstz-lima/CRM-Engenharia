@@ -79,72 +79,37 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
 
     return ReactDOM.createPortal(
         <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                background: 'transparent', // No shadow
-                zIndex: 1100,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                pointerEvents: 'none' // Allow clicks to pass through outside
-            }}
+            className="fixed inset-0 z-[1100] flex justify-center items-center pointer-events-none"
         >
             <div
                 ref={modalRef}
                 className={className}
                 style={{
-                    background: 'white',
                     width: width,
                     maxWidth: maxWidth,
                     height: height,
-                    maxHeight: height ? undefined : '90vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
                     transform: `translate(${position.x}px, ${position.y}px)`,
-                    // Important: remove default transition during drag to prevent lag
                     transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-                    pointerEvents: 'auto' // Re-enable clicks inside modal
                 }}
+                className={`flex flex-col rounded-lg shadow-2xl bg-dark-900 border border-dark-700 pointer-events-auto max-h-[90vh] ${className || ''}`}
             >
                 {/* Header - Drag Handle */}
                 <div
                     onMouseDown={handleMouseDown}
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '15px 20px',
-                        borderBottom: '1px solid #eee',
-                        cursor: isDragging ? 'grabbing' : 'grab',
-                        userSelect: 'none',
-                        background: '#f8f9fa',
-                        borderTopLeftRadius: '8px',
-                        borderTopRightRadius: '8px'
-                    }}
+                    className={`flex justify-between items-center px-5 py-3 border-b border-dark-700 bg-dark-800 rounded-t-lg select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                        }`}
                 >
-                    <h3 style={{ margin: 0 }}>{title}</h3>
+                    <h3 className="text-lg font-bold text-white m-0">{title}</h3>
                     <button
                         onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '1.5em',
-                            cursor: 'pointer',
-                            color: '#666'
-                        }}
+                        className="text-gray-400 hover:text-white text-2xl leading-none border-none bg-transparent cursor-pointer ml-4"
                     >
-                        &times;
+                        ×
                     </button>
                 </div>
 
                 {/* Content */}
-                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                <div className="p-5 overflow-y-auto flex-1 custom-scrollbar text-gray-300">
                     {children}
                 </div>
             </div>

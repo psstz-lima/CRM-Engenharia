@@ -1,6 +1,9 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
+import { FileText, Plus, Eye, Edit2, Trash2, Building2, Calendar, AlertCircle, Info, ClipboardList } from 'lucide-react';
 
 export function Contracts() {
     const [contracts, setContracts] = useState<any[]>([]);
@@ -90,7 +93,7 @@ export function Contracts() {
             'Deseja realmente excluir?'
         );
         if (!confirmed) return;
-        
+
         try {
             await api.delete(`/contracts/${id}`);
             loadContracts();
@@ -100,89 +103,199 @@ export function Contracts() {
     };
 
     return (
-        <div>
-            <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2>Contratos</h2>
-                    <button onClick={() => openModal()} style={{ padding: '10px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>+ Novo Contrato</button>
-                </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <PageHeader
+                title="Gestão de Contratos"
+                subtitle="Gerencie os contratos de obras, serviços e seus prazos."
+                icon={<ClipboardList className="text-[var(--accent-primary)]" />}
+                center
+                actions={
+                    <button onClick={() => openModal()} className="btn btn-primary flex items-center gap-2">
+                        <Plus size={16} />
+                        Novo Contrato
+                    </button>
+                }
+            />
 
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: '#f8f9fa', textAlign: 'left' }}>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Número</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Empresa</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Início</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Fim</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Valor Total</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Status</th>
-                                <th style={{ padding: '10px', borderBottom: '2px solid #ddd' }}>Ações</th>
+            <Card className="overflow-hidden border-none shadow-lg">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                            <tr>
+                                <th className="p-4 text-center">Número</th>
+                                <th className="p-4 text-left">Empresa</th>
+                                <th className="p-4 text-center">Período</th>
+                                <th className="p-4 text-center">Valor Total</th>
+                                <th className="p-4 text-center">Status</th>
+                                <th className="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {contracts.map(contract => (
-                                <tr key={contract.id} style={{ borderBottom: '1px solid #ddd' }}>
-                                    <td style={{ padding: '10px' }}>{contract.number}</td>
-                                    <td style={{ padding: '10px' }}>{contract.company?.name}</td>
-                                    <td style={{ padding: '10px' }}>{new Date(contract.startDate).toLocaleDateString()}</td>
-                                    <td style={{ padding: '10px' }}>{new Date(contract.endDate).toLocaleDateString()}</td>
-                                    <td style={{ padding: '10px' }}>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue)}</td>
-                                    <td style={{ padding: '10px' }}>{contract.isActive ? 'Ativo' : 'Inativo'}</td>
-                                    <td style={{ padding: '10px', display: 'flex', gap: '5px' }}>
-                                        <Link to={`/contracts/${contract.id}`}>
-                                            <button style={{ padding: '5px 10px', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}>Detalhes</button>
-                                        </Link>
-                                        <button onClick={() => openModal(contract)} style={{ padding: '5px 10px', background: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Editar</button>
-                                        <button onClick={() => handleDelete(contract.id)} style={{ padding: '5px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Excluir</button>
+                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                            {contracts.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="p-16 text-center text-[var(--text-muted)]">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                                <AlertCircle size={32} className="opacity-50" />
+                                            </div>
+                                            <p className="text-lg">Nenhum contrato encontrado.</p>
+                                            <button onClick={() => openModal()} className="text-[var(--accent-primary)] hover:underline">
+                                                Clique para criar um novo contrato
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                contracts.map(contract => (
+                                    <tr key={contract.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
+                                        <td className="p-4 font-bold text-[var(--text-primary)] text-center">
+                                            {contract.number}
+                                        </td>
+                                        <td className="p-4 text-[var(--text-secondary)] text-left">
+                                            <div className="flex items-center gap-2">
+                                                <Building2 size={14} className="opacity-50" />
+                                                {contract.company?.name || '-'}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-[var(--text-secondary)] text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Calendar size={14} className="opacity-50" />
+                                                <span className="text-xs">
+                                                    {new Date(contract.startDate).toLocaleDateString()} a {new Date(contract.endDate).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="p-4 font-mono text-[var(--text-primary)] text-center">
+                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${contract.isActive
+                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                }`}>
+                                                {contract.isActive ? 'ATIVO' : 'INATIVO'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Link
+                                                    to={`/contracts/${contract.id}`}
+                                                    className="p-1.5 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors"
+                                                    title="Detalhes"
+                                                >
+                                                    <Eye size={18} />
+                                                </Link>
+                                                <button
+                                                    onClick={() => openModal(contract)}
+                                                    className="p-1.5 text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors"
+                                                    title="Editar"
+                                                >
+                                                    <Edit2 size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(contract.id)}
+                                                    className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                    title="Excluir"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </Card>
 
             {showModal && (
-                <div onClick={() => setShowModal(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'white', padding: '20px', borderRadius: '8px', minWidth: '400px' }}>
-                        <h3>{editingId ? 'Editar Contrato' : 'Novo Contrato'}</h3>
-                        <form onSubmit={handleSave}>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>Número do Contrato</label>
-                                <input type="text" value={number} onChange={e => setNumber(e.target.value)} required style={{ width: '100%', padding: '8px' }} />
-                            </div>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>Objeto do Contrato</label>
-                                <textarea value={object} onChange={e => setObject(e.target.value)} rows={3} style={{ width: '100%', padding: '8px', resize: 'vertical' }} />
-                            </div>
-                            <div style={{ marginBottom: '10px' }}>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>Empresa</label>
-                                <select value={companyId} onChange={e => setCompanyId(e.target.value)} required style={{ width: '100%', padding: '8px' }}>
-                                    <option value="">Selecione</option>
-                                    {companies.map(c => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '5px' }}>Data Início</label>
-                                    <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required style={{ width: '100%', padding: '8px' }} />
+                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="modal-content w-full max-w-2xl m-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                {editingId ? <Edit2 size={20} className="text-amber-500" /> : <Plus size={20} className="text-[var(--accent-primary)]" />}
+                                {editingId ? 'Editar Contrato' : 'Novo Contrato'}
+                            </h3>
+                            <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                        </div>
+                        <form onSubmit={handleSave} className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="label">Número do Contrato *</label>
+                                    <div className="relative">
+                                        <FileText size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                                        <input
+                                            type="text"
+                                            className="input pl-10"
+                                            value={number}
+                                            onChange={e => setNumber(e.target.value)}
+                                            required
+                                            placeholder="Ex: 001/2024"
+                                        />
+                                    </div>
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '5px' }}>Data Fim</label>
-                                    <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required style={{ width: '100%', padding: '8px' }} />
+                                <div>
+                                    <label className="label">Empresa *</label>
+                                    <div className="relative">
+                                        <Building2 size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                                        <select
+                                            className="input pl-10"
+                                            value={companyId}
+                                            onChange={e => setCompanyId(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {companies.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="label">Objeto do Contrato</label>
+                                    <textarea
+                                        className="input resize-none"
+                                        value={object}
+                                        onChange={e => setObject(e.target.value)}
+                                        rows={3}
+                                        placeholder="Descrição breve do objeto do contrato..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="label">Data Início *</label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={startDate}
+                                        onChange={e => setStartDate(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="label">Data Fim *</label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={endDate}
+                                        onChange={e => setEndDate(e.target.value)}
+                                        required
+                                    />
                                 </div>
                             </div>
+
                             {!editingId && (
-                                <div style={{ marginBottom: '10px' }}>
-                                    <small style={{ color: '#666' }}>O valor total será calculado automaticamente conforme os itens forem adicionados.</small>
+                                <div className="p-4 bg-[var(--accent-glow)] border border-[var(--accent-primary)]/20 rounded-lg flex items-start gap-3">
+                                    <Info size={20} className="text-[var(--accent-primary)] shrink-0 mt-0.5" />
+                                    <p className="text-sm text-[var(--text-secondary)]">
+                                        O valor total do contrato será calculado automaticamente conforme você adicionar itens à planilha contratual na próxima tela.
+                                    </p>
                                 </div>
                             )}
-                            <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                                <button type="submit" style={{ padding: '8px 15px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Salvar</button>
-                                <button type="button" onClick={() => setShowModal(false)} style={{ padding: '8px 15px', background: '#64748b', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                                <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancelar</button>
+                                <button type="submit" className="btn btn-primary">Salvar Contrato</button>
                             </div>
                         </form>
                     </div>

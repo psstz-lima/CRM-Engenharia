@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Map, Marker, ZoomControl, GeoJson } from 'pigeon-maps';
 import { DraggableModal } from '../common/DraggableModal';
@@ -73,11 +74,6 @@ function satelliteProvider(x: number, y: number, z: number): string {
     return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
 }
 
-// Default OSM tile provider
-function osmProvider(x: number, y: number, z: number): string {
-    return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-}
-
 export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }: DistanceCalculatorModalProps) {
     // State
     const [waypoints, setWaypoints] = useState<GeoPoint[]>([]); // [origin, ...intermediates, destination]
@@ -117,7 +113,6 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
     // Helper to get origin and destination from waypoints
     const origin = waypoints.length > 0 ? waypoints[0] : null;
     const destination = waypoints.length > 1 ? waypoints[waypoints.length - 1] : null;
-    const intermediates = waypoints.length > 2 ? waypoints.slice(1, -1) : [];
 
     // Reverse geocode to get address from coordinates
     const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
@@ -476,22 +471,6 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
 
     if (!show) return null;
 
-    const inputStyle = {
-        width: '100%', padding: '8px 10px', borderRadius: '4px',
-        border: '1px solid #374151', background: '#1f2937', color: 'white',
-        fontSize: '0.9em'
-    };
-
-    const buttonStyle = (active: boolean) => ({
-        padding: '6px 12px',
-        background: active ? '#3b82f6' : '#374151',
-        border: 'none',
-        borderRadius: '4px',
-        color: 'white',
-        cursor: 'pointer',
-        fontSize: '0.85em'
-    });
-
     return (
         <DraggableModal
             isOpen={show}
@@ -501,16 +480,13 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
             maxWidth="1000px"
             height="90vh"
         >
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <div className="flex flex-col h-full overflow-hidden">
                 {/* Toolbar */}
-                <div style={{ padding: '10px 15px', background: '#111827', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', borderBottom: '1px solid #374151' }}>
+                <div className="p-3 bg-dark-950 flex gap-3 flex-wrap items-center border-b border-dark-800">
                     {/* Route Mode Toggle */}
-                    <div style={{ display: 'flex', gap: '5px' }}>
+                    <div className="flex gap-1">
                         <button
-                            style={{
-                                ...buttonStyle(routeMode === 'auto'),
-                                background: routeMode === 'auto' ? '#10b981' : '#374151'
-                            }}
+                            className={`btn btn-sm ${routeMode === 'auto' ? 'bg-green-600 hover:bg-green-500' : 'btn-secondary'}`}
                             onClick={() => {
                                 setRouteMode('auto');
                                 setIsAddingCustomPoints(false);
@@ -518,10 +494,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                             }}
                         >🛣️ Rota Automática</button>
                         <button
-                            style={{
-                                ...buttonStyle(routeMode === 'custom'),
-                                background: routeMode === 'custom' ? '#f59e0b' : '#374151'
-                            }}
+                            className={`btn btn-sm ${routeMode === 'custom' ? 'bg-amber-600 hover:bg-amber-500' : 'btn-secondary'}`}
                             onClick={() => {
                                 setRouteMode('custom');
                                 setSelectionMode('none');
@@ -532,150 +505,146 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                         >✏️ Caminho Personalizado</button>
                     </div>
 
-                    <div style={{ borderLeft: '1px solid #374151', height: '24px' }} />
+                    <div className="h-6 w-px bg-dark-700 mx-1" />
 
                     {/* Show based on route mode */}
                     {routeMode === 'auto' ? (
                         <>
                             {/* Input Mode Toggle */}
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                                <button style={buttonStyle(coordInputMode === 'search')} onClick={() => setCoordInputMode('search')}>🔍 Busca</button>
-                                <button style={buttonStyle(coordInputMode === 'latlong')} onClick={() => setCoordInputMode('latlong')}>🌐 Lat/Long</button>
-                                <button style={buttonStyle(coordInputMode === 'utm')} onClick={() => setCoordInputMode('utm')}>📐 UTM</button>
+                            <div className="flex gap-1">
+                                <button className={`btn btn-sm ${coordInputMode === 'search' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCoordInputMode('search')}>🔍 Busca</button>
+                                <button className={`btn btn-sm ${coordInputMode === 'latlong' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCoordInputMode('latlong')}>🌐 Lat/Long</button>
+                                <button className={`btn btn-sm ${coordInputMode === 'utm' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCoordInputMode('utm')}>📐 UTM</button>
                             </div>
 
-                            <div style={{ borderLeft: '1px solid #374151', height: '24px' }} />
+                            <div className="h-6 w-px bg-dark-700 mx-1" />
 
                             {/* Selection Mode */}
-                            <div style={{ display: 'flex', gap: '5px' }}>
+                            <div className="flex gap-1">
                                 <button
-                                    style={buttonStyle(selectionMode === 'origin')}
+                                    className={`btn btn-sm ${selectionMode === 'origin' ? 'btn-primary' : 'btn-secondary'}`}
                                     onClick={() => setSelectionMode(selectionMode === 'origin' ? 'none' : 'origin')}
                                 >🟢 Clicar Origem</button>
                                 <button
-                                    style={buttonStyle(selectionMode === 'waypoint')}
+                                    className={`btn btn-sm ${selectionMode === 'waypoint' ? 'btn-primary' : 'btn-secondary'}`}
                                     onClick={() => setSelectionMode(selectionMode === 'waypoint' ? 'none' : 'waypoint')}
                                     disabled={waypoints.length < 2}
                                 >🔵 + Parada</button>
                                 <button
-                                    style={buttonStyle(selectionMode === 'destination')}
+                                    className={`btn btn-sm ${selectionMode === 'destination' ? 'btn-primary' : 'btn-secondary'}`}
                                     onClick={() => setSelectionMode(selectionMode === 'destination' ? 'none' : 'destination')}
                                 >🔴 Clicar Destino</button>
                             </div>
                         </>
                     ) : (
                         /* Custom Path Controls */
-                        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                        <div className="flex gap-2 items-center">
                             <button
-                                style={{
-                                    ...buttonStyle(isAddingCustomPoints),
-                                    background: isAddingCustomPoints ? '#22c55e' : '#374151',
-                                    animation: isAddingCustomPoints ? 'pulse 1.5s infinite' : 'none'
-                                }}
+                                className={`btn btn-sm ${isAddingCustomPoints ? 'bg-green-600 hover:bg-green-500 animate-pulse' : 'btn-secondary'}`}
                                 onClick={() => setIsAddingCustomPoints(!isAddingCustomPoints)}
                             >
                                 {isAddingCustomPoints ? '✅ Adicionando Pontos...' : '➕ Adicionar Pontos'}
                             </button>
                             <button
-                                style={{ ...buttonStyle(false), background: '#ef4444' }}
+                                className="btn btn-sm bg-red-600 hover:bg-red-500 text-white border-none"
                                 onClick={clearCustomPath}
                                 disabled={customPathPoints.length === 0}
                             >🗑️ Limpar</button>
-                            <span style={{ color: '#9ca3af', fontSize: '0.85em', marginLeft: '10px' }}>
+                            <span className="text-gray-400 text-xs ml-2">
                                 {customPathPoints.length} pontos
                             </span>
                         </div>
                     )}
 
-                    <div style={{ borderLeft: '1px solid #374151', height: '24px' }} />
+                    <div className="h-6 w-px bg-dark-700 mx-1" />
 
                     {/* Map Style Toggle */}
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                        <button style={buttonStyle(mapStyle === 'default')} onClick={() => setMapStyle('default')}>🗺️ Mapa</button>
-                        <button style={buttonStyle(mapStyle === 'satellite')} onClick={() => setMapStyle('satellite')}>🛰️ Satélite</button>
+                    <div className="flex gap-1">
+                        <button className={`btn btn-sm ${mapStyle === 'default' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMapStyle('default')}>🗺️ Mapa</button>
+                        <button className={`btn btn-sm ${mapStyle === 'satellite' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setMapStyle('satellite')}>🛰️ Satélite</button>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                <div className="flex-1 flex overflow-hidden">
                     {/* Left Panel - Inputs */}
-                    <div style={{ width: '300px', background: '#1f2937', padding: '15px', overflowY: 'auto', borderRight: '1px solid #374151' }}>
+                    <div className="w-[300px] bg-dark-900 p-4 border-r border-dark-700 overflow-y-auto">
                         {/* Coordinate Input (Lat/Long or UTM) */}
                         {coordInputMode !== 'search' && (
-                            <div style={{ marginBottom: '15px', padding: '10px', background: '#111827', borderRadius: '6px' }}>
+                            <div className="mb-4 p-3 bg-dark-950 rounded-lg border border-dark-800">
                                 {coordInputMode === 'latlong' ? (
                                     <>
-                                        <div style={{ marginBottom: '8px' }}>
-                                            <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Latitude</label>
+                                        <div className="mb-2">
+                                            <label className="label">Latitude</label>
                                             <input
                                                 type="text"
                                                 value={coordLat}
                                                 onChange={(e) => setCoordLat(e.target.value)}
                                                 placeholder="-23.5505"
-                                                style={inputStyle}
+                                                className="input text-sm py-1.5"
                                             />
                                         </div>
-                                        <div style={{ marginBottom: '8px' }}>
-                                            <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Longitude</label>
+                                        <div className="mb-2">
+                                            <label className="label">Longitude</label>
                                             <input
                                                 type="text"
                                                 value={coordLng}
                                                 onChange={(e) => setCoordLng(e.target.value)}
                                                 placeholder="-46.6333"
-                                                style={inputStyle}
+                                                className="input text-sm py-1.5"
                                             />
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Zona</label>
+                                        <div className="flex gap-2 mb-2">
+                                            <div className="flex-1">
+                                                <label className="label">Zona</label>
                                                 <input
                                                     type="text"
                                                     value={utmZone}
                                                     onChange={(e) => setUtmZone(e.target.value)}
                                                     placeholder="23"
-                                                    style={inputStyle}
+                                                    className="input text-sm py-1.5"
                                                 />
                                             </div>
                                             <div>
-                                                <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Hem.</label>
+                                                <label className="label">Hem.</label>
                                                 <select
                                                     value={utmHemisphere}
                                                     onChange={(e) => setUtmHemisphere(e.target.value as 'N' | 'S')}
-                                                    style={{ ...inputStyle, padding: '8px 5px' }}
+                                                    className="input text-sm py-1.5 w-[60px]"
                                                 >
                                                     <option value="S">S</option>
                                                     <option value="N">N</option>
                                                 </select>
                                             </div>
                                         </div>
-                                        <div style={{ marginBottom: '8px' }}>
-                                            <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Easting (E)</label>
+                                        <div className="mb-2">
+                                            <label className="label">Easting (E)</label>
                                             <input
                                                 type="text"
                                                 value={utmEasting}
                                                 onChange={(e) => setUtmEasting(e.target.value)}
                                                 placeholder="323000"
-                                                style={inputStyle}
+                                                className="input text-sm py-1.5"
                                             />
                                         </div>
-                                        <div style={{ marginBottom: '8px' }}>
-                                            <label style={{ color: '#9ca3af', fontSize: '0.8em' }}>Northing (N)</label>
+                                        <div className="mb-2">
+                                            <label className="label">Northing (N)</label>
                                             <input
                                                 type="text"
                                                 value={utmNorthing}
                                                 onChange={(e) => setUtmNorthing(e.target.value)}
                                                 placeholder="7394000"
-                                                style={inputStyle}
+                                                className="input text-sm py-1.5"
                                             />
                                         </div>
                                     </>
                                 )}
-                                <div style={{ display: 'flex', gap: '5px' }}>
-                                    <button onClick={() => addFromCoords(true)} style={{ ...buttonStyle(false), flex: 1, background: '#22c55e' }}>🟢 Origem</button>
-                                    <button onClick={() => addFromCoords(false)} style={{ ...buttonStyle(false), flex: 1, background: '#ef4444' }}>🔴 Destino</button>
+                                <div className="flex gap-2 mt-3">
+                                    <button onClick={() => addFromCoords(true)} className="btn bg-green-600 hover:bg-green-500 text-white flex-1 text-xs py-1.5">🟢 Origem</button>
+                                    <button onClick={() => addFromCoords(false)} className="btn bg-red-600 hover:bg-red-500 text-white flex-1 text-xs py-1.5">🔴 Destino</button>
                                 </div>
                             </div>
                         )}
@@ -683,33 +652,22 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                         {/* Search Origin */}
                         {coordInputMode === 'search' && (
                             <>
-                                <div style={{ marginBottom: '15px', position: 'relative' }}>
-                                    <label style={{ color: '#9ca3af', fontSize: '0.85em', marginBottom: '5px', display: 'block' }}>
-                                        🟢 Origem
-                                    </label>
+                                <div className="mb-4 relative">
+                                    <label className="label mb-1 block">🟢 Origem</label>
                                     <input
                                         type="text"
                                         value={originSearch}
                                         onChange={(e) => handleSearchChange(e.target.value, true)}
                                         placeholder="Digite o endereço..."
-                                        style={inputStyle}
+                                        className="input"
                                     />
                                     {originResults.length > 0 && (
-                                        <div style={{
-                                            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                                            background: '#1f2937', border: '1px solid #374151', borderRadius: '6px',
-                                            maxHeight: '150px', overflowY: 'auto', marginTop: '3px'
-                                        }}>
+                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-dark-800 border border-dark-600 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
                                             {originResults.map((result, i) => (
                                                 <div
                                                     key={i}
                                                     onClick={() => selectLocation(result, true)}
-                                                    style={{
-                                                        padding: '8px 10px', cursor: 'pointer', color: '#e5e7eb',
-                                                        borderBottom: '1px solid #374151', fontSize: '0.85em'
-                                                    }}
-                                                    onMouseEnter={(e) => (e.currentTarget.style.background = '#374151')}
-                                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                                                    className="p-2 cursor-pointer text-gray-200 text-sm hover:bg-dark-700 border-b border-dark-700 last:border-0"
                                                 >
                                                     {result.display_name}
                                                 </div>
@@ -719,33 +677,22 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                 </div>
 
                                 {/* Search Destination */}
-                                <div style={{ marginBottom: '15px', position: 'relative' }}>
-                                    <label style={{ color: '#9ca3af', fontSize: '0.85em', marginBottom: '5px', display: 'block' }}>
-                                        🔴 Destino
-                                    </label>
+                                <div className="mb-4 relative">
+                                    <label className="label mb-1 block">🔴 Destino</label>
                                     <input
                                         type="text"
                                         value={destinationSearch}
                                         onChange={(e) => handleSearchChange(e.target.value, false)}
                                         placeholder="Digite o endereço..."
-                                        style={inputStyle}
+                                        className="input"
                                     />
                                     {destinationResults.length > 0 && (
-                                        <div style={{
-                                            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                                            background: '#1f2937', border: '1px solid #374151', borderRadius: '6px',
-                                            maxHeight: '150px', overflowY: 'auto', marginTop: '3px'
-                                        }}>
+                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-dark-800 border border-dark-600 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
                                             {destinationResults.map((result, i) => (
                                                 <div
                                                     key={i}
                                                     onClick={() => selectLocation(result, false)}
-                                                    style={{
-                                                        padding: '8px 10px', cursor: 'pointer', color: '#e5e7eb',
-                                                        borderBottom: '1px solid #374151', fontSize: '0.85em'
-                                                    }}
-                                                    onMouseEnter={(e) => (e.currentTarget.style.background = '#374151')}
-                                                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                                                    className="p-2 cursor-pointer text-gray-200 text-sm hover:bg-dark-700 border-b border-dark-700 last:border-0"
                                                 >
                                                     {result.display_name}
                                                 </div>
@@ -758,36 +705,23 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
 
                         {/* Waypoints List */}
                         {waypoints.length > 0 && (
-                            <div style={{ marginTop: '10px' }}>
-                                <label style={{ color: '#9ca3af', fontSize: '0.85em', marginBottom: '8px', display: 'block' }}>
-                                    📍 Pontos do Trajeto ({waypoints.length})
-                                </label>
+                            <div className="mt-2">
+                                <label className="label text-xs mb-2 block">📍 Pontos do Trajeto ({waypoints.length})</label>
                                 {waypoints.map((wp, i) => (
                                     <div
                                         key={i}
-                                        style={{
-                                            padding: '8px 10px',
-                                            background: '#111827',
-                                            borderRadius: '4px',
-                                            marginBottom: '5px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}
+                                        className="flex items-center gap-2 p-2 bg-dark-950 rounded mb-1 border border-dark-800"
                                     >
-                                        <span style={{
-                                            color: i === 0 ? '#22c55e' : i === waypoints.length - 1 ? '#ef4444' : '#3b82f6',
-                                            fontSize: '1.1em'
-                                        }}>
+                                        <span className={`text-base ${i === 0 ? 'text-green-500' : i === waypoints.length - 1 ? 'text-red-500' : 'text-blue-500'}`}>
                                             {i === 0 ? '🟢' : i === waypoints.length - 1 ? '🔴' : '🔵'}
                                         </span>
-                                        <span style={{ flex: 1, color: '#e5e7eb', fontSize: '0.85em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <span className="flex-1 text-xs text-gray-300 truncate">
                                             {i === 0 ? 'Origem: ' : i === waypoints.length - 1 ? 'Destino: ' : `Parada ${i}: `}
                                             {wp.label.split(',')[0]}
                                         </span>
                                         <button
                                             onClick={() => removeWaypoint(i)}
-                                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1em' }}
+                                            className="text-red-500 hover:text-red-400 text-base leading-none"
                                         >×</button>
                                     </div>
                                 ))}
@@ -796,187 +730,131 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
 
                         {/* Custom Path Points List */}
                         {routeMode === 'custom' && customPathPoints.length > 0 && (
-                            <div style={{ marginTop: '10px' }}>
-                                <label style={{ color: '#f59e0b', fontSize: '0.85em', marginBottom: '8px', display: 'block' }}>
-                                    ✏️ Pontos do Caminho ({customPathPoints.length})
-                                </label>
-                                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                    {customPathPoints.map((pt, i) => (
+                            <div className="mt-2">
+                                <label className="label text-xs mb-2 block text-amber-500">📍 Pontos Personalizados ({customPathPoints.length})</label>
+                                <div className="max-h-[200px] overflow-y-auto pr-1">
+                                    {customPathPoints.map((wp, i) => (
                                         <div
                                             key={i}
-                                            style={{
-                                                padding: '6px 10px',
-                                                background: '#111827',
-                                                borderRadius: '4px',
-                                                marginBottom: '4px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px'
-                                            }}
+                                            className="flex items-center gap-2 p-2 bg-dark-950 rounded mb-1 border border-dark-800"
                                         >
-                                            <span style={{ color: '#f59e0b', fontSize: '0.9em', fontWeight: 'bold' }}>
-                                                {i + 1}
-                                            </span>
-                                            <span style={{ flex: 1, color: '#e5e7eb', fontSize: '0.8em' }}>
-                                                {pt.lat.toFixed(4)}, {pt.lng.toFixed(4)}
-                                            </span>
+                                            <span className="text-amber-500 text-xs font-bold">{i + 1}</span>
+                                            <span className="text-gray-400 text-xs">Lat: {wp.lat.toFixed(5)}</span>
+                                            <span className="text-gray-400 text-xs">Lng: {wp.lng.toFixed(5)}</span>
                                             <button
                                                 onClick={() => removeCustomPathPoint(i)}
-                                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.9em' }}
+                                                className="ml-auto text-red-500 hover:text-red-400 text-base leading-none"
                                             >×</button>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Route Name Input */}
-                        {distance !== null && (
-                            <div style={{ marginTop: '15px' }}>
-                                <label style={{ color: '#9ca3af', fontSize: '0.85em', marginBottom: '5px', display: 'block' }}>
-                                    🏷️ Nome do Trajeto (opcional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={routeName}
-                                    onChange={(e) => setRouteName(e.target.value)}
-                                    placeholder="Ex: Trajeto São Paulo - Rio"
-                                    style={inputStyle}
-                                />
-                            </div>
-                        )}
-
-                        {/* Result */}
-                        {distance !== null && (
-                            <div style={{ marginTop: '15px', padding: '12px', background: '#064e3b', borderRadius: '6px' }}>
-                                <div style={{ color: '#a7f3d0', fontSize: '1.2em', fontWeight: 'bold', marginBottom: '5px' }}>
-                                    📏 {distance.toFixed(2)} km
-                                    {routeMode === 'custom' && <span style={{ fontSize: '0.7em', fontWeight: 'normal' }}> (linha reta)</span>}
+                                <div className="mt-3">
+                                    <label className="label">Nome do Trajeto (Opcional)</label>
+                                    <input
+                                        type="text"
+                                        value={routeName}
+                                        onChange={(e) => setRouteName(e.target.value)}
+                                        placeholder="Ex: Transporte Fazenda X"
+                                        className="input"
+                                    />
                                 </div>
-                                {duration !== null && (
-                                    <div style={{ color: '#a7f3d0', fontSize: '0.95em' }}>
-                                        ⏱️ {Math.floor(duration / 60)}h {Math.round(duration % 60)}min
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {error && (
-                            <div style={{ marginTop: '15px', padding: '12px', background: '#7f1d1d', borderRadius: '6px', color: '#fca5a5' }}>
-                                ❌ {error}
                             </div>
                         )}
                     </div>
 
-                    {/* Map */}
-                    <div style={{ flex: 1, position: 'relative' }}>
-                        {selectionMode !== 'none' && (
-                            <div style={{
-                                position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
-                                background: 'rgba(0,0,0,0.8)', padding: '8px 16px', borderRadius: '6px',
-                                color: 'white', zIndex: 10, fontSize: '0.9em'
-                            }}>
-                                Clique no mapa para selecionar {selectionMode === 'origin' ? 'ORIGEM' : selectionMode === 'destination' ? 'DESTINO' : 'PARADA'}
-                            </div>
-                        )}
-
-                        {/* Custom path instruction */}
-                        {routeMode === 'custom' && isAddingCustomPoints && (
-                            <div style={{
-                                position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
-                                background: 'rgba(245, 158, 11, 0.9)', padding: '8px 16px', borderRadius: '6px',
-                                color: 'white', zIndex: 10, fontSize: '0.9em', fontWeight: 'bold'
-                            }}>
-                                ✏️ Clique no mapa para adicionar pontos ao caminho
-                            </div>
-                        )}
-
+                    {/* Right Panel - Map */}
+                    <div className="flex-1 relative bg-gray-900 border-l border-dark-700">
                         <Map
+                            height={0} // let container handle height with 100% style
+                            defaultCenter={[-15.7801, -47.9292]}
                             center={center}
                             zoom={zoom}
-                            provider={mapStyle === 'satellite' ? satelliteProvider : osmProvider}
                             onBoundsChanged={({ center, zoom }) => {
                                 setCenter(center);
                                 setZoom(zoom);
                             }}
                             onClick={handleMapClick}
-                            attribution={mapStyle === 'satellite' ? false : undefined}
+                            provider={mapStyle === 'satellite' ? satelliteProvider : undefined}
                         >
                             <ZoomControl />
 
-                            {/* Auto route mode markers */}
-                            {routeMode === 'auto' && waypoints.map((wp, i) => (
+                            {/* Waypoints Markers */}
+                            {waypoints.map((wp, i) => (
                                 <Marker
-                                    key={`auto-${i}`}
+                                    key={i}
                                     anchor={[wp.lat, wp.lng]}
+                                    payload={i}
                                     color={i === 0 ? '#22c55e' : i === waypoints.length - 1 ? '#ef4444' : '#3b82f6'}
+                                    width={40}
                                 />
                             ))}
 
-                            {/* Custom path markers */}
-                            {routeMode === 'custom' && customPathPoints.map((pt, i) => (
+                            {/* Custom Path Markers */}
+                            {customPathPoints.map((wp, i) => (
                                 <Marker
                                     key={`custom-${i}`}
-                                    anchor={[pt.lat, pt.lng]}
+                                    anchor={[wp.lat, wp.lng]}
+                                    payload={i}
                                     color="#f59e0b"
+                                    width={30}
                                 />
                             ))}
 
-                            {/* Route Polyline */}
-                            {route.length > 1 && (
+                            {/* Route Line */}
+                            {route.length > 0 && (
                                 <GeoJson
                                     data={{
-                                        type: 'FeatureCollection',
-                                        features: [{
-                                            type: 'Feature',
-                                            geometry: {
-                                                type: 'LineString',
-                                                coordinates: route.map(([lat, lng]) => [lng, lat]) // GeoJSON uses [lng, lat]
-                                            },
-                                            properties: {}
-                                        }]
+                                        type: 'Feature',
+                                        geometry: {
+                                            type: 'LineString',
+                                            coordinates: route.map(p => [p[1], p[0]]),
+                                        },
+                                        properties: {},
                                     }}
                                     styleCallback={() => ({
-                                        stroke: '#3b82f6',
                                         strokeWidth: 4,
-                                        fill: 'none',
-                                        strokeLinecap: 'round',
-                                        strokeLinejoin: 'round',
-                                        opacity: 0.8
+                                        stroke: routeMode === 'custom' ? '#f59e0b' : '#3b82f6',
                                     })}
                                 />
                             )}
                         </Map>
 
+                        {/* Floating Distance Info */}
+                        {distance !== null && (
+                            <div className="absolute top-4 right-4 bg-dark-900/90 backdrop-blur border border-dark-600 p-4 rounded-xl shadow-2xl z-[1000] min-w-[200px]">
+                                <h4 className="text-gray-400 text-xs uppercase font-bold mb-1">Distância Total</h4>
+                                <div className="text-3xl font-bold text-white mb-1">
+                                    {distance.toFixed(2)} <span className="text-lg font-normal text-gray-500">km</span>
+                                </div>
+                                {duration !== null && (
+                                    <div className="text-gray-400 text-sm">
+                                        ⏱️ ~{Math.round(duration)} min
+                                    </div>
+                                )}
+                                <button
+                                    onClick={handleConfirm}
+                                    className="btn btn-primary w-full mt-3 justify-center text-sm py-2"
+                                >
+                                    ✅ Usar esta distância
+                                </button>
+                            </div>
+                        )}
+
                         {loading && (
-                            <div style={{
-                                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                background: 'rgba(0,0,0,0.8)', padding: '20px 30px', borderRadius: '8px', color: 'white'
-                            }}>
-                                Calculando rota...
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-[1100]">
+                                <div className="flex flex-col items-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-3"></div>
+                                    <span className="text-white font-medium">Calculando rota...</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-900/90 text-red-200 px-4 py-2 rounded shadow-lg border border-red-800 z-[1100]">
+                                {error}
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Footer */}
-                <div style={{ padding: '12px 15px', borderTop: '1px solid #374151', display: 'flex', justifyContent: 'flex-end', gap: '10px', background: '#1f2937' }}>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            padding: '10px 20px', background: '#4b5563', color: 'white',
-                            border: 'none', borderRadius: '6px', cursor: 'pointer'
-                        }}
-                    >Cancelar</button>
-                    <button
-                        onClick={handleConfirm}
-                        disabled={distance === null}
-                        style={{
-                            padding: '10px 20px', background: distance === null ? '#374151' : '#16a34a', color: 'white',
-                            border: 'none', borderRadius: '6px', cursor: distance === null ? 'not-allowed' : 'pointer',
-                            fontWeight: 'bold'
-                        }}
-                    >✓ Usar esta distância ({distance?.toFixed(2) || '0'} km)</button>
                 </div>
             </div>
         </DraggableModal>

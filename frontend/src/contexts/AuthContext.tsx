@@ -18,16 +18,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-        if (token && userData) {
-            try {
-                setUser(JSON.parse(userData));
-            } catch (e) {
-                console.error('Erro ao restaurar sessão:', e);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
+
+        const validateSession = async () => {
+            if (token && userData) {
+                try {
+                    // Optimized: First set what we have (optimistic)
+                    const parsedUser = JSON.parse(userData);
+                    setUser(parsedUser);
+
+                    // Then fetch fresh data
+                    try {
+                        const { data } = await api.get('/profile');
+                        // Merge fresh data with existing (to keep any extra fields if needed, though usually fresh replacement is better)
+                        // Actually, replacing proper fields is safer.
+                        // Assuming /profile returns the full user object used for context
+                        const freshUser = { ...parsedUser, ...data };
+                        setUser(freshUser);
+                        localStorage.setItem('user', JSON.stringify(freshUser));
+                    } catch (err) {
+                        // If fetching profile fails but token exists, it might be expired or server error.
+                        // Ideally we might want to check for 401 and logout.
+                        // api interceptor usually handles 401.
+                        console.error('Failed to refresh user profile', err);
+                    }
+                } catch (e) {
+                    console.error('Erro ao restaurar sessão:', e);
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                }
             }
-        }
-        setLoading(false);
+            setLoading(false);
+        };
+
+        validateSession();
     }, []);
 
     // Inactivity Timer

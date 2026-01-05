@@ -88,29 +88,19 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
     if (!show) return null;
 
     return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1100
-            }}
-        >
+        <div onClick={onClose} className="modal-overlay" style={{ zIndex: 1100 }}>
             <div
                 onClick={e => e.stopPropagation()}
-                style={{
-                    background: '#1f2937', borderRadius: '12px', width: '95%', maxWidth: '800px',
-                    maxHeight: '95vh', display: 'flex', flexDirection: 'column', overflow: 'hidden'
-                }}
+                className="modal-content w-[95%] max-w-[800px] max-h-[95vh] flex flex-col overflow-hidden"
             >
                 {/* Header */}
-                <div style={{ padding: '15px 20px', borderBottom: '1px solid #374151', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, color: 'white', fontSize: '1.1em' }}>✂️ Recortar Imagem</h3>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9ca3af', fontSize: '1.5em', cursor: 'pointer' }}>×</button>
+                <div className="px-5 py-4 border-b border-dark-700 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-white">✂️ Recortar Imagem</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">×</button>
                 </div>
 
                 {/* Crop Area */}
-                <div style={{ position: 'relative', height: '400px', background: '#111827' }}>
+                <div className="relative h-[400px] bg-dark-950">
                     <Cropper
                         image={imageSrc}
                         crop={crop}
@@ -124,24 +114,19 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                 </div>
 
                 {/* Controls */}
-                <div style={{ padding: '15px 20px', background: '#111827', borderTop: '1px solid #374151' }}>
+                <div className="px-5 py-4 bg-dark-900 border-t border-dark-700 space-y-4">
                     {/* Aspect Ratio */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'block', marginBottom: '8px' }}>Proporção:</label>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div>
+                        <label className="text-gray-400 text-sm block mb-2">Proporção:</label>
+                        <div className="flex gap-2 flex-wrap">
                             {aspectOptions.map(opt => (
                                 <button
                                     key={opt.label}
                                     onClick={() => setSelectedAspect(opt.value)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        background: selectedAspect === opt.value ? '#2563eb' : '#374151',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.85em'
-                                    }}
+                                    className={`px-3 py-1.5 rounded text-sm transition-colors ${selectedAspect === opt.value
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-dark-700 text-gray-300 hover:bg-dark-600'
+                                        }`}
                                 >
                                     {opt.label}
                                 </button>
@@ -150,8 +135,8 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                     </div>
 
                     {/* Zoom */}
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'block', marginBottom: '8px' }}>
+                    <div>
+                        <label className="text-gray-400 text-sm block mb-2">
                             Zoom: {zoom.toFixed(1)}x
                         </label>
                         <input
@@ -161,13 +146,13 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                             step={0.1}
                             value={zoom}
                             onChange={e => setZoom(Number(e.target.value))}
-                            style={{ width: '100%' }}
+                            className="w-full accent-primary-500"
                         />
                     </div>
 
                     {/* Rotation */}
                     <div>
-                        <label style={{ color: '#9ca3af', fontSize: '0.85em', display: 'block', marginBottom: '8px' }}>
+                        <label className="text-gray-400 text-sm block mb-2">
                             Rotação: {rotation}°
                         </label>
                         <input
@@ -177,30 +162,20 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                             step={1}
                             value={rotation}
                             onChange={e => setRotation(Number(e.target.value))}
-                            style={{ width: '100%' }}
+                            className="w-full accent-primary-500"
                         />
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '15px 20px', borderTop: '1px solid #374151', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button
-                        onClick={onClose}
-                        style={{ padding: '10px 20px', background: '#4b5563', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-                    >
+                <div className="px-5 py-4 border-t border-dark-700 flex justify-end gap-3">
+                    <button onClick={onClose} className="btn btn-secondary">
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        style={{
-                            padding: '10px 20px',
-                            background: loading ? '#4b5563' : '#16a34a',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: loading ? 'not-allowed' : 'pointer'
-                        }}
+                        className={`btn ${loading ? 'bg-dark-600 cursor-not-allowed' : 'btn-success'}`}
                     >
                         {loading ? 'Salvando...' : '✓ Aplicar Recorte'}
                     </button>
@@ -209,3 +184,4 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
         </div>
     );
 }
+

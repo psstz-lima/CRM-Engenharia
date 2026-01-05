@@ -939,22 +939,22 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             maxWidth="1400px"
         >
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {saveStatus === 'saving' && <span style={{ color: '#d97706', fontSize: '0.9em' }}>⏳ Salvando...</span>}
-                    {saveStatus === 'saved' && <span style={{ color: '#10b981', fontSize: '0.9em' }}>✔️ Configuração salva</span>}
-                    {saveStatus === 'error' && <span style={{ color: '#ef4444', fontSize: '0.9em' }}>❌ Erro ao salvar</span>}
+            <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-3">
+                    {saveStatus === 'saving' && <span className="text-amber-600 text-sm">⏳ Salvando...</span>}
+                    {saveStatus === 'saved' && <span className="text-emerald-500 text-sm">✔️ Configuração salva</span>}
+                    {saveStatus === 'error' && <span className="text-red-500 text-sm">❌ Erro ao salvar</span>}
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="flex gap-3">
                     <button
                         onClick={() => setShowManageUnits(true)}
-                        style={{ background: '#e0e7ff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', color: '#3730a3', fontSize: '0.9em' }}
+                        className="btn btn-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none"
                     >
                         Configurar Colunas / Medidas
                     </button>
                     <button
                         onClick={() => setShowLinkModal(true)}
-                        style={{ marginLeft: '10px', background: '#dcfce7', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', color: '#166534', fontSize: '0.9em' }}
+                        className="btn btn-sm bg-green-100 text-green-800 hover:bg-green-200 border-none"
                     >
                         🔗 Vincular Item
                     </button>
@@ -963,7 +963,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                         <button
                             type="button"
                             onClick={() => setShowDistanceCalculator(true)}
-                            style={{ marginLeft: '10px', background: '#fef3c7', border: '1px solid #f59e0b', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', color: '#b45309', fontSize: '0.9em', fontWeight: 'bold' }}
+                            className="btn btn-sm bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-400 font-bold"
                         >
                             📍 Calcular Distância
                         </button>
@@ -972,36 +972,29 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             </div>
 
             {/* Formula Builder */}
-            <div style={{ marginBottom: '15px', padding: '12px', background: '#fef3c7', borderRadius: '6px', border: '1px solid #f59e0b' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '0.9em', color: '#b45309', fontWeight: 'bold' }}>Fórmula de Cálculo:</span>
+            <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-400">
+                <div className="flex items-center gap-3 mb-3">
+                    <span className="text-sm text-amber-700 font-bold">Fórmula de Cálculo:</span>
                     <button
                         type="button"
                         onClick={() => setFormula([])}
-                        style={{ marginLeft: 'auto', padding: '4px 8px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8em', color: '#dc2626' }}
+                        className="ml-auto px-2 py-1 bg-red-50 border border-red-300 rounded text-xs text-red-600 hover:bg-red-100"
                     >
                         Limpar
                     </button>
                 </div>
 
                 {/* Current Formula Display */}
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', minHeight: '40px', padding: '10px', background: '#fffbeb', borderRadius: '4px', marginBottom: '10px', alignItems: 'center' }}>
+                <div className="flex gap-1.5 flex-wrap min-h-[40px] p-3 bg-amber-50/50 rounded mb-3 items-center border border-amber-200">
                     {formula.length === 0 ? (
-                        <span style={{ color: '#92400e', fontSize: '0.85em' }}>Clique nos campos e operadores abaixo para construir a fórmula</span>
+                        <span className="text-amber-800 text-sm">Clique nos campos e operadores abaixo para construir a fórmula</span>
                     ) : (
                         formula.map((item, idx) => (
                             <div
                                 key={idx}
                                 onClick={() => setFormula(formula.filter((_, i) => i !== idx))}
-                                style={{
-                                    padding: '6px 12px',
-                                    background: item.type === 'operator' ? '#fbbf24' : (item.isLinked ? '#8b5cf6' : '#3b82f6'),
-                                    color: 'white',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    fontSize: '0.9em'
-                                }}
+                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-white ${item.type === 'operator' ? 'bg-amber-500' : (item.isLinked ? 'bg-violet-500' : 'bg-blue-500')
+                                    }`}
                                 title="Clique para remover"
                             >
                                 {item.value}
@@ -1012,57 +1005,56 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                 {/* Linked Variables Section */}
                 {linkedVariables.length > 0 && (
-                    <div style={{ marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px dashed #e5e7eb' }}>
-                        <span style={{ fontSize: '0.85em', color: '#0369a1', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Itens Vinculados:</span>
+                    <div className="mb-4 pb-2 border-b border-dashed border-gray-300">
+                        <span className="text-sm text-sky-700 font-bold block mb-2">Itens Vinculados:</span>
 
-                        <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: '4px' }}>
-                            <table style={{ width: '100%', fontSize: '0.8em', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <thead style={{ background: '#f0f9ff', color: '#0c4a6e' }}>
+                        <div className="overflow-x-auto border border-gray-200 rounded">
+                            <table className="w-full text-xs border-collapse text-left">
+                                <thead className="bg-sky-50 text-sky-900">
                                     <tr>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe' }}>Item</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe' }}>Origem</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe', textAlign: 'center' }}>Linha</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe' }}>Propriedade</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe', textAlign: 'center' }}>Unid.</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe', textAlign: 'right' }}>Valor</th>
-                                        <th style={{ padding: '6px 8px', borderBottom: '1px solid #e0f2fe', textAlign: 'center' }}>Ações</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100">Item</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100">Origem</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Linha</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100">Propriedade</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Unid.</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100 text-right">Valor</th>
+                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {linkedVariables.map(v => (
-                                        <tr key={v.id} style={{ borderBottom: '1px solid #f9fafb' }}>
-                                            <td style={{ padding: '6px 8px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.itemName}>
+                                        <tr key={v.id} className="border-b border-gray-100">
+                                            <td className="px-2 py-1.5 max-w-[150px] truncate" title={v.itemName}>
                                                 {v.itemName || '-'}
                                             </td>
-                                            <td style={{ padding: '6px 8px', color: '#6b7280' }}>
+                                            <td className="px-2 py-1.5 text-gray-500">
                                                 {v.sourceBM || '-'}
                                             </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'center', color: '#6b7280' }}>
+                                            <td className="px-2 py-1.5 text-center text-gray-500">
                                                 {v.line || '-'}
                                             </td>
-                                            <td style={{ padding: '6px 8px', fontWeight: 'bold', color: '#0369a1' }}>
+                                            <td className="px-2 py-1.5 font-bold text-sky-700">
                                                 {v.property || v.label}
                                             </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'center', color: '#475569', fontSize: '0.9em' }}>
+                                            <td className="px-2 py-1.5 text-center text-slate-600 text-xs">
                                                 {v.unit || '-'}
                                             </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>
+                                            <td className="px-2 py-1.5 text-right font-mono">
                                                 {v.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 })}
                                             </td>
-                                            <td style={{ padding: '6px 8px', textAlign: 'center' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                                            <td className="px-2 py-1.5 text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
                                                     <button
                                                         type="button"
                                                         onClick={() => {
                                                             setFormula([...formula, { type: 'field', value: v.label, isLinked: true }]);
-                                                            // Add to column config if not exists to allow drag/drop
                                                             setColumnConfig(prev => {
                                                                 const id = `linked_${v.id}`;
                                                                 if (prev.some(c => c.id === id)) return prev;
                                                                 return [...prev, { id, label: v.label, visible: true, isLinked: true }];
                                                             });
                                                         }}
-                                                        style={{ padding: '2px 8px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9em' }}
+                                                        className="px-2 py-0.5 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
                                                         title="Adicionar à Fórmula"
                                                     >
                                                         Usar
@@ -1070,7 +1062,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                     <button
                                                         type="button"
                                                         onClick={() => setLinkedVariables(prev => prev.filter(p => p.id !== v.id))}
-                                                        style={{ padding: '2px 6px', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '4px', cursor: 'pointer' }}
+                                                        className="px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-300 rounded hover:bg-red-200"
                                                         title="Remover Item Vinculado"
                                                     >
                                                         ✕
@@ -1086,14 +1078,14 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 )}
 
                 {/* Available Fields - Only custom fields */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '0.8em', color: '#475569', width: '100%' }}>Campos:</span>
+                <div className="flex gap-2 flex-wrap mb-2">
+                    <span className="text-xs text-slate-600 w-full">Campos:</span>
                     {columnConfig.filter(c => c.visible && c.id.startsWith('custom_')).map(col => (
                         <button
                             key={col.id}
                             type="button"
                             onClick={() => setFormula([...formula, { type: 'field', value: col.label }])}
-                            style={{ padding: '4px 10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85em' }}
+                            className="px-2.5 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
                         >
                             {col.label}
                         </button>
@@ -1101,23 +1093,23 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 </div>
 
                 {/* Operators - Extended */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.8em', color: '#475569', width: '100%' }}>Operadores:</span>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} style={{ padding: '4px 12px', background: '#fbbf24', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>+</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} style={{ padding: '4px 12px', background: '#fbbf24', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>−</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '×' }])} style={{ padding: '4px 12px', background: '#fbbf24', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>×</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '÷' }])} style={{ padding: '4px 12px', background: '#fbbf24', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>÷</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} style={{ padding: '4px 12px', background: '#f97316', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'white' }}>^</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} style={{ padding: '4px 12px', background: '#f97316', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'white' }}>√</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} style={{ padding: '4px 12px', background: '#f97316', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'white' }}>%</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} style={{ padding: '4px 12px', background: '#94a3b8', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>(</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} style={{ padding: '4px 12px', background: '#94a3b8', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>)</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} style={{ padding: '4px 12px', background: '#8b5cf6', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', color: 'white' }}>π</button>
+                <div className="flex gap-2 flex-wrap">
+                    <span className="text-xs text-slate-600 w-full">Operadores:</span>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">+</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">−</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '×' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">×</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '÷' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">÷</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">^</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">√</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">%</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">(</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">)</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} className="px-3 py-1 bg-violet-500 text-white rounded font-bold hover:bg-violet-600">π</button>
                 </div>
 
                 {/* Engineering Formulas */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #d1d5db' }}>
-                    <span style={{ fontSize: '0.8em', color: '#475569', width: '100%' }}>Fórmulas de Engenharia (clique para calcular):</span>
+                <div className="flex gap-2 flex-wrap mt-2 pt-2 border-t border-dashed border-gray-300">
+                    <span className="text-xs text-slate-600 w-full">Fórmulas de Engenharia (clique para calcular):</span>
                     {Object.values(ENGINEERING_FORMULAS).map(f => (
                         <button
                             key={f.id}
@@ -1129,7 +1121,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 setEditingColumnId(null);
                                 setShowFormulaCalc(true);
                             }}
-                            style={{ padding: '4px 10px', background: '#059669', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8em' }}
+                            className="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700"
                             title={f.title}
                         >
                             {f.name}
@@ -1139,7 +1131,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '10px', alignItems: 'end', background: '#f8f9fa', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+                <form onSubmit={handleAdd} className="grid gap-3 items-end bg-gray-100 p-4 rounded-lg mb-5" style={{ gridTemplateColumns: gridCols }}>
 
                     <SortableContext items={columnConfig.filter(c => c.visible).map(c => c.id)} strategy={rectSortingStrategy}>
                         {columnConfig.map(col => {
@@ -1179,8 +1171,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             if (col.id === 'unit') return (
                                 <SortableFormItem key="unit" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Und.</label>
-                                    <select value={unit} onChange={e => setUnit(e.target.value)} style={{ width: '100%', padding: '6px' }}>
+                                    <label className="label text-xs">Und.</label>
+                                    <select value={unit} onChange={e => setUnit(e.target.value)} className="input py-1.5 text-sm">
                                         {availableUnits.map(u => <option key={u.id} value={u.code}>{u.code}</option>)}
                                     </select>
                                 </SortableFormItem>
@@ -1190,28 +1182,28 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             if (col.id === 'description') return (
                                 <SortableFormItem key="desc" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Descrição / Eixo</label>
-                                    <input required type="text" value={description} onChange={e => setDescription(e.target.value)} style={{ width: '100%', padding: '6px' }} />
+                                    <label className="label text-xs">Descrição / Eixo</label>
+                                    <input required type="text" value={description} onChange={e => setDescription(e.target.value)} className="input py-1.5 text-sm" />
                                 </SortableFormItem>
                             );
 
                             if (col.id === 'location') return (
                                 <SortableFormItem key="loc" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Local</label>
-                                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} style={{ width: '100%', padding: '6px' }} />
+                                    <label className="label text-xs">Local</label>
+                                    <input type="text" value={location} onChange={e => setLocation(e.target.value)} className="input py-1.5 text-sm" />
                                 </SortableFormItem>
                             );
 
                             if (col.id === 'stations') return (
                                 <SortableFormItem key="stations" id={col.id}>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Est. Inicial</label>
-                                            <input required type="text" value={startPoint} onChange={e => setStartPoint(e.target.value)} placeholder="000 + 0,000" style={{ width: '100%', padding: '6px' }} />
+                                    <div className="flex gap-2">
+                                        <div className="flex-1">
+                                            <label className="label text-xs">Est. Inicial</label>
+                                            <input required type="text" value={startPoint} onChange={e => setStartPoint(e.target.value)} placeholder="000 + 0,000" className="input py-1.5 text-sm" />
                                         </div>
-                                        <div style={{ flex: 1 }}>
-                                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Est. Final</label>
-                                            <input required type="text" value={endPoint} onChange={e => setEndPoint(e.target.value)} placeholder="000 + 0,000" style={{ width: '100%', padding: '6px' }} />
+                                        <div className="flex-1">
+                                            <label className="label text-xs">Est. Final</label>
+                                            <input required type="text" value={endPoint} onChange={e => setEndPoint(e.target.value)} placeholder="000 + 0,000" className="input py-1.5 text-sm" />
                                         </div>
                                     </div>
                                 </SortableFormItem>
@@ -1219,14 +1211,14 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             if (col.id === 'km') return (
                                 <SortableFormItem key="km" id={col.id}>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>KM Inicial</label>
-                                            <input required type="text" value={startPoint} onChange={e => setStartPoint(e.target.value)} placeholder="000 + 0,000" style={{ width: '100%', padding: '6px' }} />
+                                    <div className="flex gap-2">
+                                        <div className="flex-1">
+                                            <label className="label text-xs">KM Inicial</label>
+                                            <input required type="text" value={startPoint} onChange={e => setStartPoint(e.target.value)} placeholder="000 + 0,000" className="input py-1.5 text-sm" />
                                         </div>
-                                        <div style={{ flex: 1 }}>
-                                            <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>KM Final</label>
-                                            <input required type="text" value={endPoint} onChange={e => setEndPoint(e.target.value)} placeholder="000 + 0,000" style={{ width: '100%', padding: '6px' }} />
+                                        <div className="flex-1">
+                                            <label className="label text-xs">KM Final</label>
+                                            <input required type="text" value={endPoint} onChange={e => setEndPoint(e.target.value)} placeholder="000 + 0,000" className="input py-1.5 text-sm" />
                                         </div>
                                     </div>
                                 </SortableFormItem>
@@ -1234,31 +1226,31 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             if (col.id === 'quantity') return (
                                 <SortableFormItem key="qty" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Quantidade</label>
+                                    <label className="label text-xs">Quantidade</label>
                                     <input required type="text" value={genericLength} onChange={e => setGenericLength(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setGenericLength(n.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 4 })); }
-                                    }} placeholder="0,000" style={{ width: '100%', padding: '6px', border: importedFields['quantity'] ? '2px solid #10b981' : '1px solid #ccc', background: importedFields['quantity'] ? '#f0fdf4' : 'white' }} />
+                                    }} placeholder="0,000" className={`input py-1.5 text-sm ${importedFields['quantity'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
                             if (col.id === 'width') return (
                                 <SortableFormItem key="width" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Largura</label>
+                                    <label className="label text-xs">Largura</label>
                                     <input required type="text" value={width} onChange={e => setWidth(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setWidth(n.toLocaleString('pt-BR', { maximumFractionDigits: 4 })); }
-                                    }} placeholder="1,00" style={{ width: '100%', padding: '6px', border: importedFields['width'] ? '2px solid #10b981' : '1px solid #ccc', background: importedFields['width'] ? '#f0fdf4' : 'white' }} />
+                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['width'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
                             if (col.id === 'height') return (
                                 <SortableFormItem key="height" id={col.id}>
-                                    <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>Altura</label>
+                                    <label className="label text-xs">Altura</label>
                                     <input required type="text" value={height} onChange={e => setHeight(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setHeight(n.toLocaleString('pt-BR', { maximumFractionDigits: 4 })); }
-                                    }} placeholder="1,00" style={{ width: '100%', padding: '6px', border: importedFields['height'] ? '2px solid #10b981' : '1px solid #ccc', background: importedFields['height'] ? '#f0fdf4' : 'white' }} />
+                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['height'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
@@ -1266,14 +1258,14 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             if (col.id.startsWith('unit_') && col.id !== 'unit_desc') {
                                 return (
                                     <SortableFormItem key={col.id} id={col.id}>
-                                        <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>{col.label}</label>
+                                        <label className="label text-xs">{col.label}</label>
                                         <input
                                             required
                                             type="text"
                                             value={genericLength}
                                             onChange={e => setGenericLength(e.target.value)}
                                             placeholder="0,000"
-                                            style={{ width: '100%', padding: '6px' }}
+                                            className="input py-1.5 text-sm"
                                         />
                                     </SortableFormItem>
                                 );
@@ -1283,7 +1275,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             if (col.id.startsWith('custom_')) {
                                 return (
                                     <SortableFormItem key={col.id} id={col.id}>
-                                        <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px' }}>
+                                        <label className="label text-xs">
                                             {col.label}{col.unitLabel ? ` (${col.unitLabel})` : ''}
                                         </label>
                                         {(() => {
@@ -1355,7 +1347,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     {/* Render Linked Variables used in Formula */}
 
 
-                    <button type="submit" style={{ padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', height: '35px' }}>Adicionar</button>
+                    <button type="submit" className="btn btn-primary h-[35px] px-4">Adicionar</button>
 
                     {/* Preview Calc */}
                     <div style={{ fontSize: '0.9em', color: '#666', gridColumn: '1 / -1', marginTop: '5px' }}>
@@ -1465,10 +1457,10 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 </form>
             </DndContext>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
-                <thead style={{ background: '#eee' }}>
+            <table className="w-full border-collapse text-sm">
+                <thead className="bg-gray-200">
                     <tr>
-                        <th style={{ padding: '8px', textAlign: 'left' }}>#</th>
+                        <th className="p-2 text-left">#</th>
                         {columnConfig.map(col => {
                             if (!col.visible) return null;
                             if (col.id === 'unit') return <th key="h_unit" style={{ padding: '8px', textAlign: 'center' }}>Und.</th>;
@@ -1540,11 +1532,11 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             return null;
                         })}
-                        <th style={{ padding: '8px', textAlign: 'right', background: '#e0f2fe' }}>Qtd. Parcial</th>
-                        <th style={{ padding: '8px', textAlign: 'right', background: '#dbeafe' }}>Qtd. Acum.</th>
-                        <th style={{ padding: '8px', textAlign: 'left' }}>Descrição</th>
-                        <th style={{ padding: '8px', textAlign: 'center', background: '#fef3c7' }}>Medição</th>
-                        <th style={{ padding: '8px' }}></th>
+                        <th className="p-2 text-right bg-sky-100">Qtd. Parcial</th>
+                        <th className="p-2 text-right bg-blue-100">Qtd. Acum.</th>
+                        <th className="p-2 text-left">Descrição</th>
+                        <th className="p-2 text-center bg-amber-100">Medição</th>
+                        <th className="p-2"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1635,14 +1627,14 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     })}
                 </tbody>
                 <tfoot>
-                    <tr style={{ background: '#f8f9fa', borderTop: '2px solid #ccc' }}>
-                        <td colSpan={totalColSpan} style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>TOTAIS:</td>
-                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#2563eb', fontSize: '1.1em' }}>
-                            <div style={{ fontSize: '0.7em', color: '#64748b', textTransform: 'uppercase' }}>Medição Atual</div>
+                    <tr className="bg-gray-100 border-t-2 border-gray-300">
+                        <td colSpan={totalColSpan} className="p-3 text-right font-bold">TOTAIS:</td>
+                        <td className="p-3 text-right font-bold text-blue-600 text-base">
+                            <div className="text-[0.7em] text-slate-500 uppercase">Medição Atual</div>
                             {currentMeasurementTotal.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}
                         </td>
-                        <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold', color: '#4338ca', fontSize: '1.1em' }}>
-                            <div style={{ fontSize: '0.7em', color: '#64748b', textTransform: 'uppercase' }}>Acumulado</div>
+                        <td className="p-3 text-right font-bold text-indigo-700 text-base">
+                            <div className="text-[0.7em] text-slate-500 uppercase">Acumulado</div>
                             {grandTotal.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}
                         </td>
                         <td></td>
@@ -1668,13 +1660,13 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 width="95vw"
                 maxWidth="1600px" // Expanded max width
             >
-                <div style={{ padding: '20px' }}>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Selecione o Item de Origem:</label>
+                <div className="p-5">
+                    <div className="mb-4">
+                        <label className="block mb-1 font-bold">Selecione o Item de Origem:</label>
                         <select
                             value={linkItemId}
                             onChange={e => { setLinkItemId(e.target.value); setLinkSelections([]); }}
-                            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                            className="input w-full"
                         >
                             <option value="">Selecione um item...</option>
                             {[...availableItems]
@@ -1709,11 +1701,11 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     </div>
 
                     {linkItemId && (
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Marque as propriedades que deseja importar:</label>
+                        <div className="mb-4">
+                            <label className="block mb-1 font-bold">Marque as propriedades que deseja importar:</label>
 
                             {/* Scrollable Container with reduced height to avoid page scroll logic */}
-                            <div style={{ border: '1px solid #ccc', borderRadius: '4px', maxHeight: '450px', overflowY: 'auto', overflowX: 'auto' }}>
+                            <div className="border border-gray-300 rounded max-h-[450px] overflow-y-auto overflow-x-auto">
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85em', minWidth: '900px' }}>
                                     <thead style={{ background: '#f3f4f6', position: 'sticky', top: 0, zIndex: 1 }}>
                                         <tr>
@@ -1855,7 +1847,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 </table>
                             </div>
                             {/* Selection summary */}
-                            <div style={{ marginTop: '10px', padding: '8px', background: '#f0f9ff', borderRadius: '4px', fontSize: '0.85em' }}>
+                            <div className="mt-3 p-2 bg-sky-50 rounded text-sm">
                                 <strong>Selecionados:</strong> {linkSelections.reduce((acc, sel) => acc + sel.props.length, 0)} propriedade(s) de {linkSelections.length} linha(s)
                             </div>
                         </div>
@@ -1863,21 +1855,21 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
 
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
-                        <span style={{ fontSize: '0.8em', color: '#6b7280' }}>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs text-gray-500">
                             Os valores selecionados serão preenchidos no formulário. Lembre-se de clicar em <strong>Adicionar</strong> para salvar.
                         </span>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div className="flex gap-3">
                             <button
                                 onClick={() => setShowLinkModal(false)}
-                                style={{ padding: '8px 16px', border: '1px solid #ddd', background: 'white', borderRadius: '4px', cursor: 'pointer' }}
+                                className="btn btn-secondary"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleConfirmLink}
                                 disabled={!linkItemId}
-                                style={{ padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', opacity: !linkItemId ? 0.5 : 1 }}
+                                className={`btn bg-green-600 text-white hover:bg-green-500 ${!linkItemId ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Preencher Formulário
                             </button>
@@ -1887,7 +1879,6 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             </DraggableModal>
 
             {/* Formula Calculator Modal */}
-            {/* Formula Calculator Modal */}
             <DraggableModal
                 isOpen={showFormulaCalc && activeFormula !== null}
                 onClose={() => setShowFormulaCalc(false)}
@@ -1895,45 +1886,39 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 width="fit-content"
             >
                 {activeFormula && (
-                    <div style={{ minWidth: '400px' }}>
-                        <div style={{ marginBottom: '16px' }}>
+                    <div className="min-w-[400px]">
+                        <div className="mb-4">
                             {activeFormula.variables.map(v => (
-                                <div key={v.key} style={{ marginBottom: '12px' }}>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.9em', color: '#374151' }}>{v.label}</label>
+                                <div key={v.key} className="mb-3">
+                                    <label className="block mb-1 text-sm text-gray-700">{v.label}</label>
                                     <input
                                         type="text"
                                         value={formulaVars[v.key] || ''}
                                         onChange={e => setFormulaVars({ ...formulaVars, [v.key]: e.target.value })}
                                         placeholder="0,000"
-                                        style={{ width: '100%', boxSizing: 'border-box', padding: '10px', fontSize: '1em', border: '2px solid #d1d5db', borderRadius: '6px' }}
+                                        className="input py-2.5 text-base"
                                     />
                                 </div>
                             ))}
 
                             {/* Description Input for Auxiliary Column */}
-                            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed #e5e7eb' }}>
-                                <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.9em', color: '#374151', fontWeight: 'bold' }}>Nome da Variável Auxiliar</label>
+                            <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
+                                <label className="block mb-1 text-sm text-gray-700 font-bold">Nome da Variável Auxiliar</label>
                                 <input
                                     type="text"
                                     value={auxDescription}
                                     onChange={e => setAuxDescription(e.target.value)}
                                     placeholder="Ex: Pilar P1"
-                                    style={{ width: '100%', boxSizing: 'border-box', padding: '10px', fontSize: '1em', border: '2px solid #2563eb', borderRadius: '6px', background: '#eff6ff' }}
+                                    className="input py-2.5 text-base border-2 border-blue-600 bg-blue-50"
                                 />
-                                <span style={{ fontSize: '0.8em', color: '#6b7280' }}>Este resultado será salvo como uma nova coluna disponível para fórmulas.</span>
+                                <span className="text-xs text-gray-500">Este resultado será salvo como uma nova coluna disponível para fórmulas.</span>
                             </div>
                         </div>
 
                         {/* Result */}
-                        <div style={{
-                            background: '#ecfdf5',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            marginBottom: '16px',
-                            border: '1px solid #6ee7b7'
-                        }}>
-                            <span style={{ fontSize: '0.85em', color: '#059669' }}>Resultado:</span>
-                            <div style={{ fontSize: '1.5em', fontWeight: 'bold', color: '#047857' }}>
+                        <div className="bg-emerald-50 p-4 rounded-lg mb-4 border border-emerald-300">
+                            <span className="text-sm text-emerald-600">Resultado:</span>
+                            <div className="text-2xl font-bold text-emerald-700">
                                 {(() => {
                                     const calculationVars: Record<string, number> = {};
                                     let allFilled = true;
@@ -1949,10 +1934,10 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                        <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setShowFormulaCalc(false)}
-                                style={{ padding: '10px 20px', background: '#e5e7eb', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                                className="btn btn-secondary"
                             >
                                 Fechar
                             </button>
@@ -1981,7 +1966,6 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         const valStr = result.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
                                         if (editingColumnId) {
-                                            // Update Existing
                                             setColumnConfig(prev => prev.map(c => {
                                                 if (c.id === editingColumnId) {
                                                     return {
@@ -1997,7 +1981,6 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                             }));
                                             setFormulaVars(prev => ({ ...prev, [editingColumnId]: valStr }));
                                         } else {
-                                            // Create New
                                             const newId = `custom_aux_${Date.now()}`;
                                             const newCol: ColumnDef = {
                                                 id: newId,
@@ -2017,7 +2000,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         setEditingColumnId(null);
                                     }
                                 }}
-                                style={{ padding: '10px 20px', background: '#059669', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                className="btn bg-emerald-600 text-white hover:bg-emerald-700 font-bold"
                             >
                                 {editingColumnId ? 'Salvar Alteração' : 'Adicionar Auxiliar'}
                             </button>

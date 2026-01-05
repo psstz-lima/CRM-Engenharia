@@ -1,11 +1,14 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
+import { Lock, Edit2, Plus, LayoutTemplate, Shield, Users, Building2, FileText, Ruler, ScrollText, BarChart3, Settings, AlertCircle, Copy, Check, X } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
 
 // Permission categories with granular permissions
 const permissionCategories = [
     {
         name: 'Contratos',
-        icon: '📄',
+        icon: <FileText size={18} />,
         permissions: [
             { key: 'contracts_view', label: 'Visualizar' },
             { key: 'contracts_create', label: 'Criar' },
@@ -15,7 +18,7 @@ const permissionCategories = [
     },
     {
         name: 'Medições',
-        icon: '📏',
+        icon: <Ruler size={18} />,
         permissions: [
             { key: 'measurements_view', label: 'Visualizar' },
             { key: 'measurements_create', label: 'Criar' },
@@ -25,7 +28,7 @@ const permissionCategories = [
     },
     {
         name: 'Aditivos',
-        icon: '📝',
+        icon: <ScrollText size={18} />,
         permissions: [
             { key: 'addendums_view', label: 'Visualizar' },
             { key: 'addendums_create', label: 'Criar' },
@@ -34,7 +37,7 @@ const permissionCategories = [
     },
     {
         name: 'Empresas',
-        icon: '🏢',
+        icon: <Building2 size={18} />,
         permissions: [
             { key: 'companies_view', label: 'Visualizar' },
             { key: 'companies_manage', label: 'Gerenciar' },
@@ -42,7 +45,7 @@ const permissionCategories = [
     },
     {
         name: 'Usuários',
-        icon: '👥',
+        icon: <Users size={18} />,
         permissions: [
             { key: 'users_view', label: 'Visualizar' },
             { key: 'users_manage', label: 'Gerenciar' },
@@ -50,7 +53,7 @@ const permissionCategories = [
     },
     {
         name: 'Relatórios',
-        icon: '📊',
+        icon: <BarChart3 size={18} />,
         permissions: [
             { key: 'reports_view', label: 'Visualizar' },
             { key: 'reports_export', label: 'Exportar' },
@@ -58,7 +61,7 @@ const permissionCategories = [
     },
     {
         name: 'Administração',
-        icon: '⚙️',
+        icon: <Settings size={18} />,
         permissions: [
             { key: 'admin_roles', label: 'Perfis' },
             { key: 'admin_audit', label: 'Auditoria' },
@@ -217,45 +220,27 @@ export function Roles() {
 
     // Permission grid component
     const PermissionGrid = ({ perms, isEdit }: { perms: any; isEdit: boolean }) => (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', maxHeight: '400px', overflowY: 'auto', padding: '10px', background: '#f9fafb', borderRadius: '8px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-subtle)]">
             {permissionCategories.map(cat => (
-                <div key={cat.name} style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                <div key={cat.name} className="bg-[var(--bg-surface)] rounded-lg border border-[var(--border-subtle)] overflow-hidden">
                     <div
                         onClick={() => toggleAllInCategory(cat, isEdit)}
-                        style={{
-                            padding: '10px 12px',
-                            background: '#f1f5f9',
-                            borderBottom: '1px solid #e5e7eb',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            fontSize: '0.9em'
-                        }}
+                        className="px-4 py-3 bg-[var(--bg-card)] border-b border-[var(--border-subtle)] flex items-center gap-3 cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
                     >
-                        <span>{cat.icon}</span>
-                        <span>{cat.name}</span>
-                        <span style={{ marginLeft: 'auto', fontSize: '0.8em', color: '#6b7280' }}>
+                        <span className="text-[var(--accent-primary)]">{cat.icon}</span>
+                        <span className="font-semibold text-[var(--text-primary)] text-sm">{cat.name}</span>
+                        <span className="ml-auto text-xs text-gray-400">
                             ({cat.permissions.filter(p => perms[p.key]).length}/{cat.permissions.length})
                         </span>
                     </div>
-                    <div style={{ padding: '8px' }}>
+                    <div className="p-3 space-y-2">
                         {cat.permissions.map(p => (
-                            <label key={p.key} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '6px 8px',
-                                cursor: 'pointer',
-                                borderRadius: '4px',
-                                fontSize: '0.85em'
-                            }}>
+                            <label key={p.key} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm transition-colors ${perms[p.key] ? 'bg-[var(--accent-glow)] text-[var(--accent-primary)]' : 'hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]'}`}>
                                 <input
                                     type="checkbox"
                                     checked={perms[p.key] || false}
                                     onChange={() => togglePermission(p.key, isEdit)}
-                                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                                    className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
                                 />
                                 {p.label}
                             </label>
@@ -267,216 +252,251 @@ export function Roles() {
     );
 
     return (
-        <div style={{ padding: '20px' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0 }}>🔐 Gestão de Perfis</h2>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                        onClick={() => setShowTemplateModal(true)}
-                        style={{ padding: '10px 16px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
-                    >
-                        📋 Usar Template
-                    </button>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        style={{ padding: '10px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
-                    >
-                        + Novo Perfil
-                    </button>
-                </div>
-            </div>
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <PageHeader
+                title="Gestão de Perfis"
+                subtitle="Gerencie os níveis de acesso e permissões dos usuários do sistema."
+                icon={<Lock className="text-[var(--accent-primary)]" />}
+                actions={
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowTemplateModal(true)}
+                            className="btn btn-secondary flex items-center gap-2"
+                        >
+                            <LayoutTemplate size={16} />
+                            Usar Template
+                        </button>
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="btn btn-primary flex items-center gap-2"
+                        >
+                            <Plus size={16} />
+                            Novo Perfil
+                        </button>
+                    </div>
+                }
+            />
 
             {/* Roles Table */}
-            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e5e7eb' }}>
-                            <th style={{ padding: '12px 15px', textAlign: 'left', fontWeight: '600' }}>Nome</th>
-                            <th style={{ padding: '12px 15px', textAlign: 'left', fontWeight: '600' }}>Descrição</th>
-                            <th style={{ padding: '12px 15px', textAlign: 'center', fontWeight: '600' }}>Permissões</th>
-                            <th style={{ padding: '12px 15px', textAlign: 'center', fontWeight: '600' }}>Status</th>
-                            <th style={{ padding: '12px 15px', textAlign: 'center', fontWeight: '600' }}>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {roles.map(role => (
-                            <tr key={role.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '12px 15px', fontWeight: '500' }}>{role.name}</td>
-                                <td style={{ padding: '12px 15px', color: '#6b7280' }}>{role.description || '-'}</td>
-                                <td style={{ padding: '12px 15px', textAlign: 'center' }}>
-                                    <span style={{
-                                        padding: '4px 10px',
-                                        background: '#e0f2fe',
-                                        color: '#0369a1',
-                                        borderRadius: '20px',
-                                        fontSize: '0.85em',
-                                        fontWeight: '500'
-                                    }}>
-                                        {countPermissions(role.permissions)} ativas
-                                    </span>
-                                </td>
-                                <td style={{ padding: '12px 15px', textAlign: 'center' }}>
-                                    <span style={{
-                                        padding: '4px 10px',
-                                        background: role.isActive ? '#dcfce7' : '#fee2e2',
-                                        color: role.isActive ? '#166534' : '#991b1b',
-                                        borderRadius: '20px',
-                                        fontSize: '0.85em',
-                                        fontWeight: '500'
-                                    }}>
-                                        {role.isActive ? '✓ Ativo' : '✕ Inativo'}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '12px 15px', textAlign: 'center' }}>
-                                    <button
-                                        onClick={() => openEditModal(role)}
-                                        style={{ padding: '6px 14px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9em' }}
-                                    >
-                                        ✏️ Editar
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        {roles.length === 0 && (
+            <Card className="overflow-hidden border-none shadow-lg">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
                             <tr>
-                                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>
-                                    Nenhum perfil cadastrado. Clique em "Usar Template" para começar.
-                                </td>
+                                <th className="p-4">Nome</th>
+                                <th className="p-4">Descrição</th>
+                                <th className="p-4 text-center">Permissões</th>
+                                <th className="p-4 text-center">Status</th>
+                                <th className="p-4 text-center">Ações</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                            {roles.map(role => (
+                                <tr key={role.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
+                                    <td className="p-4 font-medium text-[var(--text-primary)]">{role.name}</td>
+                                    <td className="p-4 text-[var(--text-secondary)]">{role.description || '-'}</td>
+                                    <td className="p-4 text-center">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-secondary)] rounded-full text-xs font-medium border border-[var(--border-subtle)]">
+                                            <Shield size={10} className="opacity-70" />
+                                            {countPermissions(role.permissions)} ativas
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${role.isActive
+                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                            : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                            }`}>
+                                            {role.isActive ? <Check size={12} /> : <X size={12} />}
+                                            {role.isActive ? 'Ativo' : 'Inativo'}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-center">
+                                        <button
+                                            onClick={() => openEditModal(role)}
+                                            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-blue-400 transition-colors"
+                                            title="Editar perfil"
+                                        >
+                                            <Edit2 size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {roles.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="p-16 text-center text-[var(--text-muted)]">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                                <AlertCircle size={32} className="opacity-50" />
+                                            </div>
+                                            <p className="text-lg">Nenhum perfil cadastrado.</p>
+                                            <button
+                                                onClick={() => setShowTemplateModal(true)}
+                                                className="text-primary-400 hover:underline mt-2"
+                                            >
+                                                Clique aqui para usar um template
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
 
             {/* Create Modal */}
-            {showCreateModal && (
-                <div onClick={() => setShowCreateModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '700px', maxHeight: '90vh', overflow: 'auto' }}>
-                        <h3 style={{ margin: '0 0 20px 0' }}>➕ Novo Perfil</h3>
-                        <form onSubmit={handleCreate}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Nome *</label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={e => setName(e.target.value)}
-                                        required
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' }}
-                                    />
+            {
+                showCreateModal && (
+                    <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+                        <div className="modal-content w-full max-w-4xl m-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                    <Plus size={20} className="text-[var(--accent-primary)]" />
+                                    Novo Perfil
+                                </h3>
+                                <button onClick={() => setShowCreateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                            </div>
+                            <form onSubmit={handleCreate} className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label className="label">Nome *</label>
+                                        <input
+                                            type="text"
+                                            className="input"
+                                            value={name}
+                                            onChange={e => setName(e.target.value)}
+                                            required
+                                            placeholder="Ex: Gerente de Projetos"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="label">Descrição</label>
+                                        <input
+                                            type="text"
+                                            className="input"
+                                            value={description}
+                                            onChange={e => setDescription(e.target.value)}
+                                            placeholder="Breve descrição do papel deste perfil"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Descrição</label>
-                                    <input
-                                        type="text"
-                                        value={description}
-                                        onChange={e => setDescription(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' }}
-                                    />
+                                <div className="mb-6">
+                                    <label className="label mb-2 flex justify-between items-end">
+                                        <span>Permissões</span>
+                                        <span className="text-xs text-[var(--text-muted)] font-normal">Clique no cabeçalho para marcar/desmarcar o grupo</span>
+                                    </label>
+                                    <PermissionGrid perms={permissions} isEdit={false} />
                                 </div>
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '500' }}>Permissões (clique no cabeçalho para marcar/desmarcar todos)</label>
-                                <PermissionGrid perms={permissions} isEdit={false} />
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                <button type="button" onClick={() => setShowCreateModal(false)} style={{ padding: '10px 20px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button>
-                                <button type="submit" style={{ padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>Criar Perfil</button>
-                            </div>
-                        </form>
+                                <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                                    <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">Cancelar</button>
+                                    <button type="submit" className="btn btn-primary">Criar Perfil</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Edit Modal */}
-            {showEditModal && editingRole && (
-                <div onClick={() => setShowEditModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '700px', maxHeight: '90vh', overflow: 'auto' }}>
-                        <h3 style={{ margin: '0 0 20px 0' }}>✏️ Editar Perfil</h3>
-                        <form onSubmit={handleUpdate}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Nome *</label>
-                                    <input
-                                        type="text"
-                                        value={editName}
-                                        onChange={e => setEditName(e.target.value)}
-                                        required
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' }}
-                                    />
+            {
+                showEditModal && editingRole && (
+                    <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+                        <div className="modal-content w-full max-w-4xl m-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                    <Edit2 size={20} className="text-[var(--accent-primary)]" />
+                                    Editar Perfil
+                                </h3>
+                                <button onClick={() => setShowEditModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                            </div>
+                            <form onSubmit={handleUpdate} className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label className="label">Nome *</label>
+                                        <input
+                                            type="text"
+                                            className="input"
+                                            value={editName}
+                                            onChange={e => setEditName(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="label">Descrição</label>
+                                        <input
+                                            type="text"
+                                            className="input"
+                                            value={editDescription}
+                                            onChange={e => setEditDescription(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Descrição</label>
-                                    <input
-                                        type="text"
-                                        value={editDescription}
-                                        onChange={e => setEditDescription(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' }}
-                                    />
+                                <div className="mb-6">
+                                    <label className="label mb-2">Permissões</label>
+                                    <PermissionGrid perms={editPermissions} isEdit={true} />
                                 </div>
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', marginBottom: '10px', fontWeight: '500' }}>Permissões</label>
-                                <PermissionGrid perms={editPermissions} isEdit={true} />
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={editIsActive}
-                                        onChange={e => setEditIsActive(e.target.checked)}
-                                        style={{ width: '18px', height: '18px' }}
-                                    />
-                                    <span style={{ fontWeight: '500' }}>Perfil Ativo</span>
-                                </label>
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                <button type="button" onClick={() => setShowEditModal(false)} style={{ padding: '10px 20px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button>
-                                <button type="submit" style={{ padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>Salvar Alterações</button>
-                            </div>
-                        </form>
+                                <div className="mb-6">
+                                    <label className="flex items-center gap-3 p-4 bg-[var(--bg-elevated)] rounded-xl cursor-pointer hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)]">
+                                        <input
+                                            type="checkbox"
+                                            checked={editIsActive}
+                                            onChange={e => setEditIsActive(e.target.checked)}
+                                            className="w-5 h-5 rounded border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                                        />
+                                        <span className="font-medium text-[var(--text-primary)]">Perfil Ativo</span>
+                                        <span className="text-xs text-[var(--text-muted)] ml-auto">Perfis inativos não podem ser atribuídos</span>
+                                    </label>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                                    <button type="button" onClick={() => setShowEditModal(false)} className="btn btn-secondary">Cancelar</button>
+                                    <button type="submit" className="btn btn-primary">Salvar Alterações</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Template Modal */}
-            {showTemplateModal && (
-                <div onClick={() => setShowTemplateModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
-                        <h3 style={{ margin: '0 0 20px 0' }}>📋 Criar Perfil a partir de Template</h3>
-                        <p style={{ color: '#6b7280', marginBottom: '20px' }}>Selecione um template para criar rapidamente um perfil com permissões pré-configuradas:</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {predefinedRoles.map(template => (
-                                <button
-                                    key={template.name}
-                                    onClick={() => applyTemplate(template)}
-                                    style={{
-                                        padding: '15px',
-                                        background: '#f8fafc',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseOver={e => e.currentTarget.style.background = '#e0f2fe'}
-                                    onMouseOut={e => e.currentTarget.style.background = '#f8fafc'}
-                                >
-                                    <div style={{ fontWeight: '600', marginBottom: '4px' }}>{template.name}</div>
-                                    <div style={{ fontSize: '0.85em', color: '#6b7280' }}>{template.description}</div>
-                                    <div style={{ fontSize: '0.8em', color: '#0369a1', marginTop: '6px' }}>
-                                        {Object.keys(template.permissions).length} permissões
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                        <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                            <button onClick={() => setShowTemplateModal(false)} style={{ padding: '10px 20px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Fechar</button>
+            {
+                showTemplateModal && (
+                    <div className="modal-overlay" onClick={() => setShowTemplateModal(false)}>
+                        <div className="modal-content w-full max-w-lg m-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                    <LayoutTemplate size={20} className="text-[var(--accent-primary)]" />
+                                    Usar Template
+                                </h3>
+                                <button onClick={() => setShowTemplateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                            </div>
+                            <div className="p-6">
+                                <p className="text-gray-400 mb-4">Selecione um template para criar rapidamente um perfil com permissões pré-configuradas:</p>
+                                <div className="space-y-3">
+                                    {predefinedRoles.map(template => (
+                                        <button
+                                            key={template.name}
+                                            onClick={() => applyTemplate(template)}
+                                            className="w-full text-left p-4 bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] rounded-xl transition-all group"
+                                        >
+                                            <div className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] mb-1 flex items-center gap-2">
+                                                <Copy size={14} className="opacity-50" />
+                                                {template.name}
+                                            </div>
+                                            <div className="text-sm text-[var(--text-secondary)] mb-2 pl-6">{template.description}</div>
+                                            <div className="text-xs text-[var(--accent-primary)] font-medium pl-6">
+                                                {Object.keys(template.permissions).length} permissões incluídas
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="p-4 bg-[var(--bg-elevated)] rounded-b-2xl flex justify-end">
+                                <button onClick={() => setShowTemplateModal(false)} className="btn btn-secondary text-sm">Fechar</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

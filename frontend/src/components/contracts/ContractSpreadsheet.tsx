@@ -18,23 +18,40 @@ const typeLabels: Record<string, string> = {
 };
 
 // SortableRow component for drag-and-drop
-function SortableRow({ id, children }: { id: string; children: React.ReactNode }) {
+function SortableRow({ id, children, isContainer, isSuppressed, isAddedByAddendum, idx }: any) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+    // Row background logic
+    let bgClass = idx % 2 === 0 ? 'bg-dark-900' : 'bg-dark-800';
+    if (isContainer) bgClass = 'bg-dark-800/80';
+    if (isDragging) bgClass = 'bg-primary-900/50 opacity-50';
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
     };
+
     return (
-        <tr ref={setNodeRef} style={style} {...attributes}>
-            <td {...listeners} style={{ padding: '4px', textAlign: 'center' as const, borderBottom: '1px solid #e5e7eb', cursor: 'grab', color: '#9ca3af', width: '30px' }}>⠿</td>
+        <tr
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            className={`${bgClass} border-b border-dark-700 hover:bg-dark-700 transition-colors`}
+        >
+            <td
+                {...listeners}
+                className="p-1 text-center cursor-grab text-gray-500 hover:text-white"
+                style={{ width: '30px' }}
+            >
+                ⠿
+            </td>
             {children}
         </tr>
     );
 }
 
 export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSpreadsheetProps) {
-    const [items, setItems] = useState<any[]>([]);
+    const [treeItems, setTreeItems] = useState<any[]>([]); // Store tree structure
     const [rawItems, setRawItems] = useState<any[]>([]);
     const [addendums, setAddendums] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -173,11 +190,14 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             setAddendums(addendumsRes.data || []);
             try {
                 const vigentRes = await api.get(`/contracts/${contractId}/vigent-items`);
-                // Rebuild hierarchy and calculate subtotals
-                setItems(processItems(vigentRes.data.items || []));
+                // Rebuild hierarchy and calculate subtotals, store as tree
+                const tree = rebuildHierarchy(vigentRes.data.items || []);
+                const withSubtotals = calculateSubtotals(tree);
+                setTreeItems(withSubtotals);
             } catch {
                 // Fallback to raw items with subtotals
-                setItems(processItems(flattenItems(rawTreeItems)));
+                const withSubtotals = calculateSubtotals(rawTreeItems);
+                setTreeItems(withSubtotals);
             }
         } catch (error) { console.error(error); }
         finally { setLoading(false); }
@@ -185,11 +205,13 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
     useEffect(() => { loadData(); }, [loadData]);
 
-    const flatItems = items;
+    // Flatten items dynamically based on collapsedGroups state
+    const flatItems = React.useMemo(() => flattenItems(treeItems), [treeItems, collapsedGroups]);
     const flatRawItems = flattenItems(rawItems);
 
     // Drag and drop
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
 
     async function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
@@ -197,7 +219,6 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
         const oldIndex = flatItems.findIndex((i: any) => i.id === active.id);
         const newIndex = flatItems.findIndex((i: any) => i.id === over.id);
         if (oldIndex === -1 || newIndex === -1) return;
-        setItems(arrayMove([...flatItems], oldIndex, newIndex));
         try {
             await api.put(`/contracts/items/${active.id}/reorder`, { targetItemId: over.id, position: newIndex > oldIndex ? 'after' : 'before' });
             loadData(); onContractUpdate();
@@ -280,72 +301,82 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
         setShowOperationModal(true);
     }
 
-    if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Carregando...</div>;
+    if (loading) return <div className="p-10 text-center text-gray-400">Carregando planilha...</div>;
 
     const activeAddendums = addendums.filter((a: any) => a.status !== 'CANCELLED');
 
     return (
-        <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+        <div className="card border border-dark-700 bg-dark-900 overflow-hidden">
             {/* Toolbar */}
-            <div style={{ padding: '12px 15px', background: '#f8fafc', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1em' }}>📊 Planilha do Contrato</h3>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="p-4 bg-dark-800 border-b border-dark-700 flex flex-wrap justify-between items-center gap-4">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>📊</span> Planilha do Contrato
+                </h3>
+                <div className="flex flex-wrap gap-2 items-center">
                     {/* Search Filter */}
-                    <input
-                        type="text"
-                        value={searchFilter}
-                        onChange={(e) => setSearchFilter(e.target.value)}
-                        placeholder="🔍 Filtrar por código ou descrição..."
-                        style={{
-                            width: '280px',
-                            padding: '8px 12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '6px',
-                            fontSize: '0.9em',
-                            outline: 'none'
-                        }}
-                    />
-                    {searchFilter && (
-                        <button
-                            onClick={() => setSearchFilter('')}
-                            style={{ padding: '8px 12px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9em' }}
-                        >
-                            ✕
-                        </button>
-                    )}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            value={searchFilter}
+                            onChange={(e) => setSearchFilter(e.target.value)}
+                            placeholder="🔍 Filtrar..."
+                            className="bg-dark-900 border border-dark-600 text-gray-200 text-sm rounded-lg pl-3 pr-8 py-2 w-64 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-colors"
+                        />
+                        {searchFilter && (
+                            <button
+                                onClick={() => setSearchFilter('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
                     {/* Expand/Collapse Buttons */}
-                    <button
-                        onClick={expandAll}
-                        title="Expandir Todos"
-                        style={{ padding: '6px 10px', background: '#e0f2fe', color: '#0284c7', border: '1px solid #7dd3fc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8em' }}
-                    >
-                        ➕
+                    <div className="flex bg-dark-900 rounded-lg p-1 border border-dark-600">
+                        <button
+                            onClick={expandAll}
+                            title="Expandir Todos"
+                            className="p-1.5 text-gray-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                        >
+                            ➕
+                        </button>
+                        <button
+                            onClick={() => collapseAllGroups(rawItems)}
+                            title="Recolher Todos"
+                            className="p-1.5 text-gray-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                        >
+                            ➖
+                        </button>
+                    </div>
+
+                    <button onClick={() => openItemModal()} className="btn btn-sm btn-primary flex items-center gap-1">
+                        <span>+</span> Item
                     </button>
-                    <button
-                        onClick={() => collapseAllGroups(rawItems)}
-                        title="Recolher Todos"
-                        style={{ padding: '6px 10px', background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8em' }}
-                    >
-                        ➖
+                    <button onClick={() => setShowAddendumModal(true)} className="btn btn-sm bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1">
+                        <span>+</span> Aditivo
                     </button>
-                    <button onClick={() => openItemModal()} style={{ padding: '8px 16px', background: '#059669', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9em' }}>+ Item</button>
-                    <button onClick={() => setShowAddendumModal(true)} style={{ padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9em' }}>+ Aditivo</button>
-                    <button onClick={loadData} style={{ padding: '8px 12px', background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', cursor: 'pointer' }}>🔄</button>
+                    <button onClick={loadData} className="p-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg border border-dark-600 transition-colors" title="Atualizar">
+                        🔄
+                    </button>
                 </div>
             </div>
 
             {/* Addendums Bar */}
             {activeAddendums.length > 0 && (
-                <div style={{ padding: '8px 15px', background: '#fefce8', borderBottom: '1px solid #fde047', display: 'flex', gap: '15px', alignItems: 'center', fontSize: '0.85em', flexWrap: 'wrap' }}>
+                <div className="px-4 py-2 bg-yellow-900/10 border-b border-yellow-500/20 flex gap-4 overflow-x-auto">
                     {activeAddendums.map((add: any) => (
-                        <div key={add.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', background: add.status === 'APPROVED' ? '#dcfce7' : '#fef9c3', borderRadius: '4px' }}>
-                            <span style={{ fontWeight: 'bold' }}>Aditivo {add.number}</span>
-                            <span style={{ color: '#666', fontSize: '0.9em' }}>{new Date(add.date).toLocaleDateString('pt-BR')}</span>
+                        <div key={add.id} className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-medium border ${add.status === 'APPROVED'
+                            ? 'bg-green-900/20 text-green-400 border-green-500/20'
+                            : 'bg-yellow-900/20 text-yellow-400 border-yellow-500/20'
+                            }`}>
+                            <span className="font-bold">Aditivo {add.number}</span>
+                            <span className="opacity-70">{new Date(add.date).toLocaleDateString('pt-BR')}</span>
                             <span>{add.status === 'APPROVED' ? '✅' : '📝'}</span>
                             {add.status === 'DRAFT' && (
                                 <>
-                                    <button onClick={() => handleApprove(add.id)} style={{ padding: '2px 8px', fontSize: '11px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>Aprovar</button>
-                                    <button onClick={() => handleCancel(add.id, false)} style={{ padding: '2px 8px', fontSize: '11px', background: '#fee2e2', color: '#991b1b', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>✕</button>
+                                    <button onClick={() => handleApprove(add.id)} className="ml-2 px-2 py-0.5 bg-green-600 text-white rounded hover:bg-green-500">Aprovar</button>
+                                    <button onClick={() => handleCancel(add.id, false)} className="ml-1 px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-500">✕</button>
                                 </>
                             )}
                         </div>
@@ -354,43 +385,99 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             )}
 
             {/* Table */}
-            <div style={{ overflowX: 'auto', margin: '0 15px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82em', minWidth: '900px' }}>
-                    <thead>
-                        <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e5e7eb' }}>
-                            <th style={{ width: '30px', padding: '10px 4px', color: '#64748b' }}>☰</th>
-                            <th style={{ padding: '10px 6px', textAlign: 'center', width: '75px', color: '#475569', fontWeight: 600 }}>Tipo</th>
-                            <th style={{ padding: '10px 6px', textAlign: 'left', color: '#475569', fontWeight: 600 }}>Código</th>
-                            <th style={{ padding: '10px 6px', textAlign: 'left', minWidth: '200px', color: '#475569', fontWeight: 600 }}>Descrição</th>
-                            <th style={{ padding: '10px 6px', textAlign: 'center', width: '50px', color: '#475569', fontWeight: 600 }}>Un</th>
-                            <th style={{ padding: '10px 6px', textAlign: 'right', width: '100px', color: '#475569', fontWeight: 600 }}>P. Unit.</th>
-                            <th colSpan={2} style={{ padding: '10px 6px', textAlign: 'center', background: '#dbeafe', color: '#1e40af', fontWeight: 600 }}>📋 Base</th>
+            <div className="overflow-x-auto max-h-[600px] scrollbar-thin scrollbar-thumb-dark-600 scrollbar-track-dark-800">
+                <table className="w-full text-left border-collapse text-sm">
+                    <thead className="sticky top-0 z-20" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                        {/* Main Header Row */}
+                        <tr style={{ background: 'linear-gradient(180deg, #1a1a24 0%, #12121a 100%)' }} className="border-b border-dark-600">
+                            <th className="p-3 text-center w-10 text-gray-500 font-normal">
+                                <span className="opacity-50">⋮⋮</span>
+                            </th>
+                            <th className="p-3 w-20 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                                Tipo
+                            </th>
+                            <th className="p-3 text-left text-xs font-bold uppercase tracking-wider text-gray-400">
+                                Código
+                            </th>
+                            <th className="p-3 text-left min-w-[280px] text-xs font-bold uppercase tracking-wider text-gray-400">
+                                Descrição
+                            </th>
+                            <th className="p-3 w-16 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                                Un
+                            </th>
+                            <th className="p-3 w-28 text-right text-xs font-bold uppercase tracking-wider text-gray-400">
+                                P. Unitário
+                            </th>
+                            {/* Base Section */}
+                            <th colSpan={2} className="p-3 text-center bg-blue-950/40 border-l border-dark-600">
+                                <div className="flex items-center justify-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-blue-300">Base</span>
+                                </div>
+                            </th>
+                            {/* Addendums */}
                             {activeAddendums.map((add: any) => (
-                                <th key={add.id} colSpan={2} style={{ padding: '10px 6px', textAlign: 'center', background: add.status === 'APPROVED' ? '#dcfce7' : '#fef3c7', color: add.status === 'APPROVED' ? '#166534' : '#92400e', fontWeight: 600 }}>
-                                    {add.status === 'DRAFT' ? '📝' : '✅'} Ad.{add.number}
+                                <th key={add.id} colSpan={2} className={`p-3 text-center border-l border-dark-600 ${add.status === 'APPROVED'
+                                    ? 'bg-emerald-950/40'
+                                    : 'bg-amber-950/40'
+                                    }`}>
+                                    <div className="flex items-center justify-center gap-2">
+                                        <span className={`w-2 h-2 rounded-full ${add.status === 'APPROVED' ? 'bg-emerald-400' : 'bg-amber-400'
+                                            }`}></span>
+                                        <span className={`text-xs font-bold uppercase tracking-wider ${add.status === 'APPROVED' ? 'text-emerald-300' : 'text-amber-300'
+                                            }`}>
+                                            Aditivo {add.number}
+                                        </span>
+                                    </div>
                                 </th>
                             ))}
-                            <th colSpan={2} style={{ padding: '10px 6px', textAlign: 'center', background: '#d1fae5', color: '#065f46', fontWeight: 600 }}>✅ Vigente</th>
-                            <th style={{ width: '90px', color: '#475569', fontWeight: 600 }}>Ações</th>
+                            {/* Vigente Section */}
+                            <th colSpan={2} className="p-3 text-center bg-emerald-950/50 border-l border-dark-600">
+                                <div className="flex items-center justify-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">Vigente</span>
+                                </div>
+                            </th>
+                            <th className="p-3 w-24 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                                Ações
+                            </th>
                         </tr>
-                        <tr style={{ background: '#f1f5f9', fontSize: '0.9em', color: '#64748b' }}>
-                            <th></th><th></th><th></th><th></th><th></th><th></th>
-                            <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Qtd</th>
-                            <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Valor</th>
+                        {/* Subheader Row */}
+                        <tr className="text-[11px] text-gray-500 border-b border-dark-700" style={{ backgroundColor: '#0d0d12' }}>
+                            <th colSpan={6} className="p-0"></th>
+                            {/* Base subheaders */}
+                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-dark-700 font-medium uppercase">
+                                QTD
+                            </th>
+                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-dark-700 font-medium uppercase">
+                                VALOR
+                            </th>
+                            {/* Addendums subheaders */}
                             {activeAddendums.map((add: any) => (
                                 <React.Fragment key={`sub-${add.id}`}>
-                                    <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Δ Qtd</th>
-                                    <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Δ Valor</th>
+                                    <th className={`px-3 py-2 text-right border-l border-dark-700 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
+                                        }`}>
+                                        Δ QTD
+                                    </th>
+                                    <th className={`px-3 py-2 text-right border-l border-dark-700 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
+                                        }`}>
+                                        Δ VALOR
+                                    </th>
                                 </React.Fragment>
                             ))}
-                            <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Qtd</th>
-                            <th style={{ padding: '6px', textAlign: 'right', fontWeight: 500 }}>Valor</th>
-                            <th></th>
+                            {/* Vigente subheaders */}
+                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-dark-700 font-medium text-emerald-400 uppercase">
+                                QTD
+                            </th>
+                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-dark-700 font-medium text-emerald-400 uppercase">
+                                VALOR
+                            </th>
+                            <th className="p-0"></th>
                         </tr>
                     </thead>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={flatItems.map((i: any) => i.id)} strategy={verticalListSortingStrategy}>
-                            <tbody>
+                            <tbody className="divide-y divide-dark-700">
                                 {flatItems.filter((item: any) => {
                                     if (!searchFilter.trim()) return true;
                                     const search = searchFilter.toLowerCase();
@@ -402,7 +489,12 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                     const baseQty = Number(item.quantity) || 0;
                                     const basePrice = Number(item.unitPrice) || 0;
                                     const baseValue = baseQty * basePrice;
-                                    const rowBg = isContainer ? '#f0f9ff' : item.isSuppressed ? '#fef2f2' : item.isAddedByAddendum ? '#f0fdf4' : (idx % 2 === 0 ? '#fff' : '#f9fafb');
+
+                                    // Row Styling
+                                    let textColor = 'text-gray-300';
+                                    if (isContainer) textColor = 'text-blue-200 font-semibold';
+                                    if (item.isSuppressed) textColor = 'text-red-400 line-through';
+                                    if (item.isAddedByAddendum) textColor = 'text-green-300';
 
                                     const getAddendumDelta = (addendumId: string) => {
                                         const h = item.history?.find((x: any) => x.addendumId === addendumId);
@@ -413,60 +505,112 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                     };
 
                                     return (
-                                        <SortableRow key={item.id} id={item.id}>
-                                            <td style={{ padding: '4px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', fontSize: '10px', color: isContainer ? '#1e40af' : '#6b7280', fontWeight: isContainer ? 'bold' : 'normal' }}>
-                                                {typeLabels[item.type] || item.type}
+                                        <SortableRow
+                                            key={item.id}
+                                            id={item.id}
+                                            isContainer={isContainer}
+                                            isSuppressed={item.isSuppressed}
+                                            isAddedByAddendum={item.isAddedByAddendum}
+                                            idx={idx}
+                                        >
+                                            <td className="p-2 border-r border-dark-700 text-center">
+                                                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${isContainer ? 'bg-blue-900/30 text-blue-300' : 'bg-dark-700 text-gray-400'
+                                                    }`}>
+                                                    {typeLabels[item.type]?.substring(0, 4) || item.type}
+                                                </span>
                                             </td>
-                                            <td style={{ padding: '6px 8px', borderBottom: '1px solid #e5e7eb', background: rowBg, fontWeight: isContainer ? 'bold' : 'normal', color: isContainer ? '#1e40af' : 'inherit' }}>
+                                            <td className={`p-2 border-r border-dark-700 whitespace-nowrap ${textColor}`}>
                                                 {isContainer && item.hasChildren && (
                                                     <button
-                                                        onClick={() => toggleCollapse(item.id)}
-                                                        style={{
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            marginRight: '4px',
-                                                            fontSize: '0.8em',
-                                                            color: '#6b7280',
-                                                            padding: '2px 4px'
-                                                        }}
-                                                        title={item.isCollapsed ? 'Expandir' : 'Recolher'}
+                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCollapse(item.id); }}
+                                                        className="mr-2 text-gray-500 hover:text-white focus:outline-none"
                                                     >
                                                         {item.isCollapsed ? '▶' : '▼'}
                                                     </button>
                                                 )}
                                                 {item.code || '-'}
-                                                {item.isSuppressed && <span style={{ marginLeft: '4px' }}>🚫</span>}
-                                                {item.isAddedByAddendum && <span style={{ marginLeft: '4px', color: '#16a34a' }}>➕</span>}
+                                                {item.isSuppressed && <span className="ml-1 text-red-500" title="Suprimido">🚫</span>}
+                                                {item.isAddedByAddendum && <span className="ml-1 text-green-500" title="Adicionado">➕</span>}
                                             </td>
-                                            <td style={{ padding: '6px 8px', borderBottom: '1px solid #e5e7eb', fontWeight: isContainer ? 'bold' : 'normal', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: isContainer ? 'uppercase' : 'none' }} title={item.description}>{item.description}</td>
-                                            <td style={{ padding: '6px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>{isContainer ? '' : item.unit}</td>
-                                            <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb' }}>{isContainer ? '' : formatCurrency(basePrice)}</td>
-                                            <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: '#eff6ff' }}>{isContainer ? '' : item.isAddedByAddendum ? '-' : formatNumber(baseQty)}</td>
-                                            <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: '#eff6ff' }}>{isContainer ? formatCurrency(item._subtotalValue || 0) : item.isAddedByAddendum ? '-' : formatCurrency(baseValue)}</td>
+                                            <td className={`p-2 border-r border-dark-700 max-w-xs truncate ${textColor}`} title={item.description}>
+                                                {item.description}
+                                            </td>
+                                            <td className="p-2 text-center border-r border-dark-700 text-gray-400">{isContainer ? '' : item.unit}</td>
+                                            <td className="p-2 text-right border-r border-dark-700 text-gray-400 font-mono">{isContainer ? '' : formatCurrency(basePrice)}</td>
+
+                                            {/* Base Data */}
+                                            <td className="p-2 text-right bg-blue-900/5 text-gray-300 border-l border-dark-700 font-mono">
+                                                {isContainer ? '' : item.isAddedByAddendum ? '-' : formatNumber(baseQty)}
+                                            </td>
+                                            <td className="p-2 text-right bg-blue-900/5 text-blue-200 border-r border-dark-700 font-mono">
+                                                {isContainer ? formatCurrency(item._subtotalValue || 0) : item.isAddedByAddendum ? '-' : formatCurrency(baseValue)}
+                                            </td>
+
+                                            {/* Addendums */}
                                             {activeAddendums.map((add: any) => {
                                                 const d = getAddendumDelta(add.id);
                                                 const canEdit = add.status === 'DRAFT' && !isContainer;
+                                                const cellBg = add.status === 'APPROVED' ? 'bg-green-900/5' : 'bg-yellow-900/5';
+
                                                 return (
                                                     <React.Fragment key={`d-${add.id}`}>
-                                                        <td onClick={() => canEdit && openOperationModal(item, add)} style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: add.status === 'APPROVED' ? '#f0fdf4' : '#fefce8', cursor: canEdit ? 'pointer' : 'default' }}>
-                                                            {isContainer ? '' : d.qty !== null ? <span style={{ color: d.qty > 0 ? '#16a34a' : d.qty < 0 ? '#dc2626' : '#9ca3af' }}>{d.qty > 0 ? '+' : ''}{formatNumber(d.qty)}</span> : (canEdit ? <span style={{ color: '#9ca3af' }}>+</span> : '-')}
+                                                        <td
+                                                            onClick={() => canEdit && openOperationModal(item, add)}
+                                                            className={`p-2 text-right cursor-${canEdit ? 'pointer hover:bg-white/5' : 'default'} ${cellBg} font-mono`}
+                                                        >
+                                                            {isContainer ? '' : d.qty !== null ? (
+                                                                <span className={d.qty > 0 ? 'text-green-400' : d.qty < 0 ? 'text-red-400' : 'text-gray-500'}>
+                                                                    {d.qty > 0 ? '+' : ''}{formatNumber(d.qty)}
+                                                                </span>
+                                                            ) : (canEdit ? <span className="text-dark-600">+</span> : '-')}
                                                         </td>
-                                                        <td onClick={() => canEdit && openOperationModal(item, add)} style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: add.status === 'APPROVED' ? '#f0fdf4' : '#fefce8', cursor: canEdit ? 'pointer' : 'default' }}>
-                                                            {d.value !== null ? <span style={{ color: d.value > 0 ? '#16a34a' : d.value < 0 ? '#dc2626' : '#9ca3af' }}>{d.value > 0 ? '+' : ''}{formatCurrency(d.value)}</span> : '-'}
+                                                        <td
+                                                            onClick={() => canEdit && openOperationModal(item, add)}
+                                                            className={`p-2 text-right border-r border-dark-700 cursor-${canEdit ? 'pointer hover:bg-white/5' : 'default'} ${cellBg} font-mono`}
+                                                        >
+                                                            {d.value !== null ? (
+                                                                <span className={d.value > 0 ? 'text-green-400' : d.value < 0 ? 'text-red-400' : 'text-gray-500'}>
+                                                                    {d.value > 0 ? '+' : ''}{formatCurrency(d.value)}
+                                                                </span>
+                                                            ) : '-'}
                                                         </td>
                                                     </React.Fragment>
                                                 );
                                             })}
-                                            <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: '#dcfce7', fontWeight: 'bold' }}>{isContainer ? '' : item.isSuppressed ? <span style={{ color: '#dc2626' }}>0</span> : formatNumber(item.vigentQuantity || baseQty)}</td>
-                                            <td style={{ padding: '6px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', background: '#dcfce7', fontWeight: 'bold' }}>{isContainer ? formatCurrency(item._subtotalValue || 0) : item.isSuppressed ? <span style={{ color: '#dc2626' }}>R$ 0</span> : formatCurrency(item.vigentTotalValue || baseValue)}</td>
-                                            <td style={{ padding: '6px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
-                                                <div style={{ display: 'flex', gap: '3px', justifyContent: 'flex-end' }}>
+
+                                            {/* Vigente Data */}
+                                            <td className="p-2 text-right bg-green-900/10 text-gray-100 font-bold border-l border-dark-700 font-mono">
+                                                {isContainer ? '' : item.isSuppressed ? <span className="text-red-400">0</span> : formatNumber(item.vigentQuantity || baseQty)}
+                                            </td>
+                                            <td className="p-2 text-right bg-green-900/10 text-green-300 font-bold font-mono">
+                                                {isContainer ? formatCurrency(item._subtotalValue || 0) : item.isSuppressed ? <span className="text-red-400">R$ 0,00</span> : formatCurrency(item.vigentTotalValue || baseValue)}
+                                            </td>
+
+                                            <td className="p-2 text-center text-xs">
+                                                <div className="flex justify-end gap-1">
                                                     {isContainer && (
-                                                        <button onClick={() => openItemModal(undefined, item.id)} style={{ padding: '2px 6px', fontSize: '10px', background: '#dcfce7', color: '#166534', border: 'none', borderRadius: '3px', cursor: 'pointer' }} title="Adicionar filho">+</button>
+                                                        <button
+                                                            onClick={() => openItemModal(undefined, item.id)}
+                                                            className="p-1 bg-green-900/30 text-green-400 rounded hover:bg-green-900/50"
+                                                            title="Adicionar filho"
+                                                        >
+                                                            +
+                                                        </button>
                                                     )}
-                                                    <button onClick={() => openItemModal(item)} style={{ padding: '2px 6px', fontSize: '10px', background: '#e0e7ff', color: '#3730a3', border: 'none', borderRadius: '3px', cursor: 'pointer' }} title="Editar">✏️</button>
-                                                    <button onClick={() => handleDeleteItem(item.id)} style={{ padding: '2px 6px', fontSize: '10px', background: '#fee2e2', color: '#991b1b', border: 'none', borderRadius: '3px', cursor: 'pointer' }} title="Excluir">🗑️</button>
+                                                    <button
+                                                        onClick={() => openItemModal(item)}
+                                                        className="p-1 bg-blue-900/30 text-blue-400 rounded hover:bg-blue-900/50"
+                                                        title="Editar"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteItem(item.id)}
+                                                        className="p-1 bg-red-900/30 text-red-400 rounded hover:bg-red-900/50"
+                                                        title="Excluir"
+                                                    >
+                                                        🗑️
+                                                    </button>
                                                 </div>
                                             </td>
                                         </SortableRow>
@@ -476,19 +620,25 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                         </SortableContext>
                     </DndContext>
                     <tfoot>
-                        <tr style={{ background: '#f8fafc', borderTop: '2px solid #e5e7eb', fontWeight: 600 }}>
+                        <tr className="bg-dark-800 border-t-2 border-dark-600 font-bold text-gray-200">
                             <td></td>
-                            <td colSpan={5} style={{ padding: '12px 8px', color: '#1e293b' }}>📊 TOTAIS</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right', background: '#dbeafe', color: '#64748b' }}>-</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right', background: '#dbeafe', color: '#1e40af' }}>{formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isAddedByAddendum).reduce((s: number, i: any) => s + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0)), 0))}</td>
+                            <td colSpan={5} className="p-3 text-right text-gray-400">📊 TOTAIS GERAIS:</td>
+                            <td className="p-3 text-right bg-blue-900/10 border-l border-dark-600 font-mono">-</td>
+                            <td className="p-3 text-right bg-blue-900/10 text-blue-300 border-r border-dark-600 font-mono">
+                                {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isAddedByAddendum).reduce((s: number, i: any) => s + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0)), 0))}
+                            </td>
                             {activeAddendums.map((add: any) => (
                                 <React.Fragment key={`tot-${add.id}`}>
-                                    <td style={{ padding: '12px 8px', textAlign: 'right', background: '#fef3c7', color: '#64748b' }}>-</td>
-                                    <td style={{ padding: '12px 8px', textAlign: 'right', background: '#fef3c7', color: Number(add.netValue) >= 0 ? '#166534' : '#dc2626' }}>{Number(add.netValue) > 0 ? '+' : ''}{formatCurrency(Number(add.netValue) || 0)}</td>
+                                    <td className="p-3 text-right bg-black/20 font-mono">-</td>
+                                    <td className={`p-3 text-right bg-black/20 border-r border-dark-600 font-mono ${Number(add.netValue) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {Number(add.netValue) > 0 ? '+' : ''}{formatCurrency(Number(add.netValue) || 0)}
+                                    </td>
                                 </React.Fragment>
                             ))}
-                            <td style={{ padding: '12px 8px', textAlign: 'right', background: '#d1fae5', color: '#64748b' }}>-</td>
-                            <td style={{ padding: '12px 8px', textAlign: 'right', background: '#d1fae5', color: '#065f46', fontSize: '1.1em' }}>{formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isSuppressed).reduce((s: number, i: any) => s + (Number(i.vigentTotalValue) || ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))), 0))}</td>
+                            <td className="p-3 text-right bg-green-900/20 border-l border-dark-600 font-mono">-</td>
+                            <td className="p-3 text-right bg-green-900/20 text-green-300 text-base font-mono">
+                                {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isSuppressed).reduce((s: number, i: any) => s + (Number(i.vigentTotalValue) || ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))), 0))}
+                            </td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -496,81 +646,155 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             </div>
 
             {/* Legend */}
-            <div style={{ margin: '15px', padding: '15px', background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '0.9em', color: '#1e293b' }}>📋 Legenda</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '0.8em' }}>
-                    {/* Types Section */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#475569' }}>📁 Categorias:</span>
-                        <span style={{ padding: '2px 8px', background: '#dbeafe', color: '#1e40af', borderRadius: '4px', fontWeight: '500' }}>ETAPA</span>
-                        <span style={{ padding: '2px 8px', background: '#e0e7ff', color: '#3730a3', borderRadius: '4px', fontWeight: '500' }}>SUB-ETAPA</span>
-                        <span style={{ padding: '2px 8px', background: '#ede9fe', color: '#5b21b6', borderRadius: '4px', fontWeight: '500' }}>NÍVEL</span>
-                        <span style={{ padding: '2px 8px', background: '#fae8ff', color: '#86198f', borderRadius: '4px', fontWeight: '500' }}>GRUPO</span>
-                        <span style={{ padding: '2px 8px', background: '#f3f4f6', color: '#374151', borderRadius: '4px' }}>ITEM</span>
+            <div className="p-4 bg-dark-800 border-t border-dark-700 text-sm text-gray-400">
+                <div className="font-bold mb-2 flex items-center gap-2">
+                    <span>ℹ️</span> Legenda
+                </div>
+                <div className="flex flex-wrap gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-500">Categorias:</span>
+                        <span className="px-2 py-0.5 bg-blue-900/30 text-blue-300 rounded text-xs font-bold">ETAPA</span>
+                        <span className="px-2 py-0.5 bg-indigo-900/30 text-indigo-300 rounded text-xs font-bold">SUB-ETAPA</span>
+                        <span className="px-2 py-0.5 bg-purple-900/30 text-purple-300 rounded text-xs font-bold">NÍVEL</span>
+                        <span className="px-2 py-0.5 bg-dark-700 text-gray-300 rounded text-xs">ITEM</span>
                     </div>
-
-                    {/* Divider */}
-                    <div style={{ borderLeft: '2px solid #e2e8f0', height: '24px' }}></div>
-
-                    {/* Status Section */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#475569' }}>📊 Status:</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#9ca3af' }}>⠿</span> Arraste</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🚫 Suprimido</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>➕ Adicionado</span>
-                        <span style={{ color: '#16a34a', fontWeight: '500' }}>▲ Acréscimo</span>
-                        <span style={{ color: '#dc2626', fontWeight: '500' }}>▼ Supressão</span>
+                    <div className="w-px h-4 bg-dark-600"></div>
+                    <div className="flex items-center gap-3">
+                        <span className="font-semibold text-gray-500">Status:</span>
+                        <span className="flex items-center gap-1"><span className="text-red-500">🚫</span> Suprimido</span>
+                        <span className="flex items-center gap-1"><span className="text-green-500">➕</span> Adicionado</span>
+                        <span className="text-green-400">▲ Acréscimo</span>
+                        <span className="text-red-400">▼ Supressão</span>
                     </div>
                 </div>
             </div>
 
-            {/* Modals */}
+            {/* Modals - Using generic styles for consistency */}
             {showAddendumModal && (
-                <div onClick={() => setShowAddendumModal(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-                    <div onClick={e => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', minWidth: '400px' }}>
-                        <h3 style={{ marginTop: 0 }}>+ Novo Aditivo</h3>
-                        <form onSubmit={handleCreateAddendum}>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Data</label><input type="date" required value={addendumDate} onChange={e => setAddendumDate(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Descrição</label><textarea required value={addendumDescription} onChange={e => setAddendumDescription(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', minHeight: '80px' }} /></div>
-                            <div style={{ display: 'flex', gap: '10px' }}><button type="button" onClick={() => setShowAddendumModal(false)} style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button><button type="submit" style={{ flex: 1, padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Criar</button></div>
+                <div className="modal-overlay" onClick={() => setShowAddendumModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-dark-700 flex justify-between items-center">
+                            <h3 className="font-bold text-white">Novo Aditivo</h3>
+                            <button onClick={() => setShowAddendumModal(false)} className="text-gray-400 hover:text-white">✕</button>
+                        </div>
+                        <form onSubmit={handleCreateAddendum} className="p-4">
+                            <div className="mb-4">
+                                <label className="label">Data</label>
+                                <input type="date" required value={addendumDate} onChange={e => setAddendumDate(e.target.value)} className="input" />
+                            </div>
+                            <div className="mb-4">
+                                <label className="label">Descrição</label>
+                                <textarea required value={addendumDescription} onChange={e => setAddendumDescription(e.target.value)} className="input" rows={3} />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setShowAddendumModal(false)} className="btn btn-secondary">Cancelar</button>
+                                <button type="submit" className="btn btn-primary">Criar</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
 
             {showOperationModal && selectedItem && selectedAddendum && (
-                <div onClick={() => setShowOperationModal(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-                    <div onClick={e => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', minWidth: '450px' }}>
-                        <h3 style={{ marginTop: 0 }}>Alterar - Aditivo {selectedAddendum.number}</h3>
-                        <div style={{ background: '#f0f9ff', padding: '10px', borderRadius: '6px', marginBottom: '15px' }}><strong>{selectedItem.code}</strong> - {selectedItem.description?.substring(0, 50)}</div>
-                        <form onSubmit={handleAddOperation}>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tipo</label><select value={operationType} onChange={e => setOperationType(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}><option value="MODIFY_QTY">Modificar Quantidade</option><option value="MODIFY_PRICE">Modificar Preço</option><option value="MODIFY_BOTH">Modificar Ambos</option><option value="SUPPRESS">Suprimir</option></select></div>
-                            {(operationType === 'MODIFY_QTY' || operationType === 'MODIFY_BOTH') && <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nova Quantidade</label><input type="number" step="0.001" required value={newQuantity} onChange={e => setNewQuantity(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>}
-                            {(operationType === 'MODIFY_PRICE' || operationType === 'MODIFY_BOTH') && <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Novo Preço</label><input type="number" step="0.01" required value={newPrice} onChange={e => setNewPrice(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>}
-                            {operationType === 'SUPPRESS' && <div style={{ background: '#fef2f2', padding: '15px', borderRadius: '8px', marginBottom: '15px', color: '#991b1b' }}>⚠️ Item será suprimido</div>}
-                            <div style={{ display: 'flex', gap: '10px' }}><button type="button" onClick={() => setShowOperationModal(false)} style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button><button type="submit" style={{ flex: 1, padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Aplicar</button></div>
-                        </form>
+                <div className="modal-overlay" onClick={() => setShowOperationModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-dark-700">
+                            <h3 className="font-bold text-white">Alterar Item no Aditivo {selectedAddendum.number}</h3>
+                        </div>
+                        <div className="p-4">
+                            <div className="bg-dark-800 p-3 rounded mb-4 text-sm border border-dark-600">
+                                <span className="font-bold text-primary-400">{selectedItem.code}</span>
+                                <p className="text-gray-300 mt-1">{selectedItem.description}</p>
+                            </div>
+                            <form onSubmit={handleAddOperation}>
+                                <div className="mb-4">
+                                    <label className="label">Tipo de Alteração</label>
+                                    <select value={operationType} onChange={e => setOperationType(e.target.value)} className="input">
+                                        <option value="MODIFY_QTY">Modificar Quantidade</option>
+                                        <option value="MODIFY_PRICE">Modificar Preço</option>
+                                        <option value="MODIFY_BOTH">Modificar Ambos</option>
+                                        <option value="SUPPRESS">Suprimir Item</option>
+                                    </select>
+                                </div>
+                                {(operationType === 'MODIFY_QTY' || operationType === 'MODIFY_BOTH') && (
+                                    <div className="mb-4">
+                                        <label className="label">Nova Quantidade</label>
+                                        <input type="number" step="0.001" required value={newQuantity} onChange={e => setNewQuantity(e.target.value)} className="input" />
+                                    </div>
+                                )}
+                                {(operationType === 'MODIFY_PRICE' || operationType === 'MODIFY_BOTH') && (
+                                    <div className="mb-4">
+                                        <label className="label">Novo Preço Unitário</label>
+                                        <input type="number" step="0.01" required value={newPrice} onChange={e => setNewPrice(e.target.value)} className="input" />
+                                    </div>
+                                )}
+                                {operationType === 'SUPPRESS' && (
+                                    <div className="p-3 bg-red-900/20 border border-red-500/20 text-red-300 rounded mb-4 text-sm font-bold text-center">
+                                        ⚠️ Este item será removido do contrato vigente.
+                                    </div>
+                                )}
+                                <div className="flex justify-end gap-2">
+                                    <button type="button" onClick={() => setShowOperationModal(false)} className="btn btn-secondary">Cancelar</button>
+                                    <button type="submit" className="btn btn-primary">Aplicar Alteração</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
             {showItemModal && (
-                <div onClick={() => setShowItemModal(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000 }}>
-                    <div onClick={e => e.stopPropagation()} style={{ background: 'white', padding: '25px', borderRadius: '12px', minWidth: '450px' }}>
-                        <h3 style={{ marginTop: 0 }}>{editingItemId ? 'Editar Item' : 'Novo Item'}</h3>
-                        <form onSubmit={handleSaveItem}>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tipo</label><select value={itemType} onChange={e => setItemType(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}>{Object.entries(typeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Código</label><input value={itemCode} onChange={e => setItemCode(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Descrição</label><input required value={itemDescription} onChange={e => setItemDescription(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
+                <div className="modal-overlay" onClick={() => setShowItemModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-dark-700">
+                            <h3 className="font-bold text-white">{editingItemId ? 'Editar Item' : 'Novo Item'}</h3>
+                        </div>
+                        <form onSubmit={handleSaveItem} className="p-4">
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="label">Tipo</label>
+                                    <select value={itemType} onChange={e => setItemType(e.target.value)} className="input">
+                                        {Object.entries(typeLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Código</label>
+                                    <input value={itemCode} onChange={e => setItemCode(e.target.value)} className="input" placeholder="Ex: 1.1" />
+                                </div>
+                            </div>
+                            <div className="mb-4">
+                                <label className="label">Descrição</label>
+                                <input required value={itemDescription} onChange={e => setItemDescription(e.target.value)} className="input" />
+                            </div>
                             {itemType === 'ITEM' && (
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '15px' }}>
-                                    <div><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Unidade</label><input value={itemUnit} onChange={e => setItemUnit(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
-                                    <div><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Quantidade</label><input value={itemQuantity} onChange={e => setItemQuantity(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
-                                    <div><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Preço Unit.</label><input value={itemPrice} onChange={e => setItemPrice(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }} /></div>
+                                <div className="grid grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <label className="label">Unidade</label>
+                                        <input value={itemUnit} onChange={e => setItemUnit(e.target.value)} className="input" placeholder="Ex: m²" />
+                                    </div>
+                                    <div>
+                                        <label className="label">Quantidade</label>
+                                        <input value={itemQuantity} onChange={e => setItemQuantity(e.target.value)} className="input" type="number" step="0.001" />
+                                    </div>
+                                    <div>
+                                        <label className="label">Preço Unit.</label>
+                                        <input value={itemPrice} onChange={e => setItemPrice(e.target.value)} className="input" type="number" step="0.01" />
+                                    </div>
                                 </div>
                             )}
-                            <div style={{ marginBottom: '15px' }}><label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Pai</label><select value={itemParentId || ''} onChange={e => setItemParentId(e.target.value || null)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}><option value="">(Raiz)</option>{flatRawItems.filter(i => i.type !== 'ITEM' && i.id !== editingItemId).map(i => <option key={i.id} value={i.id}>{i.code} - {i.description?.substring(0, 30)}</option>)}</select></div>
-                            <div style={{ display: 'flex', gap: '10px' }}><button type="button" onClick={() => setShowItemModal(false)} style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancelar</button><button type="submit" style={{ flex: 1, padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Salvar</button></div>
+                            <div className="mb-4">
+                                <label className="label">Item Pai (Hierarquia)</label>
+                                <select value={itemParentId || ''} onChange={e => setItemParentId(e.target.value || null)} className="input">
+                                    <option value="">(Raiz - Sem pai)</option>
+                                    {flatRawItems.filter(i => i.type !== 'ITEM' && i.id !== editingItemId).map(i => (
+                                        <option key={i.id} value={i.id}>{i.code} - {i.description?.substring(0, 40)}...</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button type="button" onClick={() => setShowItemModal(false)} className="btn btn-secondary">Cancelar</button>
+                                <button type="submit" className="btn btn-primary">Salvar</button>
+                            </div>
                         </form>
                     </div>
                 </div>

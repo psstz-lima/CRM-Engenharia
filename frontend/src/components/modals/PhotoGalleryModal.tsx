@@ -160,18 +160,12 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
     };
 
     const handleDelete = async (photoId: string) => {
-        console.log('handleDelete called with photoId:', photoId);
-
-        // Direct deletion without confirm for testing
         try {
-            console.log('Sending DELETE request...');
             await api.delete(`/contracts/measurements/photos/${photoId}`);
-            console.log('Delete successful!');
             setPhotos(prev => prev.filter(p => p.id !== photoId));
             if (selectedPhoto?.id === photoId) {
                 setSelectedPhoto(null);
             }
-            alert('Foto excluída com sucesso!');
         } catch (err: any) {
             console.error('Erro ao excluir foto:', err);
             alert(err.response?.data?.error || 'Erro ao excluir foto. Tente novamente.');
@@ -197,28 +191,18 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
     if (!show) return null;
 
     return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1000
-            }}
-        >
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
             <div
+                className="bg-dark-900 border border-dark-700 rounded-xl w-[90%] max-w-[900px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
-                style={{
-                    background: 'white', borderRadius: '12px', width: '90%', maxWidth: '900px',
-                    maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden'
-                }}
             >
                 {/* Header */}
-                <div style={{ padding: '20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="p-5 border-b border-dark-700 flex justify-between items-center bg-dark-800">
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.3em' }}>📷 Fotos do Item</h2>
-                        <p style={{ margin: '5px 0 0', color: '#666', fontSize: '0.9em' }}>{itemName}</p>
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">📷 Fotos do Item</h2>
+                        <p className="text-gray-400 text-sm mt-1">{itemName}</p>
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5em', cursor: 'pointer', color: '#666' }}>×</button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">×</button>
                 </div>
 
                 {/* Upload Area */}
@@ -227,34 +211,29 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                         onDrop={handleDrop}
                         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                         onDragLeave={() => setDragOver(false)}
-                        style={{
-                            margin: '20px',
-                            padding: '30px',
-                            border: `2px dashed ${dragOver ? '#2563eb' : '#ddd'}`,
-                            borderRadius: '8px',
-                            background: dragOver ? '#eff6ff' : '#f9fafb',
-                            textAlign: 'center',
-                            transition: 'all 0.2s'
-                        }}
+                        className={`m-5 p-8 border-2 border-dashed rounded-lg text-center transition-all ${dragOver
+                                ? 'border-primary-500 bg-primary-900/10'
+                                : 'border-dark-600 bg-dark-800/50 hover:bg-dark-800 hover:border-dark-500'
+                            }`}
                     >
                         {uploading ? (
-                            <p style={{ margin: 0, color: '#666' }}>⏳ Enviando...</p>
+                            <p className="text-gray-400">⏳ Enviando...</p>
                         ) : (
                             <>
-                                <p style={{ margin: 0, color: '#666' }}>
+                                <p className="text-gray-300">
                                     📁 Arraste fotos aqui ou{' '}
-                                    <label style={{ color: '#2563eb', cursor: 'pointer', textDecoration: 'underline' }}>
+                                    <label className="text-primary-400 hover:text-primary-300 cursor-pointer hover:underline font-medium">
                                         selecione arquivos
                                         <input
                                             type="file"
                                             multiple
                                             accept="image/jpeg,image/png,image/webp,image/gif"
                                             onChange={e => handleSelectFiles(e.target.files)}
-                                            style={{ display: 'none' }}
+                                            className="hidden"
                                         />
                                     </label>
                                 </p>
-                                <p style={{ margin: '5px 0 0', fontSize: '0.85em', color: '#999' }}>
+                                <p className="text-xs text-gray-500 mt-2">
                                     JPG, PNG, WebP, GIF (máx. 10MB cada)
                                 </p>
                             </>
@@ -263,107 +242,100 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 )}
 
                 {/* Photo Grid */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
+                <div className="flex-1 overflow-y-auto p-5 pt-0 custom-scrollbar">
                     {loading ? (
-                        <p style={{ textAlign: 'center', color: '#666' }}>Carregando...</p>
+                        <div className="text-center py-10">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
+                            <p className="text-gray-400">Carregando...</p>
+                        </div>
                     ) : photos.length === 0 ? (
-                        <p style={{ textAlign: 'center', color: '#999' }}>Nenhuma foto cadastrada</p>
+                        <div className="text-center py-10 text-gray-500">
+                            <p className="text-4xl mb-2">🖼️</p>
+                            <p>Nenhuma foto cadastrada</p>
+                        </div>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {photos.map(photo => (
                                 <div
                                     key={photo.id}
-                                    style={{
-                                        position: 'relative',
-                                        border: '1px solid #eee',
-                                        borderRadius: '8px',
-                                        overflow: 'hidden',
-                                        background: '#f9f9f9'
-                                    }}
+                                    className="group relative border border-dark-700 rounded-lg overflow-hidden bg-dark-800 hover:border-dark-500 transition-all hover:shadow-lg"
                                 >
-                                    <img
-                                        src={getPhotoUrl(photo)}
-                                        alt={photo.filename}
-                                        onClick={() => setSelectedPhoto(photo)}
-                                        style={{
-                                            width: '100%',
-                                            height: '120px',
-                                            objectFit: 'cover',
-                                            cursor: 'pointer'
-                                        }}
-                                    />
-                                    <div style={{ padding: '8px', fontSize: '0.8em' }}>
+                                    <div className="aspect-square relative overflow-hidden bg-dark-900">
+                                        <img
+                                            src={getPhotoUrl(photo)}
+                                            alt={photo.filename}
+                                            onClick={() => setSelectedPhoto(photo)}
+                                            className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
+                                        />
+
+                                        {!isClosed && (
+                                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenEditor(photo);
+                                                    }}
+                                                    title="Editar"
+                                                    className="w-7 h-7 flex items-center justify-center bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-lg"
+                                                >
+                                                    🎨
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(photo.id);
+                                                    }}
+                                                    title="Excluir"
+                                                    className="w-7 h-7 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-2 text-xs">
                                         {editingDescription === photo.id ? (
-                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                            <div className="flex gap-1 mb-1">
                                                 <input
                                                     type="text"
                                                     value={descriptionText}
                                                     onChange={e => setDescriptionText(e.target.value)}
                                                     placeholder="Descrição..."
-                                                    style={{ flex: 1, padding: '4px', fontSize: '0.9em' }}
+                                                    className="flex-1 bg-dark-700 border border-dark-600 rounded px-1.5 py-1 text-white focus:border-primary-500 outline-none"
+                                                    autoFocus
                                                 />
-                                                <button onClick={() => handleSaveDescription(photo.id)} style={{ padding: '4px 8px', background: '#16a34a', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>✓</button>
+                                                <button
+                                                    onClick={() => handleSaveDescription(photo.id)}
+                                                    className="bg-green-600 hover:bg-green-500 text-white rounded px-1.5"
+                                                >
+                                                    ✓
+                                                </button>
                                             </div>
                                         ) : (
                                             <p
                                                 onClick={() => { if (!isClosed) { setEditingDescription(photo.id); setDescriptionText(photo.description || ''); } }}
-                                                style={{ margin: 0, color: photo.description ? '#333' : '#999', cursor: isClosed ? 'default' : 'pointer' }}
-                                                title={isClosed ? '' : 'Clique para editar'}
+                                                className={`mb-1 truncate cursor-pointer ${photo.description ? 'text-gray-300' : 'text-gray-600 italic'}`}
+                                                title={photo.description || 'Clique para adicionar descrição'}
                                             >
                                                 {photo.description || 'Sem descrição'}
                                             </p>
                                         )}
-                                        {/* Photo metadata */}
+
                                         {(photo.photoDate || photo.location) && (
-                                            <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#666' }}>
+                                            <div className="flex flex-col gap-0.5 text-gray-500 mb-1 scale-90 origin-left">
                                                 {photo.photoDate && (
-                                                    <span style={{ marginRight: '8px' }}>📅 {new Date(photo.photoDate).toLocaleDateString('pt-BR')}</span>
+                                                    <span>📅 {new Date(photo.photoDate).toLocaleDateString('pt-BR')}</span>
                                                 )}
                                                 {photo.location && (
                                                     <span>📍 {photo.location}</span>
                                                 )}
                                             </div>
                                         )}
-                                        <p style={{ margin: '4px 0 0', color: '#999', fontSize: '0.85em' }}>{formatSize(photo.size)}</p>
+                                        <div className="text-gray-600 text-[10px] flex justify-between">
+                                            <span>{formatSize(photo.size)}</span>
+                                        </div>
                                     </div>
-                                    {!isClosed && (
-                                        <>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    console.log('Edit button clicked');
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleOpenEditor(photo);
-                                                }}
-                                                title="Editar foto"
-                                                style={{
-                                                    position: 'absolute', top: '8px', right: '45px',
-                                                    background: 'rgba(124,58,237,0.95)', color: 'white',
-                                                    border: 'none', borderRadius: '50%', width: '30px', height: '30px',
-                                                    cursor: 'pointer', fontSize: '1em', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    zIndex: 10
-                                                }}
-                                            >🎨</button>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    console.log('Delete button clicked for photo:', photo.id);
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleDelete(photo.id);
-                                                }}
-                                                title="Excluir foto"
-                                                style={{
-                                                    position: 'absolute', top: '8px', right: '8px',
-                                                    background: 'rgba(220,38,38,0.95)', color: 'white',
-                                                    border: 'none', borderRadius: '50%', width: '30px', height: '30px',
-                                                    cursor: 'pointer', fontSize: '1.2em', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    zIndex: 10, fontWeight: 'bold'
-                                                }}
-                                            >×</button>
-                                        </>
-                                    )}
                                 </div>
                             ))}
                         </div>
@@ -371,172 +343,115 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '15px 20px', borderTop: '1px solid #eee', background: '#f9fafb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ color: '#666', fontSize: '0.9em' }}>{photos.length} foto(s)</span>
-                    <button onClick={onClose} style={{ padding: '10px 20px', background: '#374151', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Fechar</button>
+                <div className="p-4 border-t border-dark-700 bg-dark-800 flex justify-between items-center">
+                    <span className="text-gray-400 text-sm">{photos.length} foto(s)</span>
+                    <button onClick={onClose} className="btn btn-secondary text-sm">
+                        Fechar
+                    </button>
                 </div>
             </div>
 
             {/* Full Size Preview */}
             {selectedPhoto && (
                 <div
+                    className="fixed inset-0 z-[1001] bg-black/95 flex items-center justify-center"
                     onClick={() => setSelectedPhoto(null)}
-                    style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1001
-                    }}
                 >
                     <img
                         src={getPhotoUrl(selectedPhoto)}
                         alt={selectedPhoto.filename}
                         onClick={(e) => e.stopPropagation()}
-                        style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain' }}
+                        className="max-w-[95%] max-h-[90vh] object-contain shadow-2xl rounded-sm"
                     />
 
-                    {/* Close button */}
                     <button
                         onClick={() => setSelectedPhoto(null)}
-                        style={{
-                            position: 'absolute', top: '20px', right: '20px',
-                            background: 'rgba(255,255,255,0.2)', color: 'white',
-                            border: 'none', borderRadius: '50%', width: '40px', height: '40px',
-                            cursor: 'pointer', fontSize: '1.5em'
-                        }}
-                    >×</button>
+                        className="absolute top-5 right-5 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
+                    >
+                        ×
+                    </button>
 
-                    {/* Action buttons at bottom */}
                     {!isClosed && (
                         <div
                             onClick={(e) => e.stopPropagation()}
-                            style={{
-                                position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
-                                display: 'flex', gap: '15px'
-                            }}
+                            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4"
                         >
                             <button
-                                type="button"
                                 onClick={() => {
                                     handleOpenEditor(selectedPhoto);
                                     setSelectedPhoto(null);
                                 }}
-                                style={{
-                                    padding: '12px 24px', background: '#7c3aed', color: 'white',
-                                    border: 'none', borderRadius: '8px', cursor: 'pointer',
-                                    fontSize: '1em', display: 'flex', alignItems: 'center', gap: '8px'
-                                }}
-                            >🎨 Editar</button>
+                                className="btn btn-primary flex items-center gap-2"
+                            >
+                                🎨 Editar
+                            </button>
                             <button
-                                type="button"
                                 onClick={() => {
                                     handleDelete(selectedPhoto.id);
                                 }}
-                                style={{
-                                    padding: '12px 24px', background: '#dc2626', color: 'white',
-                                    border: 'none', borderRadius: '8px', cursor: 'pointer',
-                                    fontSize: '1em', display: 'flex', alignItems: 'center', gap: '8px'
-                                }}
-                            >🗑️ Excluir</button>
+                                className="btn bg-red-600 hover:bg-red-500 text-white border-none flex items-center gap-2"
+                            >
+                                🗑️ Excluir
+                            </button>
                         </div>
                     )}
                 </div>
             )}
+
             {/* Upload Form Modal */}
             {showUploadForm && pendingFiles && (
-                <div
-                    onClick={handleCancelUpload}
-                    style={{
-                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1002
-                    }}
-                >
-                    <div
-                        onClick={e => e.stopPropagation()}
-                        style={{
-                            background: 'white', borderRadius: '12px', width: '90%', maxWidth: '450px',
-                            padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
-                        }}
-                    >
-                        <h3 style={{ margin: '0 0 20px', fontSize: '1.2em', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="modal-overlay z-[1002]" onClick={handleCancelUpload}>
+                    <div className="modal-content max-w-md" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                             📸 Informações da Foto
-                            <span style={{ fontSize: '0.7em', color: '#666', fontWeight: 'normal' }}>
-                                ({pendingFiles.length} arquivo{pendingFiles.length > 1 ? 's' : ''})
+                            <span className="text-sm font-normal text-gray-500">
+                                ({pendingFiles.length} arquivos)
                             </span>
                         </h3>
 
-                        <p style={{ margin: '0 0 20px', fontSize: '0.9em', color: '#666' }}>
-                            Preencha os campos abaixo (opcional). Os dados serão aplicados a todas as fotos selecionadas.
+                        <p className="text-gray-400 text-sm mb-6">
+                            Preencha os campos opcionais abaixo para aplicar a todas as fotos selecionadas.
                         </p>
 
-                        {/* Description */}
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#333' }}>
-                                📝 Descrição
-                            </label>
-                            <input
-                                type="text"
-                                value={uploadMetadata.description}
-                                onChange={e => setUploadMetadata(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Ex: Vista geral do trecho"
-                                style={{
-                                    width: '100%', padding: '10px 12px', border: '1px solid #ddd',
-                                    borderRadius: '6px', fontSize: '0.95em', boxSizing: 'border-box'
-                                }}
-                            />
+                        <div className="space-y-4">
+                            <div>
+                                <label className="label">📝 Descrição</label>
+                                <input
+                                    type="text"
+                                    value={uploadMetadata.description}
+                                    onChange={e => setUploadMetadata(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="Ex: Vista geral do trecho"
+                                    className="input"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="label">📅 Data da Foto</label>
+                                <input
+                                    type="date"
+                                    value={uploadMetadata.photoDate}
+                                    onChange={e => setUploadMetadata(prev => ({ ...prev, photoDate: e.target.value }))}
+                                    className="input"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="label">📍 Local / Estaca / Km</label>
+                                <input
+                                    type="text"
+                                    value={uploadMetadata.location}
+                                    onChange={e => setUploadMetadata(prev => ({ ...prev, location: e.target.value }))}
+                                    placeholder="Ex: Estaca 120+5 ou Km 45"
+                                    className="input"
+                                />
+                            </div>
                         </div>
 
-                        {/* Photo Date */}
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#333' }}>
-                                📅 Data da Foto
-                            </label>
-                            <input
-                                type="date"
-                                value={uploadMetadata.photoDate}
-                                onChange={e => setUploadMetadata(prev => ({ ...prev, photoDate: e.target.value }))}
-                                style={{
-                                    width: '100%', padding: '10px 12px', border: '1px solid #ddd',
-                                    borderRadius: '6px', fontSize: '0.95em', boxSizing: 'border-box'
-                                }}
-                            />
-                        </div>
-
-                        {/* Location */}
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#333' }}>
-                                📍 Local / Estaca / Km
-                            </label>
-                            <input
-                                type="text"
-                                value={uploadMetadata.location}
-                                onChange={e => setUploadMetadata(prev => ({ ...prev, location: e.target.value }))}
-                                placeholder="Ex: Estaca 120+5 ou Km 45"
-                                style={{
-                                    width: '100%', padding: '10px 12px', border: '1px solid #ddd',
-                                    borderRadius: '6px', fontSize: '0.95em', boxSizing: 'border-box'
-                                }}
-                            />
-                        </div>
-
-                        {/* Buttons */}
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                            <button
-                                onClick={handleCancelUpload}
-                                style={{
-                                    padding: '10px 20px', background: '#f3f4f6', color: '#374151',
-                                    border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.95em'
-                                }}
-                            >
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button onClick={handleCancelUpload} className="btn btn-secondary">
                                 Cancelar
                             </button>
-                            <button
-                                onClick={handleConfirmUpload}
-                                style={{
-                                    padding: '10px 20px', background: '#2563eb', color: 'white',
-                                    border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.95em'
-                                }}
-                            >
+                            <button onClick={handleConfirmUpload} className="btn btn-primary">
                                 📤 Enviar
                             </button>
                         </div>
@@ -544,7 +459,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 </div>
             )}
 
-            {/* Editor Modal (unified editor for all editing) */}
+            {/* Editor Modal */}
             {editorImageSrc && (
                 <ImageEditorModal
                     show={true}
