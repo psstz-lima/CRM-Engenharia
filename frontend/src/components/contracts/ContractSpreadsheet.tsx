@@ -22,8 +22,8 @@ function SortableRow({ id, children, isContainer, isSuppressed, isAddedByAddendu
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
     // Row background logic
-    let bgClass = idx % 2 === 0 ? 'bg-dark-900' : 'bg-dark-800';
-    if (isContainer) bgClass = 'bg-dark-800/80';
+    let bgClass = idx % 2 === 0 ? 'bg-gray-100' : 'bg-gray-50';
+    if (isContainer) bgClass = 'bg-gray-50/80';
     if (isDragging) bgClass = 'bg-primary-900/50 opacity-50';
 
     const style = {
@@ -36,11 +36,11 @@ function SortableRow({ id, children, isContainer, isSuppressed, isAddedByAddendu
             ref={setNodeRef}
             style={style}
             {...attributes}
-            className={`${bgClass} border-b border-dark-700 hover:bg-dark-700 transition-colors`}
+            className={`${bgClass} border-b border-gray-300 hover:bg-gray-200 transition-colors`}
         >
             <td
                 {...listeners}
-                className="p-1 text-center cursor-grab text-gray-500 hover:text-white"
+                className="p-1 text-center cursor-grab text-gray-500 hover:text-gray-900"
                 style={{ width: '30px' }}
             >
                 ⠿
@@ -301,15 +301,15 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
         setShowOperationModal(true);
     }
 
-    if (loading) return <div className="p-10 text-center text-gray-400">Carregando planilha...</div>;
+    if (loading) return <div className="p-10 text-center text-gray-600">Carregando planilha...</div>;
 
     const activeAddendums = addendums.filter((a: any) => a.status !== 'CANCELLED');
 
     return (
-        <div className="card border border-dark-700 bg-dark-900 overflow-hidden">
+        <div className="card border border-gray-300 bg-gray-100 overflow-hidden">
             {/* Toolbar */}
-            <div className="p-4 bg-dark-800 border-b border-dark-700 flex flex-wrap justify-between items-center gap-4">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className="p-4 bg-gray-50 border-b border-gray-300 flex flex-wrap justify-between items-center gap-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                     <span>📊</span> Planilha do Contrato
                 </h3>
                 <div className="flex flex-wrap gap-2 items-center">
@@ -320,12 +320,12 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                             value={searchFilter}
                             onChange={(e) => setSearchFilter(e.target.value)}
                             placeholder="🔍 Filtrar..."
-                            className="bg-dark-900 border border-dark-600 text-gray-200 text-sm rounded-lg pl-3 pr-8 py-2 w-64 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-colors"
+                            className="bg-gray-100 border border-gray-400 text-gray-800 text-sm rounded-lg pl-3 pr-8 py-2 w-64 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-colors"
                         />
                         {searchFilter && (
                             <button
                                 onClick={() => setSearchFilter('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
                             >
                                 ✕
                             </button>
@@ -333,18 +333,18 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                     </div>
 
                     {/* Expand/Collapse Buttons */}
-                    <div className="flex bg-dark-900 rounded-lg p-1 border border-dark-600">
+                    <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-400">
                         <button
                             onClick={expandAll}
                             title="Expandir Todos"
-                            className="p-1.5 text-gray-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                            className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
                         >
                             ➕
                         </button>
                         <button
                             onClick={() => collapseAllGroups(rawItems)}
                             title="Recolher Todos"
-                            className="p-1.5 text-gray-400 hover:text-white hover:bg-dark-700 rounded transition-colors"
+                            className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
                         >
                             ➖
                         </button>
@@ -353,10 +353,10 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                     <button onClick={() => openItemModal()} className="btn btn-sm btn-primary flex items-center gap-1">
                         <span>+</span> Item
                     </button>
-                    <button onClick={() => setShowAddendumModal(true)} className="btn btn-sm bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1">
+                    <button onClick={() => setShowAddendumModal(true)} className="btn btn-sm bg-purple-600 hover:bg-purple-500 text-gray-900 flex items-center gap-1">
                         <span>+</span> Aditivo
                     </button>
-                    <button onClick={loadData} className="p-2 bg-dark-700 hover:bg-dark-600 text-gray-300 rounded-lg border border-dark-600 transition-colors" title="Atualizar">
+                    <button onClick={loadData} className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg border border-gray-400 transition-colors" title="Atualizar">
                         🔄
                     </button>
                 </div>
@@ -375,8 +375,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                             <span>{add.status === 'APPROVED' ? '✅' : '📝'}</span>
                             {add.status === 'DRAFT' && (
                                 <>
-                                    <button onClick={() => handleApprove(add.id)} className="ml-2 px-2 py-0.5 bg-green-600 text-white rounded hover:bg-green-500">Aprovar</button>
-                                    <button onClick={() => handleCancel(add.id, false)} className="ml-1 px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-500">✕</button>
+                                    <button onClick={() => handleApprove(add.id)} className="ml-2 px-2 py-0.5 bg-green-600 text-gray-900 rounded hover:bg-green-500">Aprovar</button>
+                                    <button onClick={() => handleCancel(add.id, false)} className="ml-1 px-2 py-0.5 bg-red-600 text-gray-900 rounded hover:bg-red-500">✕</button>
                                 </>
                             )}
                         </div>
@@ -389,27 +389,27 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                 <table className="w-full text-left border-collapse text-sm">
                     <thead className="sticky top-0 z-20" style={{ backgroundColor: 'var(--bg-surface)' }}>
                         {/* Main Header Row */}
-                        <tr style={{ background: 'linear-gradient(180deg, #1a1a24 0%, #12121a 100%)' }} className="border-b border-dark-600">
+                        <tr style={{ background: 'linear-gradient(180deg, #1a1a24 0%, #12121a 100%)' }} className="border-b border-gray-400">
                             <th className="p-3 text-center w-10 text-gray-500 font-normal">
                                 <span className="opacity-50">⋮⋮</span>
                             </th>
-                            <th className="p-3 w-20 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 w-20 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                                 Tipo
                             </th>
-                            <th className="p-3 text-left text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 text-left text-xs font-bold uppercase tracking-wider text-gray-600">
                                 Código
                             </th>
-                            <th className="p-3 text-left min-w-[280px] text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 text-left min-w-[280px] text-xs font-bold uppercase tracking-wider text-gray-600">
                                 Descrição
                             </th>
-                            <th className="p-3 w-16 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 w-16 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                                 Un
                             </th>
-                            <th className="p-3 w-28 text-right text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 w-28 text-right text-xs font-bold uppercase tracking-wider text-gray-600">
                                 P. Unitário
                             </th>
                             {/* Base Section */}
-                            <th colSpan={2} className="p-3 text-center bg-blue-950/40 border-l border-dark-600">
+                            <th colSpan={2} className="p-3 text-center bg-blue-950/40 border-l border-gray-400">
                                 <div className="flex items-center justify-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                                     <span className="text-xs font-bold uppercase tracking-wider text-blue-300">Base</span>
@@ -417,7 +417,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                             </th>
                             {/* Addendums */}
                             {activeAddendums.map((add: any) => (
-                                <th key={add.id} colSpan={2} className={`p-3 text-center border-l border-dark-600 ${add.status === 'APPROVED'
+                                <th key={add.id} colSpan={2} className={`p-3 text-center border-l border-gray-400 ${add.status === 'APPROVED'
                                     ? 'bg-emerald-950/40'
                                     : 'bg-amber-950/40'
                                     }`}>
@@ -432,44 +432,44 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                 </th>
                             ))}
                             {/* Vigente Section */}
-                            <th colSpan={2} className="p-3 text-center bg-emerald-950/50 border-l border-dark-600">
+                            <th colSpan={2} className="p-3 text-center bg-emerald-950/50 border-l border-gray-400">
                                 <div className="flex items-center justify-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">Vigente</span>
                                 </div>
                             </th>
-                            <th className="p-3 w-24 text-center text-xs font-bold uppercase tracking-wider text-gray-400">
+                            <th className="p-3 w-24 text-center text-xs font-bold uppercase tracking-wider text-gray-600">
                                 Ações
                             </th>
                         </tr>
                         {/* Subheader Row */}
-                        <tr className="text-[11px] text-gray-500 border-b border-dark-700" style={{ backgroundColor: '#0d0d12' }}>
+                        <tr className="text-[11px] text-gray-500 border-b border-gray-300" style={{ backgroundColor: '#0d0d12' }}>
                             <th colSpan={6} className="p-0"></th>
                             {/* Base subheaders */}
-                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-dark-700 font-medium uppercase">
+                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-gray-300 font-medium uppercase">
                                 QTD
                             </th>
-                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-dark-700 font-medium uppercase">
+                            <th className="px-3 py-2 text-right bg-blue-950/20 border-l border-gray-300 font-medium uppercase">
                                 VALOR
                             </th>
                             {/* Addendums subheaders */}
                             {activeAddendums.map((add: any) => (
                                 <React.Fragment key={`sub-${add.id}`}>
-                                    <th className={`px-3 py-2 text-right border-l border-dark-700 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
+                                    <th className={`px-3 py-2 text-right border-l border-gray-300 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
                                         }`}>
                                         Δ QTD
                                     </th>
-                                    <th className={`px-3 py-2 text-right border-l border-dark-700 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
+                                    <th className={`px-3 py-2 text-right border-l border-gray-300 font-medium uppercase ${add.status === 'APPROVED' ? 'bg-emerald-950/20' : 'bg-amber-950/20'
                                         }`}>
                                         Δ VALOR
                                     </th>
                                 </React.Fragment>
                             ))}
                             {/* Vigente subheaders */}
-                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-dark-700 font-medium text-emerald-400 uppercase">
+                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-gray-300 font-medium text-emerald-400 uppercase">
                                 QTD
                             </th>
-                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-dark-700 font-medium text-emerald-400 uppercase">
+                            <th className="px-3 py-2 text-right bg-emerald-950/30 border-l border-gray-300 font-medium text-emerald-400 uppercase">
                                 VALOR
                             </th>
                             <th className="p-0"></th>
@@ -491,7 +491,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                     const baseValue = baseQty * basePrice;
 
                                     // Row Styling
-                                    let textColor = 'text-gray-300';
+                                    let textColor = 'text-gray-700';
                                     if (isContainer) textColor = 'text-blue-200 font-semibold';
                                     if (item.isSuppressed) textColor = 'text-red-400 line-through';
                                     if (item.isAddedByAddendum) textColor = 'text-green-300';
@@ -513,17 +513,17 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                             isAddedByAddendum={item.isAddedByAddendum}
                                             idx={idx}
                                         >
-                                            <td className="p-2 border-r border-dark-700 text-center">
-                                                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${isContainer ? 'bg-blue-900/30 text-blue-300' : 'bg-dark-700 text-gray-400'
+                                            <td className="p-2 border-r border-gray-300 text-center">
+                                                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${isContainer ? 'bg-blue-900/30 text-blue-300' : 'bg-gray-200 text-gray-600'
                                                     }`}>
                                                     {typeLabels[item.type]?.substring(0, 4) || item.type}
                                                 </span>
                                             </td>
-                                            <td className={`p-2 border-r border-dark-700 whitespace-nowrap ${textColor}`}>
+                                            <td className={`p-2 border-r border-gray-300 whitespace-nowrap ${textColor}`}>
                                                 {isContainer && item.hasChildren && (
                                                     <button
                                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCollapse(item.id); }}
-                                                        className="mr-2 text-gray-500 hover:text-white focus:outline-none"
+                                                        className="mr-2 text-gray-500 hover:text-gray-900 focus:outline-none"
                                                     >
                                                         {item.isCollapsed ? '▶' : '▼'}
                                                     </button>
@@ -532,17 +532,17 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                                 {item.isSuppressed && <span className="ml-1 text-red-500" title="Suprimido">🚫</span>}
                                                 {item.isAddedByAddendum && <span className="ml-1 text-green-500" title="Adicionado">➕</span>}
                                             </td>
-                                            <td className={`p-2 border-r border-dark-700 max-w-xs truncate ${textColor}`} title={item.description}>
+                                            <td className={`p-2 border-r border-gray-300 max-w-xs truncate ${textColor}`} title={item.description}>
                                                 {item.description}
                                             </td>
-                                            <td className="p-2 text-center border-r border-dark-700 text-gray-400">{isContainer ? '' : item.unit}</td>
-                                            <td className="p-2 text-right border-r border-dark-700 text-gray-400 font-mono">{isContainer ? '' : formatCurrency(basePrice)}</td>
+                                            <td className="p-2 text-center border-r border-gray-300 text-gray-600">{isContainer ? '' : item.unit}</td>
+                                            <td className="p-2 text-right border-r border-gray-300 text-gray-600 font-mono">{isContainer ? '' : formatCurrency(basePrice)}</td>
 
                                             {/* Base Data */}
-                                            <td className="p-2 text-right bg-blue-900/5 text-gray-300 border-l border-dark-700 font-mono">
+                                            <td className="p-2 text-right bg-blue-900/5 text-gray-700 border-l border-gray-300 font-mono">
                                                 {isContainer ? '' : item.isAddedByAddendum ? '-' : formatNumber(baseQty)}
                                             </td>
-                                            <td className="p-2 text-right bg-blue-900/5 text-blue-200 border-r border-dark-700 font-mono">
+                                            <td className="p-2 text-right bg-blue-900/5 text-blue-200 border-r border-gray-300 font-mono">
                                                 {isContainer ? formatCurrency(item._subtotalValue || 0) : item.isAddedByAddendum ? '-' : formatCurrency(baseValue)}
                                             </td>
 
@@ -566,7 +566,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                                         </td>
                                                         <td
                                                             onClick={() => canEdit && openOperationModal(item, add)}
-                                                            className={`p-2 text-right border-r border-dark-700 cursor-${canEdit ? 'pointer hover:bg-white/5' : 'default'} ${cellBg} font-mono`}
+                                                            className={`p-2 text-right border-r border-gray-300 cursor-${canEdit ? 'pointer hover:bg-white/5' : 'default'} ${cellBg} font-mono`}
                                                         >
                                                             {d.value !== null ? (
                                                                 <span className={d.value > 0 ? 'text-green-400' : d.value < 0 ? 'text-red-400' : 'text-gray-500'}>
@@ -579,7 +579,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                                             })}
 
                                             {/* Vigente Data */}
-                                            <td className="p-2 text-right bg-green-900/10 text-gray-100 font-bold border-l border-dark-700 font-mono">
+                                            <td className="p-2 text-right bg-green-900/10 text-gray-100 font-bold border-l border-gray-300 font-mono">
                                                 {isContainer ? '' : item.isSuppressed ? <span className="text-red-400">0</span> : formatNumber(item.vigentQuantity || baseQty)}
                                             </td>
                                             <td className="p-2 text-right bg-green-900/10 text-green-300 font-bold font-mono">
@@ -620,22 +620,22 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                         </SortableContext>
                     </DndContext>
                     <tfoot>
-                        <tr className="bg-dark-800 border-t-2 border-dark-600 font-bold text-gray-200">
+                        <tr className="bg-gray-50 border-t-2 border-gray-400 font-bold text-gray-800">
                             <td></td>
-                            <td colSpan={5} className="p-3 text-right text-gray-400">📊 TOTAIS GERAIS:</td>
-                            <td className="p-3 text-right bg-blue-900/10 border-l border-dark-600 font-mono">-</td>
-                            <td className="p-3 text-right bg-blue-900/10 text-blue-300 border-r border-dark-600 font-mono">
+                            <td colSpan={5} className="p-3 text-right text-gray-600">📊 TOTAIS GERAIS:</td>
+                            <td className="p-3 text-right bg-blue-900/10 border-l border-gray-400 font-mono">-</td>
+                            <td className="p-3 text-right bg-blue-900/10 text-blue-300 border-r border-gray-400 font-mono">
                                 {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isAddedByAddendum).reduce((s: number, i: any) => s + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0)), 0))}
                             </td>
                             {activeAddendums.map((add: any) => (
                                 <React.Fragment key={`tot-${add.id}`}>
                                     <td className="p-3 text-right bg-black/20 font-mono">-</td>
-                                    <td className={`p-3 text-right bg-black/20 border-r border-dark-600 font-mono ${Number(add.netValue) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    <td className={`p-3 text-right bg-black/20 border-r border-gray-400 font-mono ${Number(add.netValue) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                         {Number(add.netValue) > 0 ? '+' : ''}{formatCurrency(Number(add.netValue) || 0)}
                                     </td>
                                 </React.Fragment>
                             ))}
-                            <td className="p-3 text-right bg-green-900/20 border-l border-dark-600 font-mono">-</td>
+                            <td className="p-3 text-right bg-green-900/20 border-l border-gray-400 font-mono">-</td>
                             <td className="p-3 text-right bg-green-900/20 text-green-300 text-base font-mono">
                                 {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isSuppressed).reduce((s: number, i: any) => s + (Number(i.vigentTotalValue) || ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))), 0))}
                             </td>
@@ -646,7 +646,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             </div>
 
             {/* Legend */}
-            <div className="p-4 bg-dark-800 border-t border-dark-700 text-sm text-gray-400">
+            <div className="p-4 bg-gray-50 border-t border-gray-300 text-sm text-gray-600">
                 <div className="font-bold mb-2 flex items-center gap-2">
                     <span>ℹ️</span> Legenda
                 </div>
@@ -656,9 +656,9 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
                         <span className="px-2 py-0.5 bg-blue-900/30 text-blue-300 rounded text-xs font-bold">ETAPA</span>
                         <span className="px-2 py-0.5 bg-indigo-900/30 text-indigo-300 rounded text-xs font-bold">SUB-ETAPA</span>
                         <span className="px-2 py-0.5 bg-purple-900/30 text-purple-300 rounded text-xs font-bold">NÍVEL</span>
-                        <span className="px-2 py-0.5 bg-dark-700 text-gray-300 rounded text-xs">ITEM</span>
+                        <span className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded text-xs">ITEM</span>
                     </div>
-                    <div className="w-px h-4 bg-dark-600"></div>
+                    <div className="w-px h-4 bg-gray-300"></div>
                     <div className="flex items-center gap-3">
                         <span className="font-semibold text-gray-500">Status:</span>
                         <span className="flex items-center gap-1"><span className="text-red-500">🚫</span> Suprimido</span>
@@ -673,9 +673,9 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             {showAddendumModal && (
                 <div className="modal-overlay" onClick={() => setShowAddendumModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-dark-700 flex justify-between items-center">
-                            <h3 className="font-bold text-white">Novo Aditivo</h3>
-                            <button onClick={() => setShowAddendumModal(false)} className="text-gray-400 hover:text-white">✕</button>
+                        <div className="p-4 border-b border-gray-300 flex justify-between items-center">
+                            <h3 className="font-bold text-gray-900">Novo Aditivo</h3>
+                            <button onClick={() => setShowAddendumModal(false)} className="text-gray-600 hover:text-gray-900">✕</button>
                         </div>
                         <form onSubmit={handleCreateAddendum} className="p-4">
                             <div className="mb-4">
@@ -698,13 +698,13 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             {showOperationModal && selectedItem && selectedAddendum && (
                 <div className="modal-overlay" onClick={() => setShowOperationModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-dark-700">
-                            <h3 className="font-bold text-white">Alterar Item no Aditivo {selectedAddendum.number}</h3>
+                        <div className="p-4 border-b border-gray-300">
+                            <h3 className="font-bold text-gray-900">Alterar Item no Aditivo {selectedAddendum.number}</h3>
                         </div>
                         <div className="p-4">
-                            <div className="bg-dark-800 p-3 rounded mb-4 text-sm border border-dark-600">
+                            <div className="bg-gray-50 p-3 rounded mb-4 text-sm border border-gray-400">
                                 <span className="font-bold text-primary-400">{selectedItem.code}</span>
-                                <p className="text-gray-300 mt-1">{selectedItem.description}</p>
+                                <p className="text-gray-700 mt-1">{selectedItem.description}</p>
                             </div>
                             <form onSubmit={handleAddOperation}>
                                 <div className="mb-4">
@@ -746,8 +746,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             {showItemModal && (
                 <div className="modal-overlay" onClick={() => setShowItemModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div className="p-4 border-b border-dark-700">
-                            <h3 className="font-bold text-white">{editingItemId ? 'Editar Item' : 'Novo Item'}</h3>
+                        <div className="p-4 border-b border-gray-300">
+                            <h3 className="font-bold text-gray-900">{editingItemId ? 'Editar Item' : 'Novo Item'}</h3>
                         </div>
                         <form onSubmit={handleSaveItem} className="p-4">
                             <div className="grid grid-cols-2 gap-4 mb-4">

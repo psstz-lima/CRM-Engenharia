@@ -94,9 +94,9 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                 className="modal-content w-[95%] max-w-[800px] max-h-[95vh] flex flex-col overflow-hidden"
             >
                 {/* Header */}
-                <div className="px-5 py-4 border-b border-dark-700 flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-white">✂️ Recortar Imagem</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">×</button>
+                <div className="px-5 py-4 border-b border-gray-300 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-900">✂️ Recortar Imagem</h3>
+                    <button onClick={onClose} className="text-gray-600 hover:text-gray-900 text-2xl">×</button>
                 </div>
 
                 {/* Crop Area */}
@@ -114,18 +114,18 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                 </div>
 
                 {/* Controls */}
-                <div className="px-5 py-4 bg-dark-900 border-t border-dark-700 space-y-4">
+                <div className="px-5 py-4 bg-gray-100 border-t border-gray-300 space-y-4">
                     {/* Aspect Ratio */}
                     <div>
-                        <label className="text-gray-400 text-sm block mb-2">Proporção:</label>
+                        <label className="text-gray-600 text-sm block mb-2">Proporção:</label>
                         <div className="flex gap-2 flex-wrap">
                             {aspectOptions.map(opt => (
                                 <button
                                     key={opt.label}
                                     onClick={() => setSelectedAspect(opt.value)}
                                     className={`px-3 py-1.5 rounded text-sm transition-colors ${selectedAspect === opt.value
-                                            ? 'bg-primary-600 text-white'
-                                            : 'bg-dark-700 text-gray-300 hover:bg-dark-600'
+                                            ? 'bg-primary-600 text-gray-900'
+                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }`}
                                 >
                                     {opt.label}
@@ -136,7 +136,7 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
 
                     {/* Zoom */}
                     <div>
-                        <label className="text-gray-400 text-sm block mb-2">
+                        <label className="text-gray-600 text-sm block mb-2">
                             Zoom: {zoom.toFixed(1)}x
                         </label>
                         <input
@@ -152,7 +152,7 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
 
                     {/* Rotation */}
                     <div>
-                        <label className="text-gray-400 text-sm block mb-2">
+                        <label className="text-gray-600 text-sm block mb-2">
                             Rotação: {rotation}°
                         </label>
                         <input
@@ -168,14 +168,14 @@ export function ImageCropModal({ show, imageSrc, onClose, onCropComplete, aspect
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-4 border-t border-dark-700 flex justify-end gap-3">
+                <div className="px-5 py-4 border-t border-gray-300 flex justify-end gap-3">
                     <button onClick={onClose} className="btn btn-secondary">
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className={`btn ${loading ? 'bg-dark-600 cursor-not-allowed' : 'btn-success'}`}
+                        className={`btn ${loading ? 'bg-gray-300 cursor-not-allowed' : 'btn-success'}`}
                     >
                         {loading ? 'Salvando...' : '✓ Aplicar Recorte'}
                     </button>

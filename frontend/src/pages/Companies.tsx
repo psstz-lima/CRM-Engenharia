@@ -257,7 +257,7 @@ export function Companies() {
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="btn bg-red-500 hover:bg-red-600 text-white w-full shadow-lg shadow-red-500/20"
+                                    className="btn bg-red-500 hover:bg-red-600 text-gray-900 w-full shadow-lg shadow-red-500/20"
                                 >
                                     Confirmar Exclusão
                                 </button>

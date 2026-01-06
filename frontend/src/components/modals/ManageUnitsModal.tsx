@@ -91,16 +91,16 @@ function SortableColumnItem({
         <div
             ref={setNodeRef}
             style={style}
-            className="grid grid-cols-[auto_30px_1fr_100px_60px] items-center p-2 bg-dark-800 border-b border-dark-700 hover:bg-dark-700 transition-colors"
+            className="grid grid-cols-[auto_30px_1fr_100px_60px] items-center p-2 bg-gray-50 border-b border-gray-300 hover:bg-gray-200 transition-colors"
         >
             <div {...attributes} {...listeners} className="cursor-grab mr-2 text-gray-500 flex items-center w-5 text-lg">⋮⋮</div>
             <input
                 type="checkbox"
                 checked={column.visible}
                 onChange={() => onToggle(column.id)}
-                className="cursor-pointer accent-primary-600 w-4 h-4 rounded border-dark-600 bg-dark-700"
+                className="cursor-pointer accent-primary-600 w-4 h-4 rounded border-gray-400 bg-gray-200"
             />
-            <span className="pl-2.5 text-gray-300 text-sm truncate">{column.label}</span>
+            <span className="pl-2.5 text-gray-700 text-sm truncate">{column.label}</span>
             <span className="pl-2.5 text-gray-500 text-xs">{column.unitLabel || ''}</span>
 
             <div className="flex gap-2 justify-end">
@@ -113,7 +113,7 @@ function SortableColumnItem({
                                     onRename(column.id, newName.trim());
                                 }
                             }}
-                            className="text-gray-400 hover:text-white"
+                            className="text-gray-600 hover:text-gray-900"
                             title="Editar"
                         >
                             ✎
@@ -216,7 +216,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
             <div className="flex flex-col gap-5">
 
                 {/* Settings Section (Sortable) */}
-                <div className="bg-dark-800/50 p-4 rounded-lg border border-dark-700">
+                <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-300">
                     <div className="flex justify-between items-center mb-3">
                         <h4 className="m-0 text-sm font-bold text-gray-100">Campos disponíveis</h4>
                         <button
@@ -240,7 +240,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                     </div>
 
                     {/* Table Header */}
-                    <div className="grid grid-cols-[auto_30px_1fr_100px_60px] p-2 bg-dark-700 text-gray-400 font-bold text-xs uppercase border-b border-dark-600 rounded-t">
+                    <div className="grid grid-cols-[auto_30px_1fr_100px_60px] p-2 bg-gray-200 text-gray-600 font-bold text-xs uppercase border-b border-gray-400 rounded-t">
                         <div></div>
                         <div></div>
                         <div>Descrição</div>
@@ -248,7 +248,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                         <div></div>
                     </div>
 
-                    <div className="border border-dark-700 bg-dark-900 rounded-b max-h-[400px] overflow-y-auto custom-scrollbar">
+                    <div className="border border-gray-300 bg-gray-100 rounded-b max-h-[400px] overflow-y-auto custom-scrollbar">
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -297,7 +297,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                     </div>
 
                     {/* Add New Field Form */}
-                    <div className="flex gap-3 items-end mt-4 p-3 bg-dark-700/30 rounded border border-dark-700">
+                    <div className="flex gap-3 items-end mt-4 p-3 bg-gray-200/30 rounded border border-gray-300">
                         <div className="flex-2">
                             <label className="label">Descrição do Campo</label>
                             <input
@@ -330,7 +330,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                 </div>
             </div>
 
-            <div className="mt-5 text-right border-t border-dark-700 pt-3">
+            <div className="mt-5 text-right border-t border-gray-300 pt-3">
                 <button onClick={onClose} className="btn btn-secondary">
                     Fechar
                 </button>

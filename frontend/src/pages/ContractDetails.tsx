@@ -122,17 +122,17 @@ export function ContractDetails() {
                 ]}
                 actions={
                     <div className="flex items-center gap-3">
-                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
+                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-gray-900 flex items-center gap-2">
                             <Download size={16} />
                             Exportar Excel
                         </button>
 
-                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-gray-900 flex items-center gap-2">
                             <FileSpreadsheet size={16} />
                             Modelo
                         </button>
 
-                        <label className="btn bg-amber-600 hover:bg-amber-700 text-white cursor-pointer flex items-center gap-2">
+                        <label className="btn bg-amber-600 hover:bg-amber-700 text-gray-900 cursor-pointer flex items-center gap-2">
                             <Upload size={16} />
                             Importar Excel
                             <input

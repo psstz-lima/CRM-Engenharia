@@ -59,7 +59,7 @@ export function Navbar() {
                         <span className="text-xl">🔔</span>
                         {unreadCount > 0 && (
                             <span
-                                className="absolute -top-0.5 -right-0.5 w-5 h-5 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse"
+                                className="absolute -top-0.5 -right-0.5 w-5 h-5 text-gray-900 text-xs font-bold rounded-full flex items-center justify-center animate-pulse"
                                 style={{ backgroundColor: 'var(--danger)' }}
                             >
                                 {unreadCount}

@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "@/Style/style.css";
+
+html {
+  scroll-behavior: smooth;
+  @apply overflow-x-hidden;
+}
+
+body {
+  @apply overflow-x-hidden dark:bg-darkmode;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+@layer components {
+  section {
+    @apply md:py-20 py-10;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-SlateBlueText text-17 font-normal;
+  }
+  h1 {
+    @apply md:text-53 text-40 font-bold text-MidnightNavyText dark:text-white;
+  }
+  h2 {
+    @apply md:text-40 text-28 font-bold text-MidnightNavyText dark:text-white;
+  }
+  .btn_primary {
+    @apply bg-primary text-white py-3 px-8 rounded-lg cursor-pointer transition-all duration-0.4s inline-block;
+  }
+  .container {
+    @apply w-full block max-w-1200 m-auto py-0 px-7;
+  }
+  select {
+    @apply appearance-none bg-[url('/images/contact-page/dropdown.svg')] bg-no-repeat bg-[90%_50%];
+  }
+  /* Primary Button Hover */
+  .btn {
+    @apply relative inline-block bg-transparent border-none cursor-pointer before:absolute before:content-[''] after:absolute after:content-[''];
+  }
+  .btn span {
+    @apply relative inline-block text-17 font-medium top-0 left-0 w-full py-4 px-7 transition-all duration-0.4s;
+  }
+  .btn-1::before {
+    @apply bg-primary transition-all duration-0.4s;
+  }
+  .btn-1 span {
+    @apply text-white border border-solid border-primary rounded-lg transition-all duration-0.4s;
+  }
+  .btn-1 span:hover {
+    @apply text-primary transition-all duration-0.4s;
+  }
+  .btn.hover-filled-slide-down::before {
+    @apply bottom-0 left-0 right-0 h-full w-full;
+  }
+  .btn.hover-filled-slide-down:hover::before {
+    @apply h-0;
+  }
+  /* Button Hover End */
+
+  /* Outline Primary Button Hover */
+  .btn_outline {
+    @apply relative inline-block bg-transparent border-none cursor-pointer before:absolute before:content-[''] after:absolute after:content-[''];
+  }
+  .btn_outline span {
+    @apply relative inline-block text-17 font-medium top-0 left-0 w-full py-4 px-7 transition-all duration-0.4s;
+  }
+  .btn-2::before {
+    @apply bg-primary transition-all duration-0.4s rounded-lg;
+  }
+  .btn-2 span {
+    @apply text-primary border border-solid border-primary rounded-lg transition-all duration-0.4s;
+  }
+  .btn-2 span:hover {
+    @apply text-white transition-all duration-0.4s;
+  }
+  .btn_outline.hover-outline-slide-down::before {
+    @apply top-0 left-0 right-0 h-0 w-full;
+  }
+  .btn_outline.hover-outline-slide-down:hover::before {
+    @apply h-full;
+  }
+  /* Outline Primary Button Hover End */
+}
+
+.blog-details p,
+.blog-details hr {
+  @apply mb-8 text-SlateBlueText;
+}
+
+.blog-details hr {
+  @apply dark:border-dark_border;
+}
+
+.blog-details strong {
+  @apply font-bold dark:text-white;
+}
+.blog-details ul {
+  @apply mb-8 list-inside list-disc space-y-3 text-SlateBlueText;
+}
+.blog-details ol {
+  @apply mb-8 list-inside list-decimal space-y-3;
+}
+.blog-details h1 {
+  @apply mb-8 text-3xl font-bold text-secondary dark:text-white sm:text-4xl md:text-40;
+}
+.blog-details h2 {
+  @apply mb-8 text-2xl font-bold text-secondary dark:text-white sm:text-3xl md:text-36;
+}
+.blog-details h3 {
+  @apply mb-6 text-2xl font-bold dark:text-white sm:text-28;
+}

@@ -28,7 +28,7 @@ export function TermsOfUse() {
             <div>
                 <h2>Termos de Uso e Política de Privacidade</h2>
                 <div>
-                    <p>Bem-vindo ao CRM Engenharia.</p>
+                    <p>Bem-vindo ao ConstruSys.</p>
                     <p>Ao utilizar este sistema, você concorda com os seguintes termos:</p>
                     <ul>
                         <li>O uso do sistema é estritamente profissional.</li>

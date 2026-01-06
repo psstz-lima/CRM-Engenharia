@@ -55,7 +55,7 @@ export function Login() {
                         className="text-3xl font-bold bg-clip-text text-transparent"
                         style={{ backgroundImage: 'linear-gradient(135deg, var(--text-primary), var(--text-secondary))' }}
                     >
-                        CRM Engenharia
+                        ConstruSys
                     </h1>
                     <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
                         Bem-vindo de volta! Faça login para continuar.
@@ -172,7 +172,7 @@ export function Login() {
                     className="text-center mt-6 text-sm animate-fadeIn"
                     style={{ color: 'var(--text-muted)', animationDelay: '0.2s' }}
                 >
-                    © 2026 CRM Engenharia. Todos os direitos reservados.
+                    © 2026 ConstruSys. Todos os direitos reservados.
                 </p>
             </div>
         </div>

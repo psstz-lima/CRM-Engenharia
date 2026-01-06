@@ -505,7 +505,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                         >✏️ Caminho Personalizado</button>
                     </div>
 
-                    <div className="h-6 w-px bg-dark-700 mx-1" />
+                    <div className="h-6 w-px bg-gray-200 mx-1" />
 
                     {/* Show based on route mode */}
                     {routeMode === 'auto' ? (
@@ -517,7 +517,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                 <button className={`btn btn-sm ${coordInputMode === 'utm' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setCoordInputMode('utm')}>📐 UTM</button>
                             </div>
 
-                            <div className="h-6 w-px bg-dark-700 mx-1" />
+                            <div className="h-6 w-px bg-gray-200 mx-1" />
 
                             {/* Selection Mode */}
                             <div className="flex gap-1">
@@ -546,17 +546,17 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                 {isAddingCustomPoints ? '✅ Adicionando Pontos...' : '➕ Adicionar Pontos'}
                             </button>
                             <button
-                                className="btn btn-sm bg-red-600 hover:bg-red-500 text-white border-none"
+                                className="btn btn-sm bg-red-600 hover:bg-red-500 text-gray-900 border-none"
                                 onClick={clearCustomPath}
                                 disabled={customPathPoints.length === 0}
                             >🗑️ Limpar</button>
-                            <span className="text-gray-400 text-xs ml-2">
+                            <span className="text-gray-600 text-xs ml-2">
                                 {customPathPoints.length} pontos
                             </span>
                         </div>
                     )}
 
-                    <div className="h-6 w-px bg-dark-700 mx-1" />
+                    <div className="h-6 w-px bg-gray-200 mx-1" />
 
                     {/* Map Style Toggle */}
                     <div className="flex gap-1">
@@ -568,7 +568,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                 {/* Main Content */}
                 <div className="flex-1 flex overflow-hidden">
                     {/* Left Panel - Inputs */}
-                    <div className="w-[300px] bg-dark-900 p-4 border-r border-dark-700 overflow-y-auto">
+                    <div className="w-[300px] bg-gray-100 p-4 border-r border-gray-300 overflow-y-auto">
                         {/* Coordinate Input (Lat/Long or UTM) */}
                         {coordInputMode !== 'search' && (
                             <div className="mb-4 p-3 bg-dark-950 rounded-lg border border-dark-800">
@@ -643,8 +643,8 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                     </>
                                 )}
                                 <div className="flex gap-2 mt-3">
-                                    <button onClick={() => addFromCoords(true)} className="btn bg-green-600 hover:bg-green-500 text-white flex-1 text-xs py-1.5">🟢 Origem</button>
-                                    <button onClick={() => addFromCoords(false)} className="btn bg-red-600 hover:bg-red-500 text-white flex-1 text-xs py-1.5">🔴 Destino</button>
+                                    <button onClick={() => addFromCoords(true)} className="btn bg-green-600 hover:bg-green-500 text-gray-900 flex-1 text-xs py-1.5">🟢 Origem</button>
+                                    <button onClick={() => addFromCoords(false)} className="btn bg-red-600 hover:bg-red-500 text-gray-900 flex-1 text-xs py-1.5">🔴 Destino</button>
                                 </div>
                             </div>
                         )}
@@ -662,12 +662,12 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                         className="input"
                                     />
                                     {originResults.length > 0 && (
-                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-dark-800 border border-dark-600 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
+                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-gray-50 border border-gray-400 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
                                             {originResults.map((result, i) => (
                                                 <div
                                                     key={i}
                                                     onClick={() => selectLocation(result, true)}
-                                                    className="p-2 cursor-pointer text-gray-200 text-sm hover:bg-dark-700 border-b border-dark-700 last:border-0"
+                                                    className="p-2 cursor-pointer text-gray-800 text-sm hover:bg-gray-200 border-b border-gray-300 last:border-0"
                                                 >
                                                     {result.display_name}
                                                 </div>
@@ -687,12 +687,12 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                         className="input"
                                     />
                                     {destinationResults.length > 0 && (
-                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-dark-800 border border-dark-600 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
+                                        <div className="absolute top-[100%] left-0 right-0 z-10 bg-gray-50 border border-gray-400 rounded-lg shadow-xl mt-1 max-h-[150px] overflow-y-auto">
                                             {destinationResults.map((result, i) => (
                                                 <div
                                                     key={i}
                                                     onClick={() => selectLocation(result, false)}
-                                                    className="p-2 cursor-pointer text-gray-200 text-sm hover:bg-dark-700 border-b border-dark-700 last:border-0"
+                                                    className="p-2 cursor-pointer text-gray-800 text-sm hover:bg-gray-200 border-b border-gray-300 last:border-0"
                                                 >
                                                     {result.display_name}
                                                 </div>
@@ -715,7 +715,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                         <span className={`text-base ${i === 0 ? 'text-green-500' : i === waypoints.length - 1 ? 'text-red-500' : 'text-blue-500'}`}>
                                             {i === 0 ? '🟢' : i === waypoints.length - 1 ? '🔴' : '🔵'}
                                         </span>
-                                        <span className="flex-1 text-xs text-gray-300 truncate">
+                                        <span className="flex-1 text-xs text-gray-700 truncate">
                                             {i === 0 ? 'Origem: ' : i === waypoints.length - 1 ? 'Destino: ' : `Parada ${i}: `}
                                             {wp.label.split(',')[0]}
                                         </span>
@@ -739,8 +739,8 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                                             className="flex items-center gap-2 p-2 bg-dark-950 rounded mb-1 border border-dark-800"
                                         >
                                             <span className="text-amber-500 text-xs font-bold">{i + 1}</span>
-                                            <span className="text-gray-400 text-xs">Lat: {wp.lat.toFixed(5)}</span>
-                                            <span className="text-gray-400 text-xs">Lng: {wp.lng.toFixed(5)}</span>
+                                            <span className="text-gray-600 text-xs">Lat: {wp.lat.toFixed(5)}</span>
+                                            <span className="text-gray-600 text-xs">Lng: {wp.lng.toFixed(5)}</span>
                                             <button
                                                 onClick={() => removeCustomPathPoint(i)}
                                                 className="ml-auto text-red-500 hover:text-red-400 text-base leading-none"
@@ -763,7 +763,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                     </div>
 
                     {/* Right Panel - Map */}
-                    <div className="flex-1 relative bg-gray-900 border-l border-dark-700">
+                    <div className="flex-1 relative bg-gray-900 border-l border-gray-300">
                         <Map
                             height={0} // let container handle height with 100% style
                             defaultCenter={[-15.7801, -47.9292]}
@@ -821,13 +821,13 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
 
                         {/* Floating Distance Info */}
                         {distance !== null && (
-                            <div className="absolute top-4 right-4 bg-dark-900/90 backdrop-blur border border-dark-600 p-4 rounded-xl shadow-2xl z-[1000] min-w-[200px]">
-                                <h4 className="text-gray-400 text-xs uppercase font-bold mb-1">Distância Total</h4>
-                                <div className="text-3xl font-bold text-white mb-1">
+                            <div className="absolute top-4 right-4 bg-gray-100/90 backdrop-blur border border-gray-400 p-4 rounded-xl shadow-2xl z-[1000] min-w-[200px]">
+                                <h4 className="text-gray-600 text-xs uppercase font-bold mb-1">Distância Total</h4>
+                                <div className="text-3xl font-bold text-gray-900 mb-1">
                                     {distance.toFixed(2)} <span className="text-lg font-normal text-gray-500">km</span>
                                 </div>
                                 {duration !== null && (
-                                    <div className="text-gray-400 text-sm">
+                                    <div className="text-gray-600 text-sm">
                                         ⏱️ ~{Math.round(duration)} min
                                     </div>
                                 )}
@@ -844,7 +844,7 @@ export function DistanceCalculatorModal({ show, onClose, onDistanceCalculated }:
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-[1100]">
                                 <div className="flex flex-col items-center">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-3"></div>
-                                    <span className="text-white font-medium">Calculando rota...</span>
+                                    <span className="text-gray-900 font-medium">Calculando rota...</span>
                                 </div>
                             </div>
                         )}

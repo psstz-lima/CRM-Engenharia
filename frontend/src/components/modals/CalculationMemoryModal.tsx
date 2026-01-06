@@ -993,7 +993,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             <div
                                 key={idx}
                                 onClick={() => setFormula(formula.filter((_, i) => i !== idx))}
-                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-white ${item.type === 'operator' ? 'bg-amber-500' : (item.isLinked ? 'bg-violet-500' : 'bg-blue-500')
+                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-gray-900 ${item.type === 'operator' ? 'bg-amber-500' : (item.isLinked ? 'bg-violet-500' : 'bg-blue-500')
                                     }`}
                                 title="Clique para remover"
                             >
@@ -1054,7 +1054,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                                 return [...prev, { id, label: v.label, visible: true, isLinked: true }];
                                                             });
                                                         }}
-                                                        className="px-2 py-0.5 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                                                        className="px-2 py-0.5 bg-blue-500 text-gray-900 rounded text-xs hover:bg-blue-600"
                                                         title="Adicionar à Fórmula"
                                                     >
                                                         Usar
@@ -1085,7 +1085,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             key={col.id}
                             type="button"
                             onClick={() => setFormula([...formula, { type: 'field', value: col.label }])}
-                            className="px-2.5 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                            className="px-2.5 py-1 bg-blue-500 text-gray-900 rounded text-sm hover:bg-blue-600"
                         >
                             {col.label}
                         </button>
@@ -1099,12 +1099,12 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">−</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '×' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">×</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '÷' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">÷</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">^</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">√</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-white rounded font-bold hover:bg-orange-600">%</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">^</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">√</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">%</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">(</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">)</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} className="px-3 py-1 bg-violet-500 text-white rounded font-bold hover:bg-violet-600">π</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} className="px-3 py-1 bg-violet-500 text-gray-900 rounded font-bold hover:bg-violet-600">π</button>
                 </div>
 
                 {/* Engineering Formulas */}
@@ -1121,7 +1121,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 setEditingColumnId(null);
                                 setShowFormulaCalc(true);
                             }}
-                            className="px-2.5 py-1 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700"
+                            className="px-2.5 py-1 bg-emerald-600 text-gray-900 rounded text-xs hover:bg-emerald-700"
                             title={f.title}
                         >
                             {f.name}
@@ -1869,7 +1869,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             <button
                                 onClick={handleConfirmLink}
                                 disabled={!linkItemId}
-                                className={`btn bg-green-600 text-white hover:bg-green-500 ${!linkItemId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`btn bg-green-600 text-gray-900 hover:bg-green-500 ${!linkItemId ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Preencher Formulário
                             </button>
@@ -2000,7 +2000,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         setEditingColumnId(null);
                                     }
                                 }}
-                                className="btn bg-emerald-600 text-white hover:bg-emerald-700 font-bold"
+                                className="btn bg-emerald-600 text-gray-900 hover:bg-emerald-700 font-bold"
                             >
                                 {editingColumnId ? 'Salvar Alteração' : 'Adicionar Auxiliar'}
                             </button>

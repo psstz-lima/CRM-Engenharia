@@ -20,17 +20,17 @@ module.exports = {
           900: '#1e3a8a',
         },
         dark: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#e5e5e5',
+          300: '#d4d4d4',
+          400: '#a3a3a3',
+          500: '#737373',
+          600: '#525252',
+          700: '#404040',
+          800: '#f5f5f5',   /* Era escuro, agora claro */
+          900: '#fafafa',   /* Era escuro, agora claro */
+          950: '#ffffff',   /* Era escuro, agora branco */
         }
       },
       fontFamily: {

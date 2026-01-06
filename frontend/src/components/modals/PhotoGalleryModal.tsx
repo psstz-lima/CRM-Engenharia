@@ -193,16 +193,16 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-dark-900 border border-dark-700 rounded-xl w-[90%] max-w-[900px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-gray-100 border border-gray-300 rounded-xl w-[90%] max-w-[900px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-5 border-b border-dark-700 flex justify-between items-center bg-dark-800">
+                <div className="p-5 border-b border-gray-300 flex justify-between items-center bg-gray-50">
                     <div>
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">📷 Fotos do Item</h2>
-                        <p className="text-gray-400 text-sm mt-1">{itemName}</p>
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">📷 Fotos do Item</h2>
+                        <p className="text-gray-600 text-sm mt-1">{itemName}</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">×</button>
+                    <button onClick={onClose} className="text-gray-600 hover:text-gray-900 text-2xl">×</button>
                 </div>
 
                 {/* Upload Area */}
@@ -213,14 +213,14 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                         onDragLeave={() => setDragOver(false)}
                         className={`m-5 p-8 border-2 border-dashed rounded-lg text-center transition-all ${dragOver
                                 ? 'border-primary-500 bg-primary-900/10'
-                                : 'border-dark-600 bg-dark-800/50 hover:bg-dark-800 hover:border-dark-500'
+                                : 'border-gray-400 bg-gray-50/50 hover:bg-gray-50 hover:border-dark-500'
                             }`}
                     >
                         {uploading ? (
-                            <p className="text-gray-400">⏳ Enviando...</p>
+                            <p className="text-gray-600">⏳ Enviando...</p>
                         ) : (
                             <>
-                                <p className="text-gray-300">
+                                <p className="text-gray-700">
                                     📁 Arraste fotos aqui ou{' '}
                                     <label className="text-primary-400 hover:text-primary-300 cursor-pointer hover:underline font-medium">
                                         selecione arquivos
@@ -246,7 +246,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                     {loading ? (
                         <div className="text-center py-10">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
-                            <p className="text-gray-400">Carregando...</p>
+                            <p className="text-gray-600">Carregando...</p>
                         </div>
                     ) : photos.length === 0 ? (
                         <div className="text-center py-10 text-gray-500">
@@ -258,9 +258,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                             {photos.map(photo => (
                                 <div
                                     key={photo.id}
-                                    className="group relative border border-dark-700 rounded-lg overflow-hidden bg-dark-800 hover:border-dark-500 transition-all hover:shadow-lg"
+                                    className="group relative border border-gray-300 rounded-lg overflow-hidden bg-gray-50 hover:border-dark-500 transition-all hover:shadow-lg"
                                 >
-                                    <div className="aspect-square relative overflow-hidden bg-dark-900">
+                                    <div className="aspect-square relative overflow-hidden bg-gray-100">
                                         <img
                                             src={getPhotoUrl(photo)}
                                             alt={photo.filename}
@@ -276,7 +276,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                         handleOpenEditor(photo);
                                                     }}
                                                     title="Editar"
-                                                    className="w-7 h-7 flex items-center justify-center bg-purple-600 hover:bg-purple-500 text-white rounded-full shadow-lg"
+                                                    className="w-7 h-7 flex items-center justify-center bg-purple-600 hover:bg-purple-500 text-gray-900 rounded-full shadow-lg"
                                                 >
                                                     🎨
                                                 </button>
@@ -286,7 +286,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                         handleDelete(photo.id);
                                                     }}
                                                     title="Excluir"
-                                                    className="w-7 h-7 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg"
+                                                    className="w-7 h-7 flex items-center justify-center bg-red-600 hover:bg-red-500 text-gray-900 rounded-full shadow-lg"
                                                 >
                                                     ×
                                                 </button>
@@ -302,12 +302,12 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                     value={descriptionText}
                                                     onChange={e => setDescriptionText(e.target.value)}
                                                     placeholder="Descrição..."
-                                                    className="flex-1 bg-dark-700 border border-dark-600 rounded px-1.5 py-1 text-white focus:border-primary-500 outline-none"
+                                                    className="flex-1 bg-gray-200 border border-gray-400 rounded px-1.5 py-1 text-gray-900 focus:border-primary-500 outline-none"
                                                     autoFocus
                                                 />
                                                 <button
                                                     onClick={() => handleSaveDescription(photo.id)}
-                                                    className="bg-green-600 hover:bg-green-500 text-white rounded px-1.5"
+                                                    className="bg-green-600 hover:bg-green-500 text-gray-900 rounded px-1.5"
                                                 >
                                                     ✓
                                                 </button>
@@ -315,7 +315,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                         ) : (
                                             <p
                                                 onClick={() => { if (!isClosed) { setEditingDescription(photo.id); setDescriptionText(photo.description || ''); } }}
-                                                className={`mb-1 truncate cursor-pointer ${photo.description ? 'text-gray-300' : 'text-gray-600 italic'}`}
+                                                className={`mb-1 truncate cursor-pointer ${photo.description ? 'text-gray-700' : 'text-gray-600 italic'}`}
                                                 title={photo.description || 'Clique para adicionar descrição'}
                                             >
                                                 {photo.description || 'Sem descrição'}
@@ -343,8 +343,8 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-dark-700 bg-dark-800 flex justify-between items-center">
-                    <span className="text-gray-400 text-sm">{photos.length} foto(s)</span>
+                <div className="p-4 border-t border-gray-300 bg-gray-50 flex justify-between items-center">
+                    <span className="text-gray-600 text-sm">{photos.length} foto(s)</span>
                     <button onClick={onClose} className="btn btn-secondary text-sm">
                         Fechar
                     </button>
@@ -366,7 +366,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
 
                     <button
                         onClick={() => setSelectedPhoto(null)}
-                        className="absolute top-5 right-5 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
+                        className="absolute top-5 right-5 text-gray-900/50 hover:text-gray-900 bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
                     >
                         ×
                     </button>
@@ -389,7 +389,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                 onClick={() => {
                                     handleDelete(selectedPhoto.id);
                                 }}
-                                className="btn bg-red-600 hover:bg-red-500 text-white border-none flex items-center gap-2"
+                                className="btn bg-red-600 hover:bg-red-500 text-gray-900 border-none flex items-center gap-2"
                             >
                                 🗑️ Excluir
                             </button>
@@ -402,14 +402,14 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
             {showUploadForm && pendingFiles && (
                 <div className="modal-overlay z-[1002]" onClick={handleCancelUpload}>
                     <div className="modal-content max-w-md" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                             📸 Informações da Foto
                             <span className="text-sm font-normal text-gray-500">
                                 ({pendingFiles.length} arquivos)
                             </span>
                         </h3>
 
-                        <p className="text-gray-400 text-sm mb-6">
+                        <p className="text-gray-600 text-sm mb-6">
                             Preencha os campos opcionais abaixo para aplicar a todas as fotos selecionadas.
                         </p>
 

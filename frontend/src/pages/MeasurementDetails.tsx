@@ -169,7 +169,7 @@ export function MeasurementDetails() {
                             Voltar
                         </Link>
                         {!isClosed ? (
-                            <button onClick={handleClose} className="btn bg-emerald-600 hover:bg-emerald-500 text-white border-none shadow-lg shadow-emerald-900/20 flex items-center gap-2">
+                            <button onClick={handleClose} className="btn bg-emerald-600 hover:bg-emerald-500 text-gray-900 border-none shadow-lg shadow-emerald-900/20 flex items-center gap-2">
                                 <Lock size={16} />
                                 Encerrar Medição
                             </button>
@@ -318,7 +318,7 @@ export function MeasurementDetails() {
                                                 <button
                                                     onClick={() => setActiveCalcItem(item)}
                                                     title="Memória de Cálculo"
-                                                    className={`p-1.5 rounded transition-all ${hasMemory ? 'bg-[var(--accent-primary)] text-white shadow-lg shadow-[var(--accent-primary)]/30' : 'bg-[var(--bg-ground)] text-[var(--text-muted)] hover:bg-[var(--accent-primary)] hover:text-white border border-[var(--border-subtle)]'
+                                                    className={`p-1.5 rounded transition-all ${hasMemory ? 'bg-[var(--accent-primary)] text-gray-900 shadow-lg shadow-[var(--accent-primary)]/30' : 'bg-[var(--bg-ground)] text-[var(--text-muted)] hover:bg-[var(--accent-primary)] hover:text-gray-900 border border-[var(--border-subtle)]'
                                                         }`}
                                                 >
                                                     <Calculator size={16} />
@@ -326,7 +326,7 @@ export function MeasurementDetails() {
                                                 <button
                                                     onClick={() => setActivePhotoItem(item)}
                                                     title="Fotos do Item"
-                                                    className="p-1.5 rounded bg-[var(--bg-ground)] text-[var(--text-muted)] hover:bg-purple-600 hover:text-white border border-[var(--border-subtle)] transition-all"
+                                                    className="p-1.5 rounded bg-[var(--bg-ground)] text-[var(--text-muted)] hover:bg-purple-600 hover:text-gray-900 border border-[var(--border-subtle)] transition-all"
                                                 >
                                                     <Camera size={16} />
                                                 </button>

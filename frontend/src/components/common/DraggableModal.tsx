@@ -83,7 +83,7 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
         >
             <div
                 ref={modalRef}
-                className={className}
+                className={`flex flex-col rounded-lg shadow-2xl bg-gray-50 border border-gray-300 pointer-events-auto max-h-[90vh] ${className || ''}`}
                 style={{
                     width: width,
                     maxWidth: maxWidth,
@@ -91,25 +91,24 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                     transform: `translate(${position.x}px, ${position.y}px)`,
                     transition: isDragging ? 'none' : 'transform 0.1s ease-out',
                 }}
-                className={`flex flex-col rounded-lg shadow-2xl bg-dark-900 border border-dark-700 pointer-events-auto max-h-[90vh] ${className || ''}`}
             >
                 {/* Header - Drag Handle */}
                 <div
                     onMouseDown={handleMouseDown}
-                    className={`flex justify-between items-center px-5 py-3 border-b border-dark-700 bg-dark-800 rounded-t-lg select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                    className={`flex justify-between items-center px-5 py-3 border-b border-gray-300 bg-gray-100 rounded-t-lg select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'
                         }`}
                 >
-                    <h3 className="text-lg font-bold text-white m-0">{title}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 m-0">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white text-2xl leading-none border-none bg-transparent cursor-pointer ml-4"
+                        className="text-gray-600 hover:text-gray-900 text-2xl leading-none border-none bg-transparent cursor-pointer ml-4"
                     >
                         ×
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 overflow-y-auto flex-1 custom-scrollbar text-gray-300">
+                <div className="p-5 overflow-y-auto flex-1 custom-scrollbar text-gray-700">
                     {children}
                 </div>
             </div>

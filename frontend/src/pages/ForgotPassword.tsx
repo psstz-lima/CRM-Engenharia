@@ -25,7 +25,7 @@ export function ForgotPassword() {
                     <div>
                         <div>
                             <div>
-                                <span>CRM Engenharia</span>
+                                <span>ConstruSys</span>
                             </div>
                             <h4>Email Enviado! 🚀</h4>
                             <p>Verifique sua caixa de entrada para redefinir sua senha.</p>
@@ -43,7 +43,7 @@ export function ForgotPassword() {
                 <div>
                     <div>
                         <div>
-                            <span>CRM Engenharia</span>
+                            <span>ConstruSys</span>
                         </div>
                         <h4>Esqueceu a senha? 🔒</h4>
                         <p>Digite seu email e enviaremos instruções para redefinir sua senha.</p>

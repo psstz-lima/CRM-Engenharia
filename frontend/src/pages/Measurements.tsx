@@ -138,7 +138,7 @@ export function Measurements() {
                                         <td className="p-4 text-center">
                                             <Link
                                                 to={`/measurements/${m.id}`}
-                                                className="inline-flex items-center justify-center p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white transition-all shadow-sm"
+                                                className="inline-flex items-center justify-center p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-gray-900 transition-all shadow-sm"
                                                 title="Abrir Medição"
                                             >
                                                 <Eye size={18} />

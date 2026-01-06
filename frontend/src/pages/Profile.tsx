@@ -146,7 +146,7 @@ export function Profile() {
                                         className="w-32 h-32 rounded-2xl object-cover border-4 border-[var(--border-default)] shadow-xl"
                                     />
                                 ) : (
-                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-5xl text-white shadow-xl">
+                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-5xl text-gray-900 shadow-xl">
                                         {profile.fullName?.charAt(0)?.toUpperCase() || '👤'}
                                     </div>
                                 )}
@@ -207,7 +207,7 @@ export function Profile() {
 
                                     {theme === t.id && (
                                         <div className="absolute top-3 right-3">
-                                            <span className="w-5 h-5 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white text-xs">
+                                            <span className="w-5 h-5 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-gray-900 text-xs">
                                                 ✓
                                             </span>
                                         </div>

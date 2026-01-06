@@ -68,23 +68,23 @@ export function Dashboard() {
                     <div className="flex items-center gap-4 mb-4">
                         <span className="text-4xl">👋</span>
                         <div>
-                            <h1 className="text-3xl font-bold text-white">
+                            <h1 className="text-3xl font-bold text-gray-900">
                                 Bem-vindo de volta, {user?.fullName?.split(' ')[0]}!
                             </h1>
-                            <p className="text-white/70 mt-1">
+                            <p className="text-gray-900/70 mt-1">
                                 Acompanhe as atividades e métricas do sistema
                             </p>
                         </div>
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-3">
-                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-white/90 text-sm flex items-center gap-2 border border-white/10">
+                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-gray-900/90 text-sm flex items-center gap-2 border border-white/10">
                             <span>📧</span> {user?.email}
                         </div>
-                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-white/90 text-sm flex items-center gap-2 border border-white/10">
+                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-gray-900/90 text-sm flex items-center gap-2 border border-white/10">
                             <span>🏢</span> {user?.company?.name || 'Sem empresa'}
                         </div>
-                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-white/90 text-sm flex items-center gap-2 border border-white/10">
+                        <div className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-xl text-gray-900/90 text-sm flex items-center gap-2 border border-white/10">
                             <span>🔐</span> {user?.role?.name || 'Sem perfil'}
                         </div>
                         {user?.isMaster && (

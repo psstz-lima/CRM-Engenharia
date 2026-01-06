@@ -47,11 +47,11 @@ export function Sidebar() {
             {/* Logo */}
             <div className="p-6 border-b border-[var(--border-subtle)]">
                 <span className="text-xl font-bold flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white text-sm shadow-lg">
+                    <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-gray-900 text-sm shadow-lg">
                         🏗️
                     </span>
                     <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
-                        CRM Engenharia
+                        ConstruSys
                     </span>
                 </span>
             </div>
@@ -114,7 +114,7 @@ export function Sidebar() {
             {/* User info */}
             <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white font-medium shadow-lg overflow-hidden">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-gray-900 font-medium shadow-lg overflow-hidden">
                         {user?.profilePhoto ? (
                             <img
                                 src={user.profilePhoto}

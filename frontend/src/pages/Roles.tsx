@@ -229,7 +229,7 @@ export function Roles() {
                     >
                         <span className="text-[var(--accent-primary)]">{cat.icon}</span>
                         <span className="font-semibold text-[var(--text-primary)] text-sm">{cat.name}</span>
-                        <span className="ml-auto text-xs text-gray-400">
+                        <span className="ml-auto text-xs text-gray-600">
                             ({cat.permissions.filter(p => perms[p.key]).length}/{cat.permissions.length})
                         </span>
                     </div>
@@ -470,7 +470,7 @@ export function Roles() {
                                 <button onClick={() => setShowTemplateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
                             </div>
                             <div className="p-6">
-                                <p className="text-gray-400 mb-4">Selecione um template para criar rapidamente um perfil com permissões pré-configuradas:</p>
+                                <p className="text-gray-600 mb-4">Selecione um template para criar rapidamente um perfil com permissões pré-configuradas:</p>
                                 <div className="space-y-3">
                                     {predefinedRoles.map(template => (
                                         <button
