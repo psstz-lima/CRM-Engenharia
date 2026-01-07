@@ -2,6 +2,8 @@
 
 Sistema de gerenciamento de contratos de engenharia com controle de medições, aditivos e permissões granulares.
 
+> ⚠️ **POLÍTICA DE ESTILO:** Este projeto segue uma política estrita de **"Pure HTML"**. Não é permitido o uso de CSS global ou Tailwind classes. A estruturação visual deve ser feita exclusivamente via HTML semântico ou, em último caso, estilos inline mínimos.
+
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
@@ -13,32 +15,27 @@ Sistema de gerenciamento de contratos de engenharia com controle de medições, 
 ### Contratos
 - ✅ Cadastro e gerenciamento de contratos
 - ✅ Planilha hierárquica de itens (grupos e composições)
-- ✅ Importação de planilhas Excel
+- ✅ Importação de planilhas Excel (com validação e proteção)
 - ✅ Cálculo automático de valores (quantidade × preço unitário)
+- ✅ **Aditivos Contratuais**: Controle de aditivos de valor e prazo
 
 ### Medições
 - ✅ Criação de medições vinculadas a contratos
+- ✅ **Workflow Visual**: Barra de progresso (Em Elaboração → Em Aprovação → Aprovado → Concluído)
 - ✅ Lançamento de quantidades medidas
-- ✅ Galeria de fotos com metadados (data, localização)
-- ✅ Editor de imagens integrado
+- ✅ Galeria de fotos com metadados
 - ✅ Cálculo automático de valores medidos
 
-### Aditivos
-- ✅ Registro de aditivos contratuais
-- ✅ Fluxo de aprovação
-- ✅ Histórico de alterações
+### Sistema
+- ✅ **Notificações em Tempo Real**: Alertas visuais e central de notificações
+- ✅ Sistema de Permissões Granular (19 permissões / 7 categorias)
+- ✅ Perfis de acesso: Admin, Gestor, Engenheiro, Visualizador
+- ✅ Interface limpa (Pure HTML)
 
-### Sistema de Permissões
-- ✅ 19 permissões granulares em 7 categorias
-- ✅ Perfis pré-definidos (Admin, Gestor, Engenheiro, Visualizador)
-- ✅ Interface de gerenciamento intuitiva
-- ✅ Controle no frontend e backend
-
-### Interface
-- ✅ Filtro de pesquisa em planilhas
-- ✅ Agrupamento com expandir/recolher
-- ✅ Design responsivo e moderno
-- ✅ Sidebar dinâmica baseada em permissões
+### Gestão Corporativa
+- ✅ Cadastro de Empresas e Unidades
+- ✅ Níveis de Aprovação configuráveis
+- ✅ Auditoria de ações (Logs do sistema)
 
 ## 🛠️ Tecnologias
 
@@ -47,14 +44,14 @@ Sistema de gerenciamento de contratos de engenharia com controle de medições, 
 - **TypeScript** - Tipagem estática
 - **Prisma** - ORM para banco de dados
 - **PostgreSQL** - Banco de dados relacional
-- **JWT** - Autenticação
-- **Multer** - Upload de arquivos
+- **JWT** - Autenticação e Segurança
+- **Services Pattern** - Arquitetura em camadas (Controller/Service)
 
 ### Frontend
 - **React 18** - Interface de usuário
 - **TypeScript** - Tipagem estática
-- **React Router** - Roteamento SPA
-- **Axios** - Requisições HTTP
+- **React Router** - Navegação SPA
+- **Context API** - Gerenciamento de estado (Auth)
 
 ## 🚀 Instalação
 
@@ -98,96 +95,35 @@ npm install
 
 ### 4. Inicie a aplicação
 ```bash
-# Usando o script (Windows PowerShell)
+# Script Automático (Recomendado)
 .\scripts\start.ps1
 
-# Ou manualmente:
-# Terminal 1 - Backend
-cd backend && npm run dev
-
-# Terminal 2 - Frontend
-cd frontend && npm start
+# Manualmente:
+# Terminal 1: cd backend && npm run dev
+# Terminal 2: cd frontend && npm start
 ```
-
-### 5. Acesse a aplicação
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:3001
 
 ## 📁 Estrutura do Projeto
 
 ```
 CRM-Engenharia/
 ├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma     # Modelo do banco de dados
-│   │   ├── seed.ts           # Dados iniciais
-│   │   └── migrations/       # Migrações do banco
 │   ├── src/
-│   │   ├── controllers/      # Lógica das rotas
-│   │   ├── middlewares/      # Auth, permissões
-│   │   ├── routes/           # Definição de rotas
-│   │   └── server.ts         # Entrada da aplicação
-│   └── uploads/              # Arquivos enviados
+│   │   ├── controllers/      # Controladores de rota
+│   │   ├── services/         # Regras de negócio
+│   │   ├── routes/           # Definição de endpoints
+│   │   └── models/           # Tipos e interfaces
 │
 ├── frontend/
-│   ├── public/
-│   └── src/
-│       ├── components/       # Componentes reutilizáveis
-│       │   ├── contracts/    # Planilhas, editores
-│       │   ├── layout/       # Sidebar, Header
-│       │   └── modals/       # Modais diversos
-│       ├── contexts/         # Context API (Auth)
-│       ├── pages/            # Páginas da aplicação
-│       └── services/         # API client
+│   ├── src/
+│   │   ├── components/       # Componentes React
+│   │   │   ├── layout/       # Sidebar, Navbar (Pure HTML)
+│   │   │   ├── common/       # Notificações, Inputs
+│   │   ├── pages/            # Telas do sistema
+│   │   └── contexts/         # Estado global
 │
-└── scripts/                  # Scripts de automação
-    ├── start.ps1
-    └── stop.ps1
+└── scripts/                  # Automação (PowerShell)
 ```
-
-## 🔐 Permissões
-
-O sistema possui 19 permissões organizadas em 7 categorias:
-
-| Categoria | Permissões |
-|-----------|------------|
-| Contratos | `contracts_view`, `contracts_create`, `contracts_edit`, `contracts_delete` |
-| Medições | `measurements_view`, `measurements_create`, `measurements_edit`, `measurements_delete` |
-| Aditivos | `addendums_view`, `addendums_create`, `addendums_approve` |
-| Empresas | `companies_view`, `companies_manage` |
-| Usuários | `users_view`, `users_manage` |
-| Relatórios | `reports_view`, `reports_export` |
-| Admin | `admin_roles`, `admin_settings` |
-
-### Perfis Pré-definidos
-
-- **Administrador**: Acesso total ao sistema
-- **Gestor de Contratos**: Gerencia contratos e aditivos
-- **Engenheiro de Medição**: Cria e edita medições
-- **Visualizador**: Apenas visualização
-
-## 📝 API Endpoints
-
-### Autenticação
-- `POST /auth/login` - Login
-- `GET /auth/me` - Usuário atual
-
-### Contratos
-- `GET /contracts` - Listar contratos
-- `POST /contracts` - Criar contrato
-- `GET /contracts/:id` - Detalhes do contrato
-- `PUT /contracts/:id` - Atualizar contrato
-- `DELETE /contracts/:id` - Excluir contrato
-
-### Medições
-- `GET /contracts/:contractId/measurements` - Listar medições
-- `POST /contracts/:contractId/measurements` - Criar medição
-- `PUT /measurements/:id/items` - Atualizar itens medidos
-
-### Fotos
-- `GET /measurements/:measurementId/photos` - Listar fotos
-- `POST /measurements/:measurementId/photos` - Upload de foto
-- `DELETE /photos/:id` - Excluir foto
 
 ## 👥 Contribuição
 
@@ -199,7 +135,7 @@ O sistema possui 19 permissões organizadas em 7 categorias:
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT.
 
 ---
 
