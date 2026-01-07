@@ -345,11 +345,12 @@ model Measurement {
   number      Int
   periodStart DateTime
   periodEnd   DateTime
-  status      String            @default("DRAFT") // DRAFT, CLOSED
+  status      String            @default("DRAFT") // DRAFT, CLOSED, APPROVED
   notes       String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   items       MeasurementItem[]
+  approvals   MeasurementApproval[]
 
   @@map("measurements")
 }
@@ -412,4 +413,122 @@ model MeasurementMemory {
   updatedAt         DateTime        @updatedAt
   
   @@map("measurement_memories")
+}
+
+// ==========================================
+// SISTEMA DE COMENTÁRIOS
+// ==========================================
+
+enum CommentTargetType {
+  MEASUREMENT_ITEM
+  CONTRACT_ITEM
+  MEASUREMENT
+  CONTRACT
+}
+
+model Comment {
+  id                    String            @id @default(uuid())
+  userId                String
+  content               String
+  targetType            CommentTargetType
+  targetId              String            // ID do item alvo
+  linkedItemId          String?           // ID do item de contrato vinculado (opcional)
+  linkedItemCode        String?           // Código do item vinculado (snapshot)
+  linkedItemDescription String?           // Descrição do item vinculado (snapshot)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([targetType, targetId])
+  @@index([userId])
+  @@map("comments")
+}
+
+// ==========================================
+// SISTEMA DE APROVAÇÃO MULTI-NÍVEL
+// ==========================================
+
+model ApprovalLevel {
+  id          String   @id @default(uuid())
+  name        String   @unique // Ex: "Fiscalização", "Gerência", "Diretoria"
+  level       Int      @unique // 1, 2, 3... (ordem de aprovação)
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  approvals   MeasurementApproval[]
+
+  @@map("approval_levels")
+}
+
+model MeasurementApproval {
+  id              String        @id @default(uuid())
+  measurementId   String
+  measurement     Measurement   @relation(fields: [measurementId], references: [id], onDelete: Cascade)
+  approvalLevelId String
+  approvalLevel   ApprovalLevel @relation(fields: [approvalLevelId], references: [id])
+  
+  approvedById    String        // Usuário que aprovou
+  approvedByName  String        // Nome do usuário (snapshot)
+  approvedAt      DateTime      @default(now())
+  notes           String?       // Observações da aprovação
+  
+  @@unique([measurementId, approvalLevelId])
+  @@index([measurementId])
+  @@map("measurement_approvals")
+}
+
+// ==========================================
+// SISTEMA DE REVISÕES DE MEDIÇÃO
+// ==========================================
+
+model MeasurementRevision {
+  id              String   @id @default(uuid())
+  measurementId   String
+  revisionNumber  Int
+  reason          String   // Motivo da revisão
+  snapshotData    Json     // Snapshot completo dos dados da medição
+  createdById     String
+  createdByName   String
+  createdAt       DateTime @default(now())
+
+  @@index([measurementId])
+  @@map("measurement_revisions")
+}
+
+// ==========================================
+// SISTEMA DE ANEXOS
+// ==========================================
+
+model Attachment {
+  id              String   @id @default(uuid())
+  targetType      String   // CONTRACT, MEASUREMENT, CONTRACT_ITEM
+  targetId        String   // ID do item alvo
+  filename        String   // Nome original do arquivo
+  storedName      String   // Nome armazenado
+  path            String   // Caminho no servidor
+  mimeType        String
+  size            Int      // Tamanho em bytes
+  description     String?
+  uploadedById    String?
+  uploadedByName  String?
+  createdAt       DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@map("attachments")
+}
+
+// ==========================================
+// SISTEMA DE FAVORITOS
+// ==========================================
+
+model UserFavorite {
+  id        String   @id @default(uuid())
+  userId    String
+  targetType String  // CONTRACT, MEASUREMENT
+  targetId  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId])
+  @@map("user_favorites")
 }

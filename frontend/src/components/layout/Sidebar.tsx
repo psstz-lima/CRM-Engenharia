@@ -1,6 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { ChevronRight, LogOut } from 'lucide-react';
 
 // Helper to check if user has a specific permission
 const hasPermission = (user: any, permission: string): boolean => {
@@ -18,48 +19,71 @@ const hasAnyPermission = (user: any, permissions: string[]): boolean => {
 };
 
 export function Sidebar() {
-    const { user } = useAuth();
-    const { theme } = useTheme();
+    const { user, logout } = useAuth();
     const location = useLocation();
 
     const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-    const NavItem = ({ to, icon, label }: { to: string, icon: string, label: string }) => (
-        <li>
-            <Link
-                to={to}
-                className={`sidebar-item ${isActive(to) ? 'sidebar-item-active' : ''}`}
-            >
-                <span className="text-lg">{icon}</span>
-                <span>{label}</span>
-            </Link>
-        </li>
-    );
+    const NavItem = ({ to, icon, label }: { to: string, icon: string, label: string }) => {
+        return (
+            <li>
+                <Link to={to}>
+                    <span>{icon}</span>
+                    <span>{label}</span>
+                </Link>
+            </li>
+        );
+    };
+
+    const NavGroup = ({ label, icon, children, paths = [] }: { label: string, icon: any, children: React.ReactNode, paths?: string[] }) => {
+        const isChildActive = paths.some(path => location.pathname.startsWith(path));
+        const [isOpen, setIsOpen] = useState(isChildActive);
+
+        useEffect(() => {
+            if (isChildActive) setIsOpen(true);
+        }, [isChildActive]);
+
+        return (
+            <li>
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <div>
+                        <span>{icon}</span>
+                        <span>{label}</span>
+                    </div>
+                </button>
+                {isOpen && (
+                    <ul>
+                        {children}
+                    </ul>
+                )}
+            </li>
+        );
+    };
 
     const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-        <div className="px-4 py-2 mt-6 mb-2 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-[0.15em]">
+        <div>
             {children}
         </div>
     );
 
     return (
-        <aside className="sidebar fixed left-0 top-0 h-screen w-64 flex flex-col z-40">
+        <aside>
             {/* Logo */}
-            <div className="p-6 border-b border-[var(--border-subtle)]">
-                <span className="text-xl font-bold flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-gray-900 text-sm shadow-lg">
-                        🏗️
-                    </span>
-                    <span className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] bg-clip-text text-transparent">
-                        ConstruSys
-                    </span>
-                </span>
+            <div>
+                <img
+                    src="/construsys-logo.png"
+                    alt="ConstruSys"
+                    width="150"
+                />
             </div>
 
             {/* Menu */}
-            <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin">
+            <nav>
                 <SectionTitle>Principal</SectionTitle>
-                <ul className="space-y-1">
+                <ul>
                     <NavItem to="/" icon="📊" label="Dashboard" />
                     <NavItem to="/profile" icon="👤" label="Meu Perfil" />
                 </ul>
@@ -68,7 +92,7 @@ export function Sidebar() {
                 {hasAnyPermission(user, ['contracts_view', 'contracts_create', 'measurements_view']) && (
                     <>
                         <SectionTitle>Operações</SectionTitle>
-                        <ul className="space-y-1">
+                        <ul>
                             {hasPermission(user, 'contracts_view') && (
                                 <NavItem to="/contracts" icon="📄" label="Contratos" />
                             )}
@@ -79,32 +103,57 @@ export function Sidebar() {
                     </>
                 )}
 
-                {/* Companies */}
-                {hasPermission(user, 'companies_view') && (
-                    <>
-                        <SectionTitle>Cadastros</SectionTitle>
-                        <ul className="space-y-1">
-                            <NavItem to="/companies" icon="🏢" label="Empresas" />
-                        </ul>
-                    </>
-                )}
-
                 {/* Administration */}
                 {hasAnyPermission(user, ['users_view', 'users_manage', 'admin_roles', 'admin_audit']) && (
                     <>
                         <SectionTitle>Administração</SectionTitle>
-                        <ul className="space-y-1">
-                            {hasAnyPermission(user, ['users_view', 'users_manage']) && (
-                                <NavItem to="/admin/users" icon="👥" label="Usuários" />
+                        <ul>
+                            <NavItem to="/admin" icon="⚙️" label="Visão Geral" />
+
+                            {/* Access Control Group */}
+                            {hasAnyPermission(user, ['users_view', 'users_manage', 'admin_roles']) && (
+                                <NavGroup
+                                    label="Controle de Acesso"
+                                    icon="🛡️"
+                                    paths={['/admin/users', '/admin/roles']}
+                                >
+                                    {hasAnyPermission(user, ['users_view', 'users_manage']) && (
+                                        <NavItem to="/admin/users" icon="👥" label="Usuários" />
+                                    )}
+                                    {hasPermission(user, 'admin_roles') && (
+                                        <NavItem to="/admin/roles" icon="🔐" label="Perfis" />
+                                    )}
+                                </NavGroup>
                             )}
-                            {hasPermission(user, 'companies_manage') && (
-                                <NavItem to="/admin/companies" icon="🏢" label="Empresas" />
+
+                            {/* Cadastros Group */}
+                            {hasAnyPermission(user, ['companies_manage', 'admin_roles', 'admin_settings', 'users_manage']) && (
+                                <NavGroup
+                                    label="Cadastros"
+                                    icon="🗂️"
+                                    paths={['/admin/companies', '/admin/units', '/admin/approval-levels']}
+                                >
+                                    {hasPermission(user, 'companies_manage') && (
+                                        <NavItem to="/admin/companies" icon="🏢" label="Empresas" />
+                                    )}
+                                    {hasAnyPermission(user, ['admin_roles', 'users_manage']) && (
+                                        <NavItem to="/admin/units" icon="⚖️" label="Unidades" />
+                                    )}
+                                    {hasPermission(user, 'admin_roles') && (
+                                        <NavItem to="/admin/approval-levels" icon="🎖️" label="Níveis Aprov." />
+                                    )}
+                                </NavGroup>
                             )}
-                            {hasPermission(user, 'admin_roles') && (
-                                <NavItem to="/admin/roles" icon="🔐" label="Perfis" />
-                            )}
+
+                            {/* System Group */}
                             {hasPermission(user, 'admin_audit') && (
-                                <NavItem to="/admin/audit-logs" icon="📋" label="Auditoria" />
+                                <NavGroup
+                                    label="Sistema"
+                                    icon="🖥️"
+                                    paths={['/admin/audit-logs']}
+                                >
+                                    <NavItem to="/admin/audit-logs" icon="📋" label="Auditoria" />
+                                </NavGroup>
                             )}
                         </ul>
                     </>
@@ -112,28 +161,36 @@ export function Sidebar() {
             </nav>
 
             {/* User info */}
-            <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-gray-900 font-medium shadow-lg overflow-hidden">
+            <div>
+                <div>
+                    <div>
                         {user?.profilePhoto ? (
                             <img
                                 src={user.profilePhoto}
                                 alt={user.fullName}
-                                className="w-full h-full object-cover"
+                                width="40"
                             />
                         ) : (
-                            user?.fullName?.charAt(0)?.toUpperCase() || 'U'
+                            <span>
+                                {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
                         )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">
+                    <div>
+                        <div>
                             {user?.fullName}
                         </div>
-                        <div className="text-xs text-[var(--text-muted)] truncate flex items-center gap-1">
-                            {user?.isMaster && <span className="text-amber-400">⭐</span>}
+                        <div>
+                            {user?.isMaster && <span>⭐</span>}
                             {user?.isMaster ? 'Master' : user?.role?.name || 'Sem perfil'}
                         </div>
                     </div>
+                    <button
+                        onClick={logout}
+                        title="Sair"
+                    >
+                        <LogOut size={18} />
+                    </button>
                 </div>
             </div>
         </aside>

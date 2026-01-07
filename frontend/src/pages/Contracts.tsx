@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
-import { FileText, Plus, Eye, Edit2, Trash2, Building2, Calendar, AlertCircle, Info, ClipboardList } from 'lucide-react';
+import { FileText, Plus, Eye, Edit2, Trash2, Building2, Calendar, AlertCircle, Info, ClipboardList, Search, Filter } from 'lucide-react';
+import { FavoriteToggle } from '../components/common/FavoriteToggle';
 
 export function Contracts() {
     const [contracts, setContracts] = useState<any[]>([]);
@@ -19,6 +20,11 @@ export function Contracts() {
     const [companyId, setCompanyId] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+
+    // Filter State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCompany, setFilterCompany] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
     useEffect(() => {
         loadContracts();
@@ -107,7 +113,7 @@ export function Contracts() {
             <PageHeader
                 title="Gestão de Contratos"
                 subtitle="Gerencie os contratos de obras, serviços e seus prazos."
-                icon={<ClipboardList className="text-[var(--accent-primary)]" />}
+                icon={<ClipboardList className="text-" />}
                 center
                 actions={
                     <button onClick={() => openModal()} className="btn btn-primary flex items-center gap-2">
@@ -117,11 +123,55 @@ export function Contracts() {
                 }
             />
 
+            {/* Filtros */}
+            <Card className="mb-4">
+                <div className="p-4 flex flex-wrap gap-4 items-center">
+                    <div className="flex-1 min-w-[200px] relative">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Buscar por número ou objeto..."
+                            className="input pl-10 w-full"
+                        />
+                    </div>
+                    <select
+                        value={filterCompany}
+                        onChange={e => setFilterCompany(e.target.value)}
+                        className="input w-48"
+                    >
+                        <option value="">Todas Empresas</option>
+                        {companies.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={filterStatus}
+                        onChange={e => setFilterStatus(e.target.value)}
+                        className="input w-36"
+                    >
+                        <option value="">Todos Status</option>
+                        <option value="active">Ativos</option>
+                        <option value="inactive">Inativos</option>
+                    </select>
+                    {(searchTerm || filterCompany || filterStatus) && (
+                        <button
+                            onClick={() => { setSearchTerm(''); setFilterCompany(''); setFilterStatus(''); }}
+                            className="btn btn-secondary text-sm"
+                        >
+                            Limpar Filtros
+                        </button>
+                    )}
+                </div>
+            </Card>
+
             <Card className="overflow-hidden border-none shadow-lg">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                        <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
+                                <th className="p-4 text-center w-16">Fav</th>
                                 <th className="p-4 text-center">Número</th>
                                 <th className="p-4 text-left">Empresa</th>
                                 <th className="p-4 text-center">Período</th>
@@ -130,79 +180,103 @@ export function Contracts() {
                                 <th className="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)]">
-                            {contracts.length === 0 ? (
+                        <tbody className="divide-y divide-">
+                            {contracts
+                                .filter(c => {
+                                    if (searchTerm && !c.number.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                                        !c.object?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                                    if (filterCompany && c.companyId !== filterCompany) return false;
+                                    if (filterStatus === 'active' && !c.isActive) return false;
+                                    if (filterStatus === 'inactive' && c.isActive) return false;
+                                    return true;
+                                })
+                                .length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-16 text-center text-[var(--text-muted)]">
+                                    <td colSpan={7} className="p-16 text-center text-">
                                         <div className="flex flex-col items-center gap-3">
-                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                            <div className="w-16 h-16 rounded-full bg- flex items-center justify-center">
                                                 <AlertCircle size={32} className="opacity-50" />
                                             </div>
                                             <p className="text-lg">Nenhum contrato encontrado.</p>
-                                            <button onClick={() => openModal()} className="text-[var(--accent-primary)] hover:underline">
+                                            <button onClick={() => openModal()} className="text- hover:underline">
                                                 Clique para criar um novo contrato
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                contracts.map(contract => (
-                                    <tr key={contract.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
-                                        <td className="p-4 font-bold text-[var(--text-primary)] text-center">
-                                            {contract.number}
-                                        </td>
-                                        <td className="p-4 text-[var(--text-secondary)] text-left">
-                                            <div className="flex items-center gap-2">
-                                                <Building2 size={14} className="opacity-50" />
-                                                {contract.company?.name || '-'}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-[var(--text-secondary)] text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Calendar size={14} className="opacity-50" />
-                                                <span className="text-xs">
-                                                    {new Date(contract.startDate).toLocaleDateString()} a {new Date(contract.endDate).toLocaleDateString()}
+                                contracts
+                                    .filter(c => {
+                                        if (searchTerm && !c.number.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                                            !c.object?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                                        if (filterCompany && c.companyId !== filterCompany) return false;
+                                        if (filterStatus === 'active' && !c.isActive) return false;
+                                        if (filterStatus === 'inactive' && c.isActive) return false;
+                                        return true;
+                                    })
+                                    .map(contract => (
+                                        <tr key={contract.id} className="hover:bg- transition-colors text-sm group">
+                                            <td className="p-4 text-center">
+                                                <FavoriteToggle
+                                                    targetType="CONTRACT"
+                                                    targetId={contract.id}
+                                                />
+                                            </td>
+                                            <td className="p-4 font-bold text- text-center">
+                                                {contract.number}
+                                            </td>
+                                            <td className="p-4 text- text-left">
+                                                <div className="flex items-center gap-2">
+                                                    <Building2 size={14} className="opacity-50" />
+                                                    {contract.company?.name || '-'}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text- text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Calendar size={14} className="opacity-50" />
+                                                    <span className="text-xs">
+                                                        {new Date(contract.startDate).toLocaleDateString()} a {new Date(contract.endDate).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 font-mono text- text-center">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${contract.isActive
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                    : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                    }`}>
+                                                    {contract.isActive ? 'ATIVO' : 'INATIVO'}
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 font-mono text-[var(--text-primary)] text-center">
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${contract.isActive
-                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                : 'bg-red-500/10 text-red-500 border-red-500/20'
-                                                }`}>
-                                                {contract.isActive ? 'ATIVO' : 'INATIVO'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Link
-                                                    to={`/contracts/${contract.id}`}
-                                                    className="p-1.5 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors"
-                                                    title="Detalhes"
-                                                >
-                                                    <Eye size={18} />
-                                                </Link>
-                                                <button
-                                                    onClick={() => openModal(contract)}
-                                                    className="p-1.5 text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors"
-                                                    title="Editar"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(contract.id)}
-                                                    className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                    title="Excluir"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Link
+                                                        to={`/contracts/${contract.id}`}
+                                                        className="p-1.5 text- hover:bg-/10 rounded-lg transition-colors"
+                                                        title="Detalhes"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => openModal(contract)}
+                                                        className="p-1.5 text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors"
+                                                        title="Editar"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(contract.id)}
+                                                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                        title="Excluir"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
                             )}
                         </tbody>
                     </table>
@@ -212,19 +286,19 @@ export function Contracts() {
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content w-full max-w-2xl m-4" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                {editingId ? <Edit2 size={20} className="text-amber-500" /> : <Plus size={20} className="text-[var(--accent-primary)]" />}
+                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                            <h3 className="text-xl font-bold text- flex items-center gap-2">
+                                {editingId ? <Edit2 size={20} className="text-amber-500" /> : <Plus size={20} className="text-" />}
                                 {editingId ? 'Editar Contrato' : 'Novo Contrato'}
                             </h3>
-                            <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                            <button onClick={() => setShowModal(false)} className="text- hover:text-">✕</button>
                         </div>
                         <form onSubmit={handleSave} className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="label">Número do Contrato *</label>
                                     <div className="relative">
-                                        <FileText size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                                        <FileText size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
                                         <input
                                             type="text"
                                             className="input pl-10"
@@ -238,7 +312,7 @@ export function Contracts() {
                                 <div>
                                     <label className="label">Empresa *</label>
                                     <div className="relative">
-                                        <Building2 size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                                        <Building2 size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
                                         <select
                                             className="input pl-10"
                                             value={companyId}
@@ -285,15 +359,15 @@ export function Contracts() {
                             </div>
 
                             {!editingId && (
-                                <div className="p-4 bg-[var(--accent-glow)] border border-[var(--accent-primary)]/20 rounded-lg flex items-start gap-3">
-                                    <Info size={20} className="text-[var(--accent-primary)] shrink-0 mt-0.5" />
-                                    <p className="text-sm text-[var(--text-secondary)]">
+                                <div className="p-4 bg- border border-/20 rounded-lg flex items-start gap-3">
+                                    <Info size={20} className="text- shrink-0 mt-0.5" />
+                                    <p className="text-sm text-">
                                         O valor total do contrato será calculado automaticamente conforme você adicionar itens à planilha contratual na próxima tela.
                                     </p>
                                 </div>
                             )}
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancelar</button>
                                 <button type="submit" className="btn btn-primary">Salvar Contrato</button>
                             </div>

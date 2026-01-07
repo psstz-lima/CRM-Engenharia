@@ -143,8 +143,14 @@ export class UserController {
     static async delete(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            await prisma.user.update({ where: { id }, data: { isActive: false } });
-            res.json({ message: 'Usuário desativado' });
+
+            // Deletar sessões do usuário primeiro
+            await prisma.session.deleteMany({ where: { userId: id } });
+
+            // Deletar o usuário permanentemente
+            await prisma.user.delete({ where: { id } });
+
+            res.json({ message: 'Usuário excluído permanentemente' });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }

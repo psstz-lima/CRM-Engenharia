@@ -11,11 +11,11 @@ export function MainLayout() {
     }
 
     return (
-        <div className="min-h-screen font-sans" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+        <div>
             <Sidebar />
-            <div className="ml-64 min-h-screen flex flex-col transition-all duration-300">
+            <div>
                 <Navbar />
-                <main className="flex-1 p-8" style={{ backgroundColor: 'var(--bg-base)' }}>
+                <main>
                     <Outlet />
                 </main>
             </div>

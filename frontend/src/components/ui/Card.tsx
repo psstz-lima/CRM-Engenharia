@@ -33,7 +33,7 @@ export function Card({
             className={`
                 ${variantClasses[variant]} 
                 ${paddingClasses[padding]}
-                ${hover ? 'hover:border-[var(--accent-primary)] hover:shadow-[var(--shadow-glow)] transition-all duration-300' : ''}
+                ${hover ? 'hover:border- hover:shadow- transition-all duration-300' : ''}
                 ${className}
             `}
         >
@@ -49,7 +49,7 @@ interface CardHeaderProps {
 
 export function CardHeader({ children, className = '' }: CardHeaderProps) {
     return (
-        <div className={`border-b border-[var(--border-subtle)] pb-4 mb-4 ${className}`}>
+        <div className={`border-b border- pb-4 mb-4 ${className}`}>
             {children}
         </div>
     );
@@ -63,7 +63,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, icon, className = '' }: CardTitleProps) {
     return (
-        <h3 className={`text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2 ${className}`}>
+        <h3 className={`text-lg font-semibold text- flex items-center gap-2 ${className}`}>
             {icon && <span>{icon}</span>}
             {children}
         </h3>

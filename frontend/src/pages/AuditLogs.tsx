@@ -27,15 +27,15 @@ export function AuditLogs() {
             case 'LOGIN':
                 return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
             default:
-                return 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-subtle)]';
+                return 'bg- text- border-';
         }
     };
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="flex flex-col items-center gap-2 text-[var(--text-muted)]">
-                    <div className="w-6 h-6 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex flex-col items-center gap-2 text-">
+                    <div className="w-6 h-6 border-2 border- border-t-transparent rounded-full animate-spin"></div>
                     <p>Carregando logs...</p>
                 </div>
             </div>
@@ -47,13 +47,13 @@ export function AuditLogs() {
             <PageHeader
                 title="Logs de Auditoria"
                 subtitle="Histórico completo de ações e atividades realizadas no sistema."
-                icon={<ClipboardList className="text-[var(--accent-primary)]" />}
+                icon={<ClipboardList className="text-" />}
             />
 
             <Card className="overflow-hidden border-none shadow-lg">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                        <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
                                 <th className="p-4">Data</th>
                                 <th className="p-4">Usuário</th>
@@ -62,12 +62,12 @@ export function AuditLogs() {
                                 <th className="p-4">IP</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                        <tbody className="divide-y divide-">
                             {logs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="p-16 text-center text-[var(--text-muted)]">
+                                    <td colSpan={5} className="p-16 text-center text-">
                                         <div className="flex flex-col items-center gap-3">
-                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                            <div className="w-16 h-16 rounded-full bg- flex items-center justify-center">
                                                 <AlertCircle size={32} className="opacity-50" />
                                             </div>
                                             <p className="text-lg">Nenhum log encontrado.</p>
@@ -76,21 +76,21 @@ export function AuditLogs() {
                                 </tr>
                             ) : (
                                 logs.map(log => (
-                                    <tr key={log.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
-                                        <td className="p-4 text-[var(--text-secondary)] whitespace-nowrap">
+                                    <tr key={log.id} className="hover:bg- transition-colors text-sm group">
+                                        <td className="p-4 text- whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <Calendar size={14} className="opacity-50" />
                                                 {new Date(log.createdAt).toLocaleString('pt-BR')}
                                             </div>
                                         </td>
-                                        <td className="p-4 font-medium text-[var(--text-primary)]">
+                                        <td className="p-4 font-medium text-">
                                             {log.user?.email ? (
                                                 <div className="flex items-center gap-2">
-                                                    <User size={14} className="text-[var(--accent-primary)] opacity-70" />
+                                                    <User size={14} className="text- opacity-70" />
                                                     {log.user.email}
                                                 </div>
                                             ) : (
-                                                <span className="text-[var(--text-muted)] italic">Sistema</span>
+                                                <span className="text- italic">Sistema</span>
                                             )}
                                         </td>
                                         <td className="p-4">
@@ -99,13 +99,13 @@ export function AuditLogs() {
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-[var(--text-secondary)]">
+                                        <td className="p-4 text-">
                                             <div className="flex items-center gap-2">
                                                 <Database size={14} className="opacity-50" />
                                                 {log.module}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-[var(--text-muted)] font-mono text-xs">
+                                        <td className="p-4 text- font-mono text-xs">
                                             <div className="flex items-center gap-2">
                                                 <Network size={14} className="opacity-50" />
                                                 {log.ipAddress}
@@ -119,7 +119,7 @@ export function AuditLogs() {
                 </div>
 
                 {logs.length > 0 && (
-                    <div className="p-4 bg-[var(--bg-elevated)] border-t border-[var(--border-subtle)] text-xs text-[var(--text-muted)] flex justify-between items-center">
+                    <div className="p-4 bg- border-t border- text-xs text- flex justify-between items-center">
                         <span>Exibindo {logs.length} registro{logs.length !== 1 ? 's' : ''}</span>
                     </div>
                 )}

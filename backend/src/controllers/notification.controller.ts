@@ -37,7 +37,7 @@ export class NotificationController {
             const { id } = req.params;
             await prisma.notification.update({
                 where: { id },
-                data: { read: true }
+                data: { isRead: true }
             });
             res.json({ message: 'Marcada como lida' });
         } catch (e: any) {
@@ -48,8 +48,8 @@ export class NotificationController {
     static async markAllAsRead(req: any, res: Response) {
         try {
             await prisma.notification.updateMany({
-                where: { userId: req.user.id, read: false },
-                data: { read: true }
+                where: { userId: req.user.id, isRead: false },
+                data: { isRead: true }
             });
             res.json({ message: 'Todas marcadas como lidas' });
         } catch (e: any) {

@@ -50,8 +50,8 @@ Write-Host "  SISTEMA PRONTO E INICIANDO!          " -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Credenciais de acesso:" -ForegroundColor Cyan
-Write-Host "  Email: master@crm.com" -ForegroundColor White
-Write-Host "  Senha: Master@2024" -ForegroundColor White
+Write-Host "  Email: paulo.lima@consorcio381.com.br" -ForegroundColor White
+Write-Host "  Senha: psstz72659913Ps*" -ForegroundColor White
 Write-Host ""
 Write-Host "Abrindo em 5 segundos..." -ForegroundColor Yellow
 Start-Sleep -Seconds 5

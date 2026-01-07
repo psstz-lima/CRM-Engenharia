@@ -3,6 +3,7 @@ import { ContractController } from '../controllers/contract.controller';
 import { AddendumController } from '../controllers/addendum.controller';
 import { MeasurementController } from '../controllers/measurement.controller';
 import { PhotoController } from '../controllers/photo.controller';
+import { ExcelService } from '../services/excel.service';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { checkPermission, checkAnyPermission } from '../middlewares/permissions.middleware';
 import multer from 'multer';
@@ -80,6 +81,21 @@ router.get('/measurements/:id', checkPermission('measurements_view'), Measuremen
 router.post('/measurements/:id/items', checkPermission('measurements_edit'), MeasurementController.updateItem);
 router.get('/measurements/:id/balances', checkPermission('measurements_view'), MeasurementController.getBalances);
 router.post('/measurements/:id/close', checkPermission('measurements_close'), MeasurementController.close);
+router.post('/measurements/:id/reopen', checkPermission('measurements_edit'), MeasurementController.reopen);
+router.get('/measurements/:id/revisions', checkPermission('measurements_view'), MeasurementController.listRevisions);
+
+// --- EXPORTAÇÃO DE MEDIÇÃO ---
+router.get('/measurements/:id/export', checkPermission('reports_export'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const buffer = await ExcelService.generateMeasurementExcel(id);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=medicao-${id}.xlsx`);
+        res.send(buffer);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // --- MEMÓRIA DE CÁLCULO ---
 router.post('/measurements/:id/memories', checkPermission('measurements_edit'), MeasurementController.addMemory);

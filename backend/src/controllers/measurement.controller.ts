@@ -448,4 +448,89 @@ export class MeasurementController {
             data: { measuredQuantity: total }
         });
     }
+
+    // Reopen a closed measurement (creates a revision)
+    static async reopen(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const userId = (req as any).userId;
+            const { reason } = req.body;
+
+            if (!reason) {
+                return res.status(400).json({ error: 'Motivo da revisão é obrigatório' });
+            }
+
+            // Get user info
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+            // Get measurement with all data
+            const measurement = await prisma.measurement.findUnique({
+                where: { id },
+                include: {
+                    items: { include: { memories: true } },
+                    approvals: true
+                }
+            });
+
+            if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
+            if (measurement.status === 'DRAFT') {
+                return res.status(400).json({ error: 'Medição já está aberta' });
+            }
+
+            // Count existing revisions
+            const revisionCount = await prisma.measurementRevision.count({
+                where: { measurementId: id }
+            });
+
+            // Create revision with snapshot
+            await prisma.measurementRevision.create({
+                data: {
+                    measurementId: id,
+                    revisionNumber: revisionCount + 1,
+                    reason,
+                    snapshotData: {
+                        status: measurement.status,
+                        items: measurement.items,
+                        approvals: measurement.approvals,
+                        closedAt: new Date().toISOString()
+                    },
+                    createdById: userId,
+                    createdByName: user.fullName
+                }
+            });
+
+            // Delete existing approvals (need to re-approve after revision)
+            await prisma.measurementApproval.deleteMany({
+                where: { measurementId: id }
+            });
+
+            // Reopen measurement
+            await prisma.measurement.update({
+                where: { id },
+                data: { status: 'DRAFT' }
+            });
+
+            return res.json({ message: 'Medição reaberta para revisão', revisionNumber: revisionCount + 1 });
+        } catch (e: any) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
+
+    // List revisions of a measurement
+    static async listRevisions(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+
+            const revisions = await prisma.measurementRevision.findMany({
+                where: { measurementId: id },
+                orderBy: { revisionNumber: 'desc' }
+            });
+
+            return res.json(revisions);
+        } catch (e: any) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
 }
+

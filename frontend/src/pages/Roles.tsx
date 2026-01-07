@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Lock, Edit2, Plus, LayoutTemplate, Shield, Users, Building2, FileText, Ruler, ScrollText, BarChart3, Settings, AlertCircle, Copy, Check, X } from 'lucide-react';
+import { Lock, Edit2, Plus, LayoutTemplate, Shield, Users, Building2, FileText, Ruler, ScrollText, BarChart3, Settings, AlertCircle, Copy, Check, X, Trash2 } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 
@@ -14,6 +14,7 @@ const permissionCategories = [
             { key: 'contracts_create', label: 'Criar' },
             { key: 'contracts_edit', label: 'Editar' },
             { key: 'contracts_delete', label: 'Excluir' },
+            { key: 'contracts_comment', label: 'Comentar' },
         ]
     },
     {
@@ -24,6 +25,8 @@ const permissionCategories = [
             { key: 'measurements_create', label: 'Criar' },
             { key: 'measurements_edit', label: 'Editar' },
             { key: 'measurements_close', label: 'Encerrar' },
+            { key: 'measurements_comment', label: 'Comentar' },
+            { key: 'measurements_approve', label: 'Aprovar' },
         ]
     },
     {
@@ -218,29 +221,40 @@ export function Roles() {
         return Object.values(perms || {}).filter(Boolean).length;
     };
 
+    const handleDelete = async (role: any) => {
+        if (!confirm(`Tem certeza que deseja EXCLUIR PERMANENTEMENTE o perfil "${role.name}"?\n\n⚠️ Esta ação NÃO pode ser desfeita!`)) return;
+        try {
+            await api.delete(`/roles/${role.id}`);
+            loadRoles();
+            alert('Perfil excluído com sucesso!');
+        } catch (err: any) {
+            alert(err.response?.data?.error || 'Erro ao excluir perfil');
+        }
+    };
+
     // Permission grid component
     const PermissionGrid = ({ perms, isEdit }: { perms: any; isEdit: boolean }) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-subtle)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-4 bg- rounded-xl border border-">
             {permissionCategories.map(cat => (
-                <div key={cat.name} className="bg-[var(--bg-surface)] rounded-lg border border-[var(--border-subtle)] overflow-hidden">
+                <div key={cat.name} className="bg- rounded-lg border border- overflow-hidden">
                     <div
                         onClick={() => toggleAllInCategory(cat, isEdit)}
-                        className="px-4 py-3 bg-[var(--bg-card)] border-b border-[var(--border-subtle)] flex items-center gap-3 cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
+                        className="px-4 py-3 bg- border-b border- flex items-center gap-3 cursor-pointer hover:bg- transition-colors"
                     >
-                        <span className="text-[var(--accent-primary)]">{cat.icon}</span>
-                        <span className="font-semibold text-[var(--text-primary)] text-sm">{cat.name}</span>
+                        <span className="text-">{cat.icon}</span>
+                        <span className="font-semibold text- text-sm">{cat.name}</span>
                         <span className="ml-auto text-xs text-gray-600">
                             ({cat.permissions.filter(p => perms[p.key]).length}/{cat.permissions.length})
                         </span>
                     </div>
                     <div className="p-3 space-y-2">
                         {cat.permissions.map(p => (
-                            <label key={p.key} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm transition-colors ${perms[p.key] ? 'bg-[var(--accent-glow)] text-[var(--accent-primary)]' : 'hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]'}`}>
+                            <label key={p.key} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm transition-colors ${perms[p.key] ? 'bg- text-' : 'hover:bg- text-'}`}>
                                 <input
                                     type="checkbox"
                                     checked={perms[p.key] || false}
                                     onChange={() => togglePermission(p.key, isEdit)}
-                                    className="w-4 h-4 rounded border-[var(--border-default)] bg-[var(--bg-elevated)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                                    className="w-4 h-4 rounded border- bg- text- focus:ring-"
                                 />
                                 {p.label}
                             </label>
@@ -256,7 +270,7 @@ export function Roles() {
             <PageHeader
                 title="Gestão de Perfis"
                 subtitle="Gerencie os níveis de acesso e permissões dos usuários do sistema."
-                icon={<Lock className="text-[var(--accent-primary)]" />}
+                icon={<Lock className="text-" />}
                 actions={
                     <div className="flex gap-3">
                         <button
@@ -281,7 +295,7 @@ export function Roles() {
             <Card className="overflow-hidden border-none shadow-lg">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                        <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
                                 <th className="p-4">Nome</th>
                                 <th className="p-4">Descrição</th>
@@ -290,13 +304,13 @@ export function Roles() {
                                 <th className="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                        <tbody className="divide-y divide-">
                             {roles.map(role => (
-                                <tr key={role.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
-                                    <td className="p-4 font-medium text-[var(--text-primary)]">{role.name}</td>
-                                    <td className="p-4 text-[var(--text-secondary)]">{role.description || '-'}</td>
+                                <tr key={role.id} className="hover:bg- transition-colors text-sm group">
+                                    <td className="p-4 font-medium text-">{role.name}</td>
+                                    <td className="p-4 text-">{role.description || '-'}</td>
                                     <td className="p-4 text-center">
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-secondary)] rounded-full text-xs font-medium border border-[var(--border-subtle)]">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg- text- rounded-full text-xs font-medium border border-">
                                             <Shield size={10} className="opacity-70" />
                                             {countPermissions(role.permissions)} ativas
                                         </span>
@@ -311,21 +325,30 @@ export function Roles() {
                                         </span>
                                     </td>
                                     <td className="p-4 text-center">
-                                        <button
-                                            onClick={() => openEditModal(role)}
-                                            className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-blue-400 transition-colors"
-                                            title="Editar perfil"
-                                        >
-                                            <Edit2 size={16} />
-                                        </button>
+                                        <div className="flex items-center justify-center gap-1">
+                                            <button
+                                                onClick={() => openEditModal(role)}
+                                                className="p-2 rounded-lg hover:bg- text- hover:text-blue-400 transition-colors"
+                                                title="Editar perfil"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(role)}
+                                                className="p-2 rounded-lg hover:bg-red-500/10 text- hover:text-red-500 transition-colors"
+                                                title="Excluir perfil"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {roles.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="p-16 text-center text-[var(--text-muted)]">
+                                    <td colSpan={5} className="p-16 text-center text-">
                                         <div className="flex flex-col items-center gap-3">
-                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                            <div className="w-16 h-16 rounded-full bg- flex items-center justify-center">
                                                 <AlertCircle size={32} className="opacity-50" />
                                             </div>
                                             <p className="text-lg">Nenhum perfil cadastrado.</p>
@@ -349,12 +372,12 @@ export function Roles() {
                 showCreateModal && (
                     <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
                         <div className="modal-content w-full max-w-4xl m-4" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                    <Plus size={20} className="text-[var(--accent-primary)]" />
+                            <div className="p-6 border-b border- flex justify-between items-center bg-">
+                                <h3 className="text-xl font-bold text- flex items-center gap-2">
+                                    <Plus size={20} className="text-" />
                                     Novo Perfil
                                 </h3>
-                                <button onClick={() => setShowCreateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                                <button onClick={() => setShowCreateModal(false)} className="text- hover:text-">✕</button>
                             </div>
                             <form onSubmit={handleCreate} className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -383,11 +406,11 @@ export function Roles() {
                                 <div className="mb-6">
                                     <label className="label mb-2 flex justify-between items-end">
                                         <span>Permissões</span>
-                                        <span className="text-xs text-[var(--text-muted)] font-normal">Clique no cabeçalho para marcar/desmarcar o grupo</span>
+                                        <span className="text-xs text- font-normal">Clique no cabeçalho para marcar/desmarcar o grupo</span>
                                     </label>
                                     <PermissionGrid perms={permissions} isEdit={false} />
                                 </div>
-                                <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                                <div className="flex justify-end gap-3 pt-4 border-t border-">
                                     <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">Cancelar</button>
                                     <button type="submit" className="btn btn-primary">Criar Perfil</button>
                                 </div>
@@ -402,12 +425,12 @@ export function Roles() {
                 showEditModal && editingRole && (
                     <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                         <div className="modal-content w-full max-w-4xl m-4" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                    <Edit2 size={20} className="text-[var(--accent-primary)]" />
+                            <div className="p-6 border-b border- flex justify-between items-center bg-">
+                                <h3 className="text-xl font-bold text- flex items-center gap-2">
+                                    <Edit2 size={20} className="text-" />
                                     Editar Perfil
                                 </h3>
-                                <button onClick={() => setShowEditModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                                <button onClick={() => setShowEditModal(false)} className="text- hover:text-">✕</button>
                             </div>
                             <form onSubmit={handleUpdate} className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -436,18 +459,18 @@ export function Roles() {
                                     <PermissionGrid perms={editPermissions} isEdit={true} />
                                 </div>
                                 <div className="mb-6">
-                                    <label className="flex items-center gap-3 p-4 bg-[var(--bg-elevated)] rounded-xl cursor-pointer hover:bg-[var(--bg-hover)] transition-colors border border-[var(--border-subtle)]">
+                                    <label className="flex items-center gap-3 p-4 bg- rounded-xl cursor-pointer hover:bg- transition-colors border border-">
                                         <input
                                             type="checkbox"
                                             checked={editIsActive}
                                             onChange={e => setEditIsActive(e.target.checked)}
-                                            className="w-5 h-5 rounded border-[var(--border-default)] bg-[var(--bg-surface)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                                            className="w-5 h-5 rounded border- bg- text- focus:ring-"
                                         />
-                                        <span className="font-medium text-[var(--text-primary)]">Perfil Ativo</span>
-                                        <span className="text-xs text-[var(--text-muted)] ml-auto">Perfis inativos não podem ser atribuídos</span>
+                                        <span className="font-medium text-">Perfil Ativo</span>
+                                        <span className="text-xs text- ml-auto">Perfis inativos não podem ser atribuídos</span>
                                     </label>
                                 </div>
-                                <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                                <div className="flex justify-end gap-3 pt-4 border-t border-">
                                     <button type="button" onClick={() => setShowEditModal(false)} className="btn btn-secondary">Cancelar</button>
                                     <button type="submit" className="btn btn-primary">Salvar Alterações</button>
                                 </div>
@@ -462,12 +485,12 @@ export function Roles() {
                 showTemplateModal && (
                     <div className="modal-overlay" onClick={() => setShowTemplateModal(false)}>
                         <div className="modal-content w-full max-w-lg m-4" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                                <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                    <LayoutTemplate size={20} className="text-[var(--accent-primary)]" />
+                            <div className="p-6 border-b border- flex justify-between items-center bg-">
+                                <h3 className="text-xl font-bold text- flex items-center gap-2">
+                                    <LayoutTemplate size={20} className="text-" />
                                     Usar Template
                                 </h3>
-                                <button onClick={() => setShowTemplateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                                <button onClick={() => setShowTemplateModal(false)} className="text- hover:text-">✕</button>
                             </div>
                             <div className="p-6">
                                 <p className="text-gray-600 mb-4">Selecione um template para criar rapidamente um perfil com permissões pré-configuradas:</p>
@@ -476,21 +499,21 @@ export function Roles() {
                                         <button
                                             key={template.name}
                                             onClick={() => applyTemplate(template)}
-                                            className="w-full text-left p-4 bg-[var(--bg-card)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] rounded-xl transition-all group"
+                                            className="w-full text-left p-4 bg- hover:bg- border border- hover:border- rounded-xl transition-all group"
                                         >
-                                            <div className="font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] mb-1 flex items-center gap-2">
+                                            <div className="font-semibold text- group-hover:text- mb-1 flex items-center gap-2">
                                                 <Copy size={14} className="opacity-50" />
                                                 {template.name}
                                             </div>
-                                            <div className="text-sm text-[var(--text-secondary)] mb-2 pl-6">{template.description}</div>
-                                            <div className="text-xs text-[var(--accent-primary)] font-medium pl-6">
+                                            <div className="text-sm text- mb-2 pl-6">{template.description}</div>
+                                            <div className="text-xs text- font-medium pl-6">
                                                 {Object.keys(template.permissions).length} permissões incluídas
                                             </div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
-                            <div className="p-4 bg-[var(--bg-elevated)] rounded-b-2xl flex justify-end">
+                            <div className="p-4 bg- rounded-b-2xl flex justify-end">
                                 <button onClick={() => setShowTemplateModal(false)} className="btn btn-secondary text-sm">Fechar</button>
                             </div>
                         </div>

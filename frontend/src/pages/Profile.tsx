@@ -1,12 +1,10 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardTitle } from '../components/ui/Card';
 
 export function Profile() {
-    const { theme, setTheme, themes } = useTheme();
     const { updateUser } = useAuth(); // Get updateUser from AuthContext
     const [profile, setProfile] = useState<any>(null);
     const [editing, setEditing] = useState(false);
@@ -106,7 +104,7 @@ export function Profile() {
 
     if (!profile) return (
         <div className="flex items-center justify-center h-64">
-            <div className="text-[var(--text-muted)]">Carregando...</div>
+            <div className="text-">Carregando...</div>
         </div>
     );
 
@@ -143,17 +141,17 @@ export function Profile() {
                                     <img
                                         src={profile.profilePhoto}
                                         alt="Foto de perfil"
-                                        className="w-32 h-32 rounded-2xl object-cover border-4 border-[var(--border-default)] shadow-xl"
+                                        className="w-32 h-32 rounded-2xl object-cover border-4 border- shadow-xl"
                                     />
                                 ) : (
-                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-5xl text-gray-900 shadow-xl">
+                                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from- to- flex items-center justify-center text-5xl text-gray-900 shadow-xl">
                                         {profile.fullName?.charAt(0)?.toUpperCase() || '👤'}
                                     </div>
                                 )}
                             </div>
 
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{profile.fullName}</h3>
-                            <p className="text-sm text-[var(--text-muted)] mt-1">{profile.email}</p>
+                            <h3 className="text-xl font-bold text-">{profile.fullName}</h3>
+                            <p className="text-sm text- mt-1">{profile.email}</p>
 
                             {profile.role && (
                                 <span className="inline-block mt-3 badge badge-primary">
@@ -162,12 +160,12 @@ export function Profile() {
                             )}
 
                             {/* Upload de foto */}
-                            <form onSubmit={handlePhotoUpload} className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
+                            <form onSubmit={handlePhotoUpload} className="mt-6 pt-6 border-t border-">
                                 <input
                                     type="file"
                                     onChange={e => setPhoto(e.target.files?.[0] || null)}
                                     accept="image/*"
-                                    className="text-sm text-[var(--text-muted)] file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--bg-hover)] file:text-[var(--text-secondary)] hover:file:bg-[var(--accent-glow)] file:cursor-pointer file:transition-all"
+                                    className="text-sm text- file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg- file:text- hover:file:bg- file:cursor-pointer file:transition-all"
                                 />
                                 {photo && (
                                     <button type="submit" className="btn btn-primary mt-3 w-full">
@@ -182,40 +180,7 @@ export function Profile() {
                 {/* Coluna 2: Formulários */}
                 <div className="lg:col-span-2 space-y-6">
 
-                    {/* Tema */}
-                    <Card>
-                        <CardTitle icon="🎨">Aparência</CardTitle>
-                        <p className="text-sm text-[var(--text-muted)] mt-1 mb-6">
-                            Escolha o tema visual da plataforma
-                        </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {themes.map((t) => (
-                                <button
-                                    key={t.id}
-                                    onClick={() => setTheme(t.id)}
-                                    className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-left ${theme === t.id
-                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-glow)] shadow-[var(--shadow-glow)]'
-                                        : 'border-[var(--border-default)] hover:border-[var(--border-strong)] bg-[var(--bg-elevated)]'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-2xl">{t.icon}</span>
-                                        <span className="font-medium text-[var(--text-primary)]">{t.name}</span>
-                                    </div>
-                                    <p className="text-xs text-[var(--text-muted)]">{t.description}</p>
-
-                                    {theme === t.id && (
-                                        <div className="absolute top-3 right-3">
-                                            <span className="w-5 h-5 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-gray-900 text-xs">
-                                                ✓
-                                            </span>
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </Card>
 
                     {/* Informações Pessoais */}
                     <Card>
@@ -247,7 +212,7 @@ export function Profile() {
                                     disabled
                                     className="input opacity-60"
                                 />
-                                <p className="text-xs text-[var(--text-muted)] mt-1">O email não pode ser alterado</p>
+                                <p className="text-xs text- mt-1">O email não pode ser alterado</p>
                             </div>
 
                             {editing && (
@@ -298,7 +263,7 @@ export function Profile() {
                     {/* Zona de Perigo */}
                     <Card className="border-red-500/20 bg-red-500/5">
                         <CardTitle icon="⚠️" className="text-red-400">Zona de Perigo</CardTitle>
-                        <p className="text-sm text-[var(--text-muted)] mt-2 mb-4">
+                        <p className="text-sm text- mt-2 mb-4">
                             Caso suspeite de acesso não autorizado, você pode desconectar de todos os dispositivos.
                         </p>
                         <button onClick={handleLogoutAll} className="btn btn-danger">

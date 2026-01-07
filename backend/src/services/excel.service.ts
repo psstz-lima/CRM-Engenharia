@@ -311,4 +311,118 @@ export class ExcelService {
             });
         });
     }
+
+    // Gerar relatório Excel de uma medição
+    static async generateMeasurementExcel(measurementId: string): Promise<Buffer> {
+        const measurement = await prisma.measurement.findUnique({
+            where: { id: measurementId },
+            include: {
+                items: {
+                    include: {
+                        contractItem: true,
+                        memories: true
+                    }
+                }
+            }
+        });
+
+        if (!measurement) throw new Error('Medição não encontrada');
+
+        const contract = await prisma.contract.findUnique({
+            where: { id: measurement.contractId },
+            include: { company: true }
+        });
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Boletim de Medição');
+
+        // Header do relatório
+        worksheet.mergeCells('A1:H1');
+        worksheet.getCell('A1').value = `BOLETIM DE MEDIÇÃO Nº ${measurement.number}`;
+        worksheet.getCell('A1').font = { bold: true, size: 16 };
+        worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells('A2:H2');
+        worksheet.getCell('A2').value = `Contrato: ${contract?.number} - ${contract?.company?.name}`;
+        worksheet.getCell('A2').alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells('A3:H3');
+        worksheet.getCell('A3').value = `Período: ${new Date(measurement.periodStart).toLocaleDateString()} a ${new Date(measurement.periodEnd).toLocaleDateString()}`;
+        worksheet.getCell('A3').alignment = { horizontal: 'center' };
+
+        worksheet.addRow([]);
+
+        // Headers da tabela
+        const headerRow = worksheet.addRow([
+            'Código',
+            'Descrição',
+            'Unidade',
+            'Qtd. Contratada',
+            'Qtd. Acumulada',
+            'Qtd. Período',
+            'Preço Unit.',
+            'Total Período'
+        ]);
+
+        headerRow.font = { bold: true };
+        headerRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: '2563EB' }
+        };
+        headerRow.font = { bold: true, color: { argb: 'FFFFFF' } };
+
+        // Dados
+        let totalMeasurement = 0;
+        for (const item of measurement.items) {
+            const contractItem = item.contractItem;
+            const measuredQty = Number(item.measuredQuantity) || 0;
+            const price = Number(item.currentPrice) || Number(contractItem?.unitPrice) || 0;
+            const totalItem = measuredQty * price;
+            totalMeasurement += totalItem;
+
+            worksheet.addRow([
+                contractItem?.code || '',
+                contractItem?.description || '',
+                contractItem?.unit || '',
+                contractItem?.quantity || 0,
+                Number(item.accumulatedQuantity) || 0,
+                measuredQty,
+                price,
+                totalItem
+            ]);
+        }
+
+        // Linha de total
+        worksheet.addRow([]);
+        const totalRow = worksheet.addRow(['', '', '', '', '', '', 'TOTAL:', totalMeasurement]);
+        totalRow.font = { bold: true };
+        totalRow.getCell(8).numFmt = 'R$ #,##0.00';
+
+        // Formatar colunas
+        worksheet.columns = [
+            { width: 15 },
+            { width: 40 },
+            { width: 10 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 15 },
+            { width: 18 }
+        ];
+
+        // Formatar números
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber > 5) {
+                row.getCell(4).numFmt = '#,##0.00';
+                row.getCell(5).numFmt = '#,##0.00';
+                row.getCell(6).numFmt = '#,##0.00';
+                row.getCell(7).numFmt = 'R$ #,##0.00';
+                row.getCell(8).numFmt = 'R$ #,##0.00';
+            }
+        });
+
+        return await workbook.xlsx.writeBuffer() as unknown as Buffer;
+    }
 }
+

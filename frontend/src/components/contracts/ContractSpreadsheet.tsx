@@ -387,7 +387,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
             {/* Table */}
             <div className="overflow-x-auto max-h-[600px] scrollbar-thin scrollbar-thumb-dark-600 scrollbar-track-dark-800">
                 <table className="w-full text-left border-collapse text-sm">
-                    <thead className="sticky top-0 z-20" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                    <thead className="sticky top-0 z-20" >
                         {/* Main Header Row */}
                         <tr style={{ background: 'linear-gradient(180deg, #1a1a24 0%, #12121a 100%)' }} className="border-b border-gray-400">
                             <th className="p-3 text-center w-10 text-gray-500 font-normal">

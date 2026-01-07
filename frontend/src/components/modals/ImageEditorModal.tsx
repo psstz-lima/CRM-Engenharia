@@ -596,7 +596,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                 </div>
 
                 {/* Canvas Area / Crop Area */}
-                <div className="flex-1 overflow-hidden relative bg-[#0f172a] flex items-center justify-center p-4">
+                <div className="flex-1 overflow-hidden relative bg-gray-200 flex items-center justify-center p-4">
                     {mode === 'crop' ? (
                         <>
                             {/* Crop Type Toggle */}

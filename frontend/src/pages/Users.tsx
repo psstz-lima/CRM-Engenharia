@@ -1,6 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react';
 import api from '../services/api';
-import { Users as UsersIcon, UserPlus, Mail, Edit2, Shield, Building2 } from 'lucide-react';
+import { Users as UsersIcon, UserPlus, Mail, Edit2, Shield, Building2, Trash2, Search } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 
@@ -36,6 +36,12 @@ export function Users() {
     const [inviteFullName, setInviteFullName] = useState('');
     const [inviteCompanyId, setInviteCompanyId] = useState('');
     const [inviteRoleId, setInviteRoleId] = useState('');
+
+    // Filter State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCompany, setFilterCompany] = useState('');
+    const [filterRole, setFilterRole] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
     useEffect(() => {
         loadData();
@@ -127,12 +133,23 @@ export function Users() {
         }
     };
 
+    const handleDelete = async (user: any) => {
+        if (!confirm(`Tem certeza que deseja EXCLUIR PERMANENTEMENTE o usuário "${user.fullName}"?\n\n⚠️ Esta ação NÃO pode ser desfeita!`)) return;
+        try {
+            await api.delete(`/users/${user.id}`);
+            loadData();
+            alert('Usuário excluído com sucesso!');
+        } catch (err: any) {
+            alert(err.response?.data?.error || 'Erro ao excluir usuário');
+        }
+    };
+
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <PageHeader
                 title="Gestão de Usuários"
                 subtitle="Gerencie o acesso e permissões dos usuários do sistema."
-                icon={<UsersIcon className="text-[var(--accent-primary)]" />}
+                icon={<UsersIcon className="text-" />}
                 actions={
                     <div className="flex gap-3">
                         <button onClick={() => setShowInviteModal(true)} className="btn btn-secondary flex items-center gap-2">
@@ -150,7 +167,7 @@ export function Users() {
             <Card className="overflow-hidden border-none shadow-lg">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                        <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
                                 <th className="p-4">Nome</th>
                                 <th className="p-4">Email</th>
@@ -160,63 +177,92 @@ export function Users() {
                                 <th className="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                        <tbody className="divide-y divide-">
                             {loading ? (
                                 <tr><td colSpan={6} className="p-8 text-center text-gray-500">Carregando...</td></tr>
-                            ) : users.length === 0 ? (
+                            ) : users
+                                .filter(u => {
+                                    if (searchTerm && !u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                                        !u.email.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                                    if (filterCompany && u.companyId !== filterCompany) return false;
+                                    if (filterRole && u.roleId !== filterRole) return false;
+                                    if (filterStatus === 'active' && !u.isActive) return false;
+                                    if (filterStatus === 'inactive' && u.isActive) return false;
+                                    return true;
+                                })
+                                .length === 0 ? (
                                 <tr><td colSpan={6} className="p-8 text-center text-gray-500">Nenhum usuário encontrado.</td></tr>
                             ) : (
-                                users.map(user => (
-                                    <tr key={user.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
-                                        <td className="p-4 font-medium text-[var(--text-primary)] flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500/20 to-primary-600/20 flex items-center justify-center text-primary-400 font-bold text-sm ring-1 ring-primary-500/30">
-                                                {user.fullName.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            {user.fullName}
-                                        </td>
-                                        <td className="p-4 text-[var(--text-secondary)]">{user.email}</td>
-                                        <td className="p-4 text-[var(--text-secondary)] flex items-center gap-2">
-                                            {user.company?.name ? (
-                                                <>
-                                                    <Building2 size={14} className="opacity-50" />
-                                                    {user.company.name}
-                                                </>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="p-4 text-[var(--text-secondary)]">
-                                            {user.role?.name ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] text-xs border border-[var(--border-subtle)] font-medium">
-                                                    <Shield size={10} className="opacity-70" />
-                                                    {user.role.name}
-                                                </span>
-                                            ) : '-'}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${user.isActive
-                                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                    : 'bg-red-500/10 text-red-500 border-red-500/20'
-                                                    }`}>
-                                                    {user.isActive ? 'ATIVO' : 'INATIVO'}
-                                                </span>
-                                                {user.isMaster && (
-                                                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                                                        MASTER
+                                users
+                                    .filter(u => {
+                                        if (searchTerm && !u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                                            !u.email.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+                                        if (filterCompany && u.companyId !== filterCompany) return false;
+                                        if (filterRole && u.roleId !== filterRole) return false;
+                                        if (filterStatus === 'active' && !u.isActive) return false;
+                                        if (filterStatus === 'inactive' && u.isActive) return false;
+                                        return true;
+                                    })
+                                    .map(user => (
+                                        <tr key={user.id} className="hover:bg- transition-colors text-sm group">
+                                            <td className="p-4 font-medium text- flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500/20 to-primary-600/20 flex items-center justify-center text-primary-400 font-bold text-sm ring-1 ring-primary-500/30">
+                                                    {user.fullName.substring(0, 2).toUpperCase()}
+                                                </div>
+                                                {user.fullName}
+                                            </td>
+                                            <td className="p-4 text-">{user.email}</td>
+                                            <td className="p-4 text- flex items-center gap-2">
+                                                {user.company?.name ? (
+                                                    <>
+                                                        <Building2 size={14} className="opacity-50" />
+                                                        {user.company.name}
+                                                    </>
+                                                ) : '-'}
+                                            </td>
+                                            <td className="p-4 text-">
+                                                {user.role?.name ? (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg- text-xs border border- font-medium">
+                                                        <Shield size={10} className="opacity-70" />
+                                                        {user.role.name}
                                                     </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <button
-                                                onClick={() => openEditModal(user)}
-                                                className="p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-blue-400 transition-colors"
-                                                title="Editar Usuário"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                                ) : '-'}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${user.isActive
+                                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                        : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                        }`}>
+                                                        {user.isActive ? 'ATIVO' : 'INATIVO'}
+                                                    </span>
+                                                    {user.isMaster && (
+                                                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                                            MASTER
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <button
+                                                        onClick={() => openEditModal(user)}
+                                                        className="p-2 rounded-lg hover:bg- text- hover:text-blue-400 transition-colors"
+                                                        title="Editar Usuário"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(user)}
+                                                        className="p-2 rounded-lg hover:bg-red-500/10 text- hover:text-red-500 transition-colors"
+                                                        title="Excluir Usuário"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
                             )}
                         </tbody>
                     </table>
@@ -227,9 +273,9 @@ export function Users() {
             {showInviteModal && (
                 <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
                     <div className="modal-content w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Convidar Usuário</h3>
-                            <button onClick={() => setShowInviteModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                            <h3 className="text-xl font-bold text-">Convidar Usuário</h3>
+                            <button onClick={() => setShowInviteModal(false)} className="text- hover:text-">✕</button>
                         </div>
                         <form onSubmit={handleInvite} className="p-6 space-y-4">
                             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-sm mb-4 flex gap-3">
@@ -279,9 +325,9 @@ export function Users() {
             {showCreateModal && (
                 <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
                     <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Novo Usuário</h3>
-                            <button onClick={() => setShowCreateModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                            <h3 className="text-xl font-bold text-">Novo Usuário</h3>
+                            <button onClick={() => setShowCreateModal(false)} className="text- hover:text-">✕</button>
                         </div>
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -331,9 +377,9 @@ export function Users() {
             {showEditModal && editingUser && (
                 <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
                     <div className="modal-content w-full max-w-2xl" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Editar Usuário</h3>
-                            <button onClick={() => setShowEditModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                            <h3 className="text-xl font-bold text-">Editar Usuário</h3>
+                            <button onClick={() => setShowEditModal(false)} className="text- hover:text-">✕</button>
                         </div>
                         <form onSubmit={handleUpdate} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -365,22 +411,22 @@ export function Users() {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border-subtle)]">
-                                <label className="flex items-center cursor-pointer gap-3 text-[var(--text-secondary)] select-none">
+                            <div className="p-4 bg- rounded-lg border border-">
+                                <label className="flex items-center cursor-pointer gap-3 text- select-none">
                                     <input
                                         type="checkbox"
                                         checked={editIsActive}
                                         onChange={e => setEditIsActive(e.target.checked)}
-                                        className="rounded border-[var(--border-default)] bg-[var(--bg-surface)] text-primary-600 focus:ring-primary-500 w-5 h-5"
+                                        className="rounded border- bg- text-primary-600 focus:ring-primary-500 w-5 h-5"
                                     />
                                     <span className="font-medium">Usuário Ativo</span>
                                 </label>
                             </div>
 
-                            <div className="border-t border-[var(--border-subtle)] pt-6 mt-2">
+                            <div className="border-t border- pt-6 mt-2">
                                 <label className="label text-amber-500 font-bold mb-2 block">Redefinir Senha (opcional)</label>
                                 <input type="password" value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder="Nova senha" className="input border-amber-500/30 focus:border-amber-500 focus:ring-amber-500/20" />
-                                <p className="text-xs text-[var(--text-muted)] mt-2">Preencha apenas se desejar alterar a senha do usuário.</p>
+                                <p className="text-xs text- mt-2">Preencha apenas se desejar alterar a senha do usuário.</p>
                             </div>
 
                             <div className="flex justify-end gap-3 pt-4">

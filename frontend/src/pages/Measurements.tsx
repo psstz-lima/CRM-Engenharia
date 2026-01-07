@@ -4,6 +4,7 @@ import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Ruler, Calendar, ArrowRight, FileText, Plus, AlertCircle, Eye } from 'lucide-react';
+import { FavoriteToggle } from '../components/common/FavoriteToggle';
 
 export function Measurements() {
     const { id } = useParams(); // Contract ID
@@ -53,8 +54,8 @@ export function Measurements() {
 
     if (loading) return (
         <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2 text-[var(--text-muted)]">
-                <div className="w-6 h-6 border-2 border-[var(--accent-primary)] border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex flex-col items-center gap-2 text-">
+                <div className="w-6 h-6 border-2 border- border-t-transparent rounded-full animate-spin"></div>
                 <p>Carregando dados...</p>
             </div>
         </div>
@@ -65,7 +66,7 @@ export function Measurements() {
             <PageHeader
                 title={`Medições: Contrato ${contract?.number}`}
                 subtitle={contract?.object}
-                icon={<Ruler className="text-[var(--accent-primary)]" />}
+                icon={<Ruler className="text-" />}
                 breadcrumb={[
                     { label: 'Contratos', href: '/contracts' },
                     { label: 'Medições', href: '/measurements' },
@@ -88,8 +89,9 @@ export function Measurements() {
             <Card className="overflow-hidden border-none shadow-lg">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs uppercase font-semibold border-b border-[var(--border-subtle)]">
+                        <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
+                                <th className="p-4 w-16 text-center">Fav</th>
                                 <th className="p-4">Número</th>
                                 <th className="p-4">Período</th>
                                 <th className="p-4">Status</th>
@@ -97,16 +99,16 @@ export function Measurements() {
                                 <th className="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--border-subtle)]">
+                        <tbody className="divide-y divide-">
                             {measurements.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="p-16 text-center text-[var(--text-muted)]">
+                                    <td colSpan={6} className="p-16 text-center text-">
                                         <div className="flex flex-col items-center gap-3">
-                                            <div className="w-16 h-16 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center">
+                                            <div className="w-16 h-16 rounded-full bg- flex items-center justify-center">
                                                 <AlertCircle size={32} className="opacity-50" />
                                             </div>
                                             <p className="text-lg">Nenhuma medição encontrada.</p>
-                                            <button onClick={() => setShowModal(true)} className="text-[var(--accent-primary)] hover:underline">
+                                            <button onClick={() => setShowModal(true)} className="text- hover:underline">
                                                 Clique em "+ Nova Medição" para começar
                                             </button>
                                         </div>
@@ -114,11 +116,17 @@ export function Measurements() {
                                 </tr>
                             ) : (
                                 measurements.map(m => (
-                                    <tr key={m.id} className="hover:bg-[var(--bg-hover)] transition-colors text-sm group">
-                                        <td className="p-4 font-bold text-[var(--text-primary)]">
+                                    <tr key={m.id} className="hover:bg- transition-colors text-sm group">
+                                        <td className="p-4 text-center">
+                                            <FavoriteToggle
+                                                targetType="MEASUREMENT"
+                                                targetId={m.id}
+                                            />
+                                        </td>
+                                        <td className="p-4 font-bold text-">
                                             #{m.number}
                                         </td>
-                                        <td className="p-4 text-[var(--text-secondary)]">
+                                        <td className="p-4 text-">
                                             <div className="flex items-center gap-2">
                                                 <Calendar size={14} className="opacity-50" />
                                                 {new Date(m.periodStart).toLocaleDateString()} a {new Date(m.periodEnd).toLocaleDateString()}
@@ -132,13 +140,13 @@ export function Measurements() {
                                                 {m.status === 'CLOSED' ? 'FECHADO' : 'RASCUNHO'}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-[var(--text-secondary)] max-w-xs truncate">
+                                        <td className="p-4 text- max-w-xs truncate">
                                             {m.notes || '-'}
                                         </td>
                                         <td className="p-4 text-center">
                                             <Link
                                                 to={`/measurements/${m.id}`}
-                                                className="inline-flex items-center justify-center p-2 rounded-lg bg-[var(--bg-elevated)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-gray-900 transition-all shadow-sm"
+                                                className="inline-flex items-center justify-center p-2 rounded-lg bg- text- hover:bg- hover:text-gray-900 transition-all shadow-sm"
                                                 title="Abrir Medição"
                                             >
                                                 <Eye size={18} />
@@ -155,12 +163,12 @@ export function Measurements() {
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-[var(--border-subtle)] flex justify-between items-center bg-[var(--bg-elevated)]">
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                <Plus size={20} className="text-[var(--accent-primary)]" />
+                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                            <h3 className="text-xl font-bold text- flex items-center gap-2">
+                                <Plus size={20} className="text-" />
                                 Nova Medição
                             </h3>
-                            <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">✕</button>
+                            <button onClick={() => setShowModal(false)} className="text- hover:text-">✕</button>
                         </div>
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -177,7 +185,7 @@ export function Measurements() {
                                 <label className="label">Observações</label>
                                 <textarea value={notes} onChange={e => setNotes(e.target.value)} className="input" rows={3} placeholder="Opcional..." />
                             </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancelar</button>
                                 <button type="submit" className="btn btn-primary">Criar Medição</button>
                             </div>

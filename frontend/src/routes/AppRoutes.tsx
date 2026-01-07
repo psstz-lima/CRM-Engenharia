@@ -13,9 +13,13 @@ import { Notifications } from '../pages/Notifications';
 import { Users } from '../pages/Users';
 import { Companies } from '../pages/Companies';
 import { Roles } from '../pages/Roles';
+import { ApprovalLevels } from '../pages/ApprovalLevels';
+import { MeasurementUnits } from '../pages/MeasurementUnits';
 import { AuditLogs } from '../pages/AuditLogs';
+import { AdminDashboard } from '../pages/AdminDashboard';
 import { Contracts } from '../pages/Contracts';
 import { ContractDetails } from '../pages/ContractDetails';
+import { Import } from '../pages/Import';
 
 export function AppRoutes() {
     return (
@@ -31,9 +35,12 @@ export function AppRoutes() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/notifications" element={<Notifications />} />
+                <Route path="/admin" element={<ProtectedRoute masterOnly><AdminDashboard /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute masterOnly><Users /></ProtectedRoute>} />
                 <Route path="/admin/companies" element={<ProtectedRoute masterOnly><Companies /></ProtectedRoute>} />
                 <Route path="/admin/roles" element={<ProtectedRoute masterOnly><Roles /></ProtectedRoute>} />
+                <Route path="/admin/approval-levels" element={<ProtectedRoute masterOnly><ApprovalLevels /></ProtectedRoute>} />
+                <Route path="/admin/units" element={<ProtectedRoute masterOnly><MeasurementUnits /></ProtectedRoute>} />
                 <Route path="/admin/audit-logs" element={<ProtectedRoute masterOnly><AuditLogs /></ProtectedRoute>} />
                 <Route path="/contracts" element={<Contracts />} />
                 <Route path="/contracts/:id" element={<ContractDetails />} />
@@ -42,6 +49,7 @@ export function AppRoutes() {
                 <Route path="/measurements/:id" element={<MeasurementDetails />} />
 
                 <Route path="/companies" element={<Companies />} />
+                <Route path="/import" element={<Import />} />
             </Route>
         </Routes>
     );

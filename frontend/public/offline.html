@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - CRM Engenharia</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            max-width: 400px;
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+        p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 32px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 24px;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📡</div>
+        <h1>Você está offline</h1>
+        <p>Parece que você perdeu a conexão com a internet. Verifique sua conexão e tente novamente.</p>
+        <button class="btn" onclick="window.location.reload()">
+            Tentar novamente
+        </button>
+        <div class="status" id="status">
+            Verificando conexão...
+        </div>
+    </div>
+    <script>
+        function checkConnection() {
+            const status = document.getElementById('status');
+            if (navigator.onLine) {
+                status.innerHTML = '✅ Conexão detectada! Recarregando...';
+                status.style.background = 'rgba(16, 185, 129, 0.1)';
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                status.innerHTML = '❌ Sem conexão';
+                status.style.background = 'rgba(239, 68, 68, 0.1)';
+            }
+        }
+        window.addEventListener('online', checkConnection);
+        checkConnection();
+    </script>
+</body>
+</html>

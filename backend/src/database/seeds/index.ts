@@ -32,7 +32,23 @@ async function main() {
         },
     });
 
+    // Criar níveis de aprovação padrão
+    const approvalLevels = [
+        { level: 1, name: 'Fiscalização', description: 'Aprovação da equipe de fiscalização em campo' },
+        { level: 2, name: 'Gerência', description: 'Aprovação do gerente de contrato' },
+        { level: 3, name: 'Diretoria', description: 'Aprovação final da diretoria' },
+    ];
+
+    for (const al of approvalLevels) {
+        await prisma.approvalLevel.upsert({
+            where: { level: al.level },
+            update: {},
+            create: al,
+        });
+    }
+
     console.log('✅ Seed completo! Email: master@crm.com | Senha: Master@2024');
+    console.log('✅ Níveis de aprovação criados: Fiscalização, Gerência, Diretoria');
 }
 
 main()

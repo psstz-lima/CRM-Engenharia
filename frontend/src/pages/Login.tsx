@@ -27,37 +27,22 @@ export function Login() {
     return (
         <div
             className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-            style={{ backgroundColor: 'var(--bg-base)' }}
-        >
-            {/* Background decoration */}
-            <div
-                className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full blur-3xl opacity-30 -mr-48 -mt-48"
-                style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))' }}
-            ></div>
-            <div
-                className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-3xl opacity-20 -ml-32 -mb-32"
-                style={{ background: 'var(--accent-secondary)' }}
-            ></div>
 
+        >
             <div className="max-w-md w-full relative z-10">
                 {/* Logo Card */}
                 <div className="text-center mb-8 animate-fadeIn">
-                    <div
-                        className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 shadow-2xl"
-                        style={{
-                            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-                            boxShadow: 'var(--shadow-glow), var(--shadow-lg)'
-                        }}
-                    >
-                        <span className="text-4xl">🏗️</span>
+                    <div>
+                        <img
+                            src="/construsys-logo.png"
+                            alt="ConstruSys"
+                            width="200"
+                        />
                     </div>
-                    <h1
-                        className="text-3xl font-bold bg-clip-text text-transparent"
-                        style={{ backgroundImage: 'linear-gradient(135deg, var(--text-primary), var(--text-secondary))' }}
-                    >
+                    <h1>
                         ConstruSys
                     </h1>
-                    <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
+                    <p>
                         Bem-vindo de volta! Faça login para continuar.
                     </p>
                 </div>
@@ -65,19 +50,12 @@ export function Login() {
                 {/* Login Card */}
                 <div
                     className="card p-8 animate-fadeIn"
-                    style={{
-                        animationDelay: '0.1s',
-                        boxShadow: 'var(--shadow-lg)'
-                    }}
+
                 >
                     {error && (
                         <div
                             className="p-4 rounded-xl mb-6 text-sm flex items-center gap-3"
-                            style={{
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
-                                color: 'var(--danger)'
-                            }}
+
                         >
                             <span className="text-lg">⚠️</span>
                             <div>
@@ -110,7 +88,7 @@ export function Login() {
                                 <Link
                                     to="/forgot-password"
                                     className="text-sm transition-colors"
-                                    style={{ color: 'var(--accent-primary)' }}
+
                                 >
                                     Esqueceu?
                                 </Link>
@@ -143,12 +121,12 @@ export function Login() {
                     {/* Divider */}
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full" style={{ borderTop: '1px solid var(--border-default)' }}></div>
+                            <div className="w-full" ></div>
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                             <span
                                 className="px-3"
-                                style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)' }}
+
                             >
                                 ou
                             </span>
@@ -170,7 +148,7 @@ export function Login() {
                 {/* Footer */}
                 <p
                     className="text-center mt-6 text-sm animate-fadeIn"
-                    style={{ color: 'var(--text-muted)', animationDelay: '0.2s' }}
+
                 >
                     © 2026 ConstruSys. Todos os direitos reservados.
                 </p>

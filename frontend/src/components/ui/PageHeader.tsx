@@ -18,16 +18,16 @@ export function PageHeader({ title, subtitle, icon, actions, breadcrumb, center 
                 <nav className="flex items-center gap-2 text-sm mb-4">
                     {breadcrumb.map((item, index) => (
                         <React.Fragment key={index}>
-                            {index > 0 && <span className="text-[var(--text-muted)]">/</span>}
+                            {index > 0 && <span className="text-">/</span>}
                             {item.href ? (
                                 <Link
                                     to={item.href}
-                                    className="text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors"
+                                    className="text- hover:text- transition-colors"
                                 >
                                     {item.label}
                                 </Link>
                             ) : (
-                                <span className="text-[var(--text-secondary)]">{item.label}</span>
+                                <span className="text-">{item.label}</span>
                             )}
                         </React.Fragment>
                     ))}
@@ -39,7 +39,7 @@ export function PageHeader({ title, subtitle, icon, actions, breadcrumb, center 
                 <div className={`${center ? 'text-center w-full' : ''}`}>
                     <h1 className={`page-title ${center ? 'justify-center' : ''}`}>
                         {icon && <span className="text-2xl">{icon}</span>}
-                        <span className="bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)] bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from- to- bg-clip-text text-transparent">
                             {title}
                         </span>
                     </h1>
