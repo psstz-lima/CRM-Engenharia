@@ -20,6 +20,13 @@ import { AdminDashboard } from '../pages/AdminDashboard';
 import { Contracts } from '../pages/Contracts';
 import { ContractDetails } from '../pages/ContractDetails';
 import { Import } from '../pages/Import';
+import Documents from '../pages/Documents';
+import DocumentDetails from '../pages/DocumentDetails';
+import GRDList from '../pages/GRDList';
+import GRDDetails from '../pages/GRDDetails';
+import Projects from '../pages/Projects';
+import CriticalAnalysis from '../pages/CriticalAnalysis';
+import DocumentSLADashboard from '../pages/DocumentSLADashboard';
 
 export function AppRoutes() {
     return (
@@ -47,6 +54,20 @@ export function AppRoutes() {
                 <Route path="/measurements" element={<MeasurementContracts />} />
                 <Route path="/contracts/:id/measurements" element={<Measurements />} />
                 <Route path="/measurements/:id" element={<MeasurementDetails />} />
+
+                {/* Projetos */}
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/sla" element={<DocumentSLADashboard />} />
+                <Route path="/analysis" element={<CriticalAnalysis />} />
+
+                {/* Documentos */}
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/contracts/:contractId/documents" element={<Documents />} />
+                <Route path="/documents/:id" element={<DocumentDetails />} />
+
+                {/* GRD */}
+                <Route path="/grd" element={<GRDList />} />
+                <Route path="/grd/:id" element={<GRDDetails />} />
 
                 <Route path="/companies" element={<Companies />} />
                 <Route path="/import" element={<Import />} />

@@ -21,6 +21,10 @@ import reportRoutes from './routes/report.routes';
 import importRoutes from './routes/import.routes';
 import attachmentRoutes from './routes/attachment.routes';
 import favoriteRoutes from './routes/favorite.routes';
+import documentRoutes from './routes/document.routes';
+import criticalAnalysisRoutes from './routes/critical-analysis.routes';
+import grdRoutes from './routes/grd.routes';
+import dwgRoutes from './routes/dwg.routes';
 import { setupSwagger } from './config/swagger';
 
 const app = express();
@@ -71,12 +75,24 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/attachments', attachmentRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/critical-analysis', criticalAnalysisRoutes);
+app.use('/api/grd', grdRoutes);
+app.use('/api', dwgRoutes);
 
 import { initScheduledJobs } from './modules/scheduled-jobs';
 
 // Iniciar jobs agendados
+// Iniciar jobs agendados
 initScheduledJobs();
+
+// Error Handler Global
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('SERVER ERROR:', err);
+    res.status(500).json({ error: err.message || 'Erro interno do servidor' });
+});
 
 app.listen(config.port, () => {
     console.log(`Server running on port ${config.port}`);
 });
+// Force restart timestamp: 2026-01-08T15:38:00

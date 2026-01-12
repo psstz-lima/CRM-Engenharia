@@ -215,6 +215,8 @@ model Contract {
   items        ContractItem[]
   addendums    ContractAddendum[]
   measurements Measurement[]
+  projectDocuments ProjectDocument[]
+  grds         GRD[]
 
   @@map("contracts")
 }
@@ -531,4 +533,294 @@ model UserFavorite {
   @@unique([userId, targetType, targetId])
   @@index([userId])
   @@map("user_favorites")
+}
+
+// ==========================================
+// SISTEMA DE CONTROLE DE DOCUMENTOS
+// ==========================================
+
+// Categorias/Disciplinas de documentos
+model DocumentCategory {
+  id          String   @id @default(uuid())
+  code        String   @unique // ARQ, EST, ELE, HID, MEC, etc.
+  name        String   // Arquitetura, Estrutural, etc.
+  description String?
+  color       String?  // Cor para exibição
+  icon        String?  // Ícone
+  orderIndex  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  documents   ProjectDocument[]
+  
+  @@map("document_categories")
+}
+
+// Documento de projeto (DWG, PDF, etc.)
+model ProjectDocument {
+  id            String   @id @default(uuid())
+  contractId    String?
+  categoryId    String?
+  
+  // Identificação
+  code          String   // Código do documento: PRJ-ARQ-001
+  title         String
+  description   String?
+  
+  // Arquivo
+  fileName      String
+  storedName    String
+  filePath      String
+  fileSize      Int
+  mimeType      String
+  
+  // Versionamento
+  revision      String   @default("R00") // R00, R01, R02...
+  revisionDate  DateTime @default(now())
+  
+  // Status do workflow
+  status        DocumentStatus @default(RECEIVED)
+  
+  // Timestamps do workflow
+  receivedAt    DateTime @default(now())
+  analyzedAt    DateTime?
+  approvedAt    DateTime?
+  distributedAt DateTime?
+  releasedAt    DateTime?
+  
+  // Responsáveis
+  uploadedById    String?
+  uploadedByName  String?
+  
+  // Metadados
+  author        String?  // Autor do projeto (projetista)
+  discipline    String?  // Disciplina alternativa
+  format        String?  // A0, A1, A2, A3, A4
+  scale         String?  // 1:50, 1:100, etc.
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relações
+  contract      Contract?  @relation(fields: [contractId], references: [id])
+  category      DocumentCategory? @relation(fields: [categoryId], references: [id])
+  versions      DocumentVersion[]
+  analyses      CriticalAnalysis[]
+  grdItems      GRDItem[]
+  annotations   DocumentAnnotation[]
+  
+  @@index([contractId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([code])
+  @@map("project_documents")
+}
+
+enum DocumentStatus {
+  RECEIVED        // Recebido
+  IN_ANALYSIS     // Em análise crítica
+  APPROVED        // Aprovado
+  APPROVED_NOTES  // Aprovado com ressalvas
+  REJECTED        // Reprovado
+  DISTRIBUTED     // Distribuído (GRD)
+  RELEASED        // Liberado para obra
+  SUPERSEDED      // Substituído por nova revisão
+}
+
+// Versões do documento
+model DocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  revision      String   // R00, R01, R02...
+  
+  // Arquivo
+  fileName      String
+  storedName    String
+  filePath      String
+  fileSize      Int
+  
+  // Metadados
+  changes       String?  // Descrição das alterações
+  uploadedById  String?
+  uploadedByName String?
+  
+  createdAt     DateTime @default(now())
+  
+  document      ProjectDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  @@index([documentId])
+  @@map("document_versions")
+}
+
+// Análise Crítica
+model CriticalAnalysis {
+  id            String   @id @default(uuid())
+  documentId    String
+  
+  // Revisor
+  reviewerId    String?
+  reviewerName  String?
+  
+  // Status
+  status        AnalysisStatus @default(PENDING)
+  result        AnalysisResult?
+  
+  // Conteúdo
+  observations  String?  @db.Text
+  pendencies    Json?    // Lista de pendências
+  technicalNotes String? @db.Text
+  
+  // Prazos
+  deadline      DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  document      ProjectDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  @@index([documentId])
+  @@index([reviewerId])
+  @@index([status])
+  @@map("critical_analyses")
+}
+
+enum AnalysisStatus {
+  PENDING       // Aguardando
+  IN_PROGRESS   // Em andamento
+  COMPLETED     // Concluída
+}
+
+enum AnalysisResult {
+  APPROVED        // Aprovado
+  REJECTED        // Reprovado
+  APPROVED_NOTES  // Aprovado com ressalvas
+}
+
+// GRD - Guia de Remessa de Documentos
+model GRD {
+  id            String   @id @default(uuid())
+  contractId    String
+  
+  // Identificação
+  number        String   @unique // GRD-001/2026
+  year          Int
+  sequence      Int
+  
+  // Destinatário
+  recipient       String
+  recipientEmail  String?
+  recipientPhone  String?
+  recipientCompany String?
+  
+  // Envio
+  sendMethod    GRDSendMethod @default(EMAIL)
+  reason        GRDReason     @default(INITIAL)
+  status        GRDStatus     @default(DRAFT)
+  
+  // Observações
+  notes         String?
+  
+  // Datas
+  sentAt        DateTime?
+  confirmedAt   DateTime?
+  
+  // Responsável
+  createdById   String?
+  createdByName String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  contract      Contract  @relation(fields: [contractId], references: [id])
+  items         GRDItem[]
+  
+  @@index([contractId])
+  @@index([number])
+  @@index([status])
+  @@map("grds")
+}
+
+enum GRDSendMethod {
+  EMAIL
+  PHYSICAL
+  CLOUD
+  CD_DVD
+  PENDRIVE
+}
+
+enum GRDReason {
+  INITIAL       // Envio inicial
+  REVISION      // Revisão
+  REPLACEMENT   // Substituição
+  INFORMATION   // Para informação
+  APPROVAL      // Para aprovação
+}
+
+enum GRDStatus {
+  DRAFT         // Rascunho
+  SENT          // Enviado
+  RECEIVED      // Recebido
+  PENDING       // Pendente resposta
+  CANCELLED     // Cancelado
+}
+
+// Itens da GRD
+model GRDItem {
+  id          String   @id @default(uuid())
+  grdId       String
+  documentId  String
+  
+  copies      Int      @default(1)  // Quantidade de cópias
+  format      String?  // A0, A1, A2, A3, A4
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  
+  grd         GRD             @relation(fields: [grdId], references: [id], onDelete: Cascade)
+  document    ProjectDocument @relation(fields: [documentId], references: [id])
+  
+  @@index([grdId])
+  @@index([documentId])
+  @@map("grd_items")
+}
+
+// Anotações/Marcações em documentos
+model DocumentAnnotation {
+  id          String   @id @default(uuid())
+  documentId  String
+  
+  // Tipo de anotação
+  type        AnnotationType
+  
+  // Posição e geometria (JSON)
+  geometry    Json     // {x, y, width, height, points, etc.}
+  
+  // Conteúdo
+  text        String?
+  color       String   @default("#ff0000")
+  
+  // Autor
+  createdById   String?
+  createdByName String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  document    ProjectDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  @@index([documentId])
+  @@map("document_annotations")
+}
+
+enum AnnotationType {
+  CIRCLE      // Círculo
+  ARROW       // Seta
+  TEXT        // Texto
+  CLOUD       // Nuvem de revisão
+  DIMENSION   // Cota/medida
+  STRIKEOUT   // Riscado
+  RECTANGLE   // Retângulo
+  FREEHAND    // Desenho livre
 }

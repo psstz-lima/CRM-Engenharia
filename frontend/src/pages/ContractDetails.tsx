@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { ContractSpreadsheet } from '../components/contracts/ContractSpreadsheet';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -15,14 +15,16 @@ import {
     DollarSign,
     FileText,
     AlertCircle,
-    Paperclip
+    Paperclip,
+    FolderOpen
 } from 'lucide-react';
 
 export function ContractDetails() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [contract, setContract] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'spreadsheet' | 'attachments'>('spreadsheet');
+    const [activeTab, setActiveTab] = useState<'spreadsheet' | 'attachments' | 'documents'>('spreadsheet');
     const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
@@ -216,6 +218,13 @@ export function ContractDetails() {
                 >
                     <Paperclip size={18} />
                     Anexos
+                </button>
+                <button
+                    onClick={() => navigate(`/contracts/${id}/documents`)}
+                    className="pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 border-transparent text- hover:text-blue-500 hover:border-blue-500"
+                >
+                    <FolderOpen size={18} />
+                    Documentos Técnicos
                 </button>
             </div>
 

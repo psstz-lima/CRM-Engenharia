@@ -103,6 +103,22 @@ export function Sidebar() {
                     </>
                 )}
 
+                {/* Projetos - Documentação Técnica */}
+                <SectionTitle>Projetos</SectionTitle>
+                <ul>
+                    <NavGroup
+                        label="Documentação"
+                        icon="📐"
+                        paths={['/projects', '/documents', '/grd', '/analysis']}
+                    >
+                        <NavItem to="/projects" icon="📁" label="Visão Geral" />
+                        <NavItem to="/documents" icon="📚" label="Biblioteca de Projetos" />
+                        <NavItem to="/grd" icon="📬" label="GRD" />
+                        <NavItem to="/analysis" icon="🔍" label="Análise Crítica" />
+                        <NavItem to="/projects/sla" icon="📊" label="Dashboard SLA" />
+                    </NavGroup>
+                </ul>
+
                 {/* Administration */}
                 {hasAnyPermission(user, ['users_view', 'users_manage', 'admin_roles', 'admin_audit']) && (
                     <>
