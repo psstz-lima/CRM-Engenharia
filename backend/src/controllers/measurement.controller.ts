@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import prisma from '../config/database';
 
 export class MeasurementController {
@@ -25,7 +25,7 @@ export class MeasurementController {
                 where: { id },
                 include: { items: { include: { contractItem: true, memories: true } } }
             });
-            if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
+            if (!measurement) return res.status(404).json({ error: 'MediÃ§Ã£o nÃ£o encontrada' });
             return res.json(measurement);
         } catch (e: any) {
             return res.status(500).json({ error: e.message });
@@ -38,6 +38,17 @@ export class MeasurementController {
         try {
             const { contractId } = req.params;
             const { periodStart, periodEnd, notes } = req.body;
+            if (!periodStart || !periodEnd) {
+                return res.status(400).json({ error: 'periodStart e periodEnd são obrigatórios' });
+            }
+            const start = new Date(periodStart);
+            const end = new Date(periodEnd);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return res.status(400).json({ error: 'Datas inválidas' });
+            }
+            if (start > end) {
+                return res.status(400).json({ error: 'periodStart não pode ser maior que periodEnd' });
+            }
 
             // Find last number
             const last = await prisma.measurement.findFirst({
@@ -50,8 +61,8 @@ export class MeasurementController {
                 data: {
                     contractId,
                     number,
-                    periodStart: new Date(periodStart),
-                    periodEnd: new Date(periodEnd),
+                    periodStart: start,
+                    periodEnd: end,
                     notes,
                     status: 'DRAFT'
                 }
@@ -70,7 +81,7 @@ export class MeasurementController {
         isSuppressed: boolean;
     }> {
         const item = await prisma.contractItem.findUnique({ where: { id: contractItemId } });
-        if (!item) throw new Error('Item não encontrado');
+        if (!item) throw new Error('Item nÃ£o encontrado');
 
         let quantity = Number(item.quantity) || 0;
         let unitPrice = Number(item.unitPrice) || 0;
@@ -113,20 +124,24 @@ export class MeasurementController {
         try {
             const { id } = req.params; // Measurement ID
             const { contractItemId, quantity } = req.body;
+            const normalizedQuantity = Number(quantity);
+            if (!Number.isFinite(normalizedQuantity) || normalizedQuantity < 0) {
+                return res.status(400).json({ error: 'Quantidade inválida' });
+            }
 
             const measurement = await prisma.measurement.findUnique({ where: { id } });
-            if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
-            if (measurement.status !== 'DRAFT') return res.status(400).json({ error: 'Apenas medições em Rascunho podem ser alteradas' });
+            if (!measurement) return res.status(404).json({ error: 'MediÃ§Ã£o nÃ£o encontrada' });
+            if (measurement.status !== 'DRAFT') return res.status(400).json({ error: 'Apenas mediÃ§Ãµes em Rascunho podem ser alteradas' });
 
             const contractItem = await prisma.contractItem.findUnique({ where: { id: contractItemId } });
-            if (!contractItem) return res.status(404).json({ error: 'Item não encontrado' });
+            if (!contractItem) return res.status(404).json({ error: 'Item nÃ£o encontrado' });
 
             // Get VIGENT values (with addendums applied)
             const vigent = await MeasurementController.getVigentItemValues(contractItemId, measurement.contractId);
 
             // Check if item is suppressed
             if (vigent.isSuppressed) {
-                return res.status(400).json({ error: 'Item suprimido por aditivo. Não é possível medir.' });
+                return res.status(400).json({ error: 'Item suprimido por aditivo. NÃ£o Ã© possÃ­vel medir.' });
             }
 
             // Calculate Accumulated from PREVIOUS CLOSED measurements
@@ -145,9 +160,9 @@ export class MeasurementController {
             // Use VIGENT quantity for balance calculation
             const currentBalance = vigent.quantity - alreadyMeasured;
 
-            if (Number(quantity) > currentBalance) {
+            if (normalizedQuantity > currentBalance) {
                 return res.status(400).json({
-                    error: `Saldo insuficiente. Saldo vigente: ${currentBalance.toFixed(3)}, Tentativa: ${quantity}`
+                    error: `Saldo insuficiente. Saldo vigente: ${currentBalance.toFixed(3)}, Tentativa: ${normalizedQuantity}`
                 });
             }
 
@@ -158,7 +173,7 @@ export class MeasurementController {
             });
 
             if (existingItem && existingItem.memories.length > 0) {
-                return res.status(400).json({ error: 'Este item possui memória de cálculo. Use a calculadora para editar.' });
+                return res.status(400).json({ error: 'Este item possui memÃ³ria de cÃ¡lculo. Use a calculadora para editar.' });
             }
 
             // Upsert Measurement Item with VIGENT price
@@ -170,14 +185,14 @@ export class MeasurementController {
                     }
                 },
                 update: {
-                    measuredQuantity: quantity,
+                    measuredQuantity: normalizedQuantity,
                     currentPrice: vigent.unitPrice, // Use VIGENT price
                     accumulatedQuantity: alreadyMeasured
                 },
                 create: {
                     measurementId: id,
                     contractItemId,
-                    measuredQuantity: quantity,
+                    measuredQuantity: normalizedQuantity,
                     currentPrice: vigent.unitPrice, // Use VIGENT price
                     accumulatedQuantity: alreadyMeasured
                 }
@@ -199,7 +214,7 @@ export class MeasurementController {
                 where: { id },
                 data: { status: 'CLOSED' }
             });
-            return res.json({ message: 'Medição fechada com sucesso' });
+            return res.json({ message: 'MediÃ§Ã£o fechada com sucesso' });
         } catch (e: any) {
             return res.status(500).json({ error: e.message });
         }
@@ -211,7 +226,7 @@ export class MeasurementController {
         try {
             const { id } = req.params; // Measurement ID
             const measurement = await prisma.measurement.findUnique({ where: { id } });
-            if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
+            if (!measurement) return res.status(404).json({ error: 'MediÃ§Ã£o nÃ£o encontrada' });
 
             // Get all contract items
             const contractItems = await prisma.contractItem.findMany({
@@ -266,7 +281,7 @@ export class MeasurementController {
             const { contractItemId, description, startPoint, endPoint, length, width, height, quantity, metadata } = req.body;
 
             const measurement = await prisma.measurement.findUnique({ where: { id } });
-            if (!measurement || measurement.status !== 'DRAFT') return res.status(400).json({ error: 'Medição inválida ou fechada' });
+            if (!measurement || measurement.status !== 'DRAFT') return res.status(400).json({ error: 'MediÃ§Ã£o invÃ¡lida ou fechada' });
 
             // Ensure MeasurementItem exists
             let item = await prisma.measurementItem.findUnique({
@@ -276,13 +291,13 @@ export class MeasurementController {
             if (!item) {
                 // Fetch contract item
                 const ci = await prisma.contractItem.findUnique({ where: { id: contractItemId } });
-                if (!ci) return res.status(404).json({ error: 'Item de contrato não encontrado' });
+                if (!ci) return res.status(404).json({ error: 'Item de contrato nÃ£o encontrado' });
 
                 // Get vigent values (with addendums applied)
                 const vigent = await MeasurementController.getVigentItemValues(contractItemId, measurement.contractId);
 
                 if (vigent.isSuppressed) {
-                    return res.status(400).json({ error: 'Item suprimido por aditivo. Não é possível medir.' });
+                    return res.status(400).json({ error: 'Item suprimido por aditivo. NÃ£o Ã© possÃ­vel medir.' });
                 }
 
                 // Create initial item with 0 quantity and VIGENT price
@@ -315,7 +330,7 @@ export class MeasurementController {
             // Recalculate Total
             await MeasurementController.recalculateItemQuantity(item.id);
 
-            return res.json({ message: 'Memória adicionada' });
+            return res.json({ message: 'MemÃ³ria adicionada' });
 
         } catch (e: any) {
             return res.status(500).json({ error: e.message });
@@ -328,15 +343,15 @@ export class MeasurementController {
             const { memoryId } = req.params;
             const memory = await prisma.measurementMemory.findUnique({ include: { measurementItem: { include: { measurement: true } } }, where: { id: memoryId } });
 
-            if (!memory) return res.status(404).json({ error: 'Memória não encontrada' });
-            if (memory.measurementItem.measurement.status !== 'DRAFT') return res.status(400).json({ error: 'Medição fechada' });
+            if (!memory) return res.status(404).json({ error: 'MemÃ³ria nÃ£o encontrada' });
+            if (memory.measurementItem.measurement.status !== 'DRAFT') return res.status(400).json({ error: 'MediÃ§Ã£o fechada' });
 
             await prisma.measurementMemory.delete({ where: { id: memoryId } });
 
             // Recalculate
             await MeasurementController.recalculateItemQuantity(memory.measurementItemId);
 
-            return res.json({ message: 'Memória removida' });
+            return res.json({ message: 'MemÃ³ria removida' });
 
         } catch (e: any) {
             return res.status(500).json({ error: e.message });
@@ -402,10 +417,10 @@ export class MeasurementController {
             if (!item) {
                 // Fetch contract item and measurement
                 const ci = await prisma.contractItem.findUnique({ where: { id: itemId } });
-                if (!ci) return res.status(404).json({ error: 'Item de contrato não encontrado' });
+                if (!ci) return res.status(404).json({ error: 'Item de contrato nÃ£o encontrado' });
 
                 const measurement = await prisma.measurement.findUnique({ where: { id } });
-                if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
+                if (!measurement) return res.status(404).json({ error: 'MediÃ§Ã£o nÃ£o encontrada' });
 
                 // Get vigent values (with addendums applied)
                 const vigent = await MeasurementController.getVigentItemValues(itemId, measurement.contractId);
@@ -457,12 +472,12 @@ export class MeasurementController {
             const { reason } = req.body;
 
             if (!reason) {
-                return res.status(400).json({ error: 'Motivo da revisão é obrigatório' });
+                return res.status(400).json({ error: 'Motivo da revisÃ£o Ã© obrigatÃ³rio' });
             }
 
             // Get user info
             const user = await prisma.user.findUnique({ where: { id: userId } });
-            if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+            if (!user) return res.status(404).json({ error: 'UsuÃ¡rio nÃ£o encontrado' });
 
             // Get measurement with all data
             const measurement = await prisma.measurement.findUnique({
@@ -473,9 +488,9 @@ export class MeasurementController {
                 }
             });
 
-            if (!measurement) return res.status(404).json({ error: 'Medição não encontrada' });
+            if (!measurement) return res.status(404).json({ error: 'MediÃ§Ã£o nÃ£o encontrada' });
             if (measurement.status === 'DRAFT') {
-                return res.status(400).json({ error: 'Medição já está aberta' });
+                return res.status(400).json({ error: 'MediÃ§Ã£o jÃ¡ estÃ¡ aberta' });
             }
 
             // Count existing revisions
@@ -511,7 +526,7 @@ export class MeasurementController {
                 data: { status: 'DRAFT' }
             });
 
-            return res.json({ message: 'Medição reaberta para revisão', revisionNumber: revisionCount + 1 });
+            return res.json({ message: 'MediÃ§Ã£o reaberta para revisÃ£o', revisionNumber: revisionCount + 1 });
         } catch (e: any) {
             return res.status(500).json({ error: e.message });
         }
@@ -533,4 +548,5 @@ export class MeasurementController {
         }
     }
 }
+
 

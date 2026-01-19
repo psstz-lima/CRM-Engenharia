@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -11,6 +11,9 @@ export class AuthController {
         console.log('Login attempt received:', req.body.email);
         try {
             const { email, password } = req.body;
+            if (!email || !password) {
+                return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+            }
             const user = await prisma.user.findUnique({ where: { email }, include: { company: true, role: true } });
             if (!user) return res.status(401).json({ error: 'Credenciais inválidas' });
 
@@ -124,6 +127,9 @@ export class AuthController {
         try {
             console.log('Login Master Attempt:', req.body);
             const { email, password } = req.body;
+            if (!email || !password) {
+                return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+            }
             const user = await prisma.user.findUnique({ where: { email }, include: { company: true, role: true } });
             console.log('User found:', user?.email, 'isMaster:', user?.isMaster);
             if (!user || !user.isMaster) return res.status(403).json({ error: 'Acesso negado: Usuário não existe ou não é Master' });
@@ -169,6 +175,9 @@ export class AuthController {
     static async refresh(req: Request, res: Response) {
         try {
             const { refreshToken } = req.body;
+            if (!refreshToken) {
+                return res.status(400).json({ error: 'Refresh token não informado' });
+            }
             const session = await prisma.session.findUnique({
                 where: { refreshToken },
                 include: { user: { include: { company: true, role: true } } }
@@ -229,6 +238,9 @@ export class AuthController {
     static async forgotPassword(req: Request, res: Response) {
         try {
             const { email } = req.body;
+            if (!email) {
+                return res.status(400).json({ error: 'Email não informado' });
+            }
             const user = await prisma.user.findUnique({ where: { email } });
             if (!user) return res.json({ message: 'Se o email existir, um link será enviado' });
 
@@ -253,6 +265,9 @@ export class AuthController {
     static async resetPassword(req: Request, res: Response) {
         try {
             const { token, newPassword } = req.body;
+            if (!token || !newPassword) {
+                return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
+            }
             const reset = await prisma.passwordReset.findUnique({ where: { token } });
             if (!reset || reset.usedAt || reset.expiresAt < new Date()) {
                 return res.status(400).json({ error: 'Token inválido ou expirado' });
@@ -272,3 +287,6 @@ export class AuthController {
         }
     }
 }
+
+
+

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import prisma from '../config/database';
@@ -14,6 +14,7 @@ export const authMiddleware = async (req: any, res: Response, next: NextFunction
         });
         if (!user || !user.isActive) return res.status(401).json({ error: 'Usuário inativo' });
         req.user = user;
+        req.userId = user.id;
         next();
     } catch {
         res.status(401).json({ error: 'Token inválido' });
@@ -24,3 +25,5 @@ export const masterMiddleware = (req: any, res: Response, next: NextFunction) =>
     if (!req.user?.isMaster) return res.status(403).json({ error: 'Acesso negado' });
     next();
 };
+
+

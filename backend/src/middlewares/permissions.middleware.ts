@@ -1,4 +1,45 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
+
+/**
+ * Helper to check if user has a specific permission
+ * Supports formats: 'users_view' or 'users.view' -> checks perms.users.view
+ */
+const checkPermissionInternal = (userPermissions: any, requiredPermission: string): boolean => {
+    // Check for 'all' permission (admin override)
+    if (userPermissions.all === true) {
+        return true;
+    }
+
+    // Check direct permission (old format: users_view)
+    if (userPermissions[requiredPermission] === true) {
+        return true;
+    }
+
+    // Check nested format (new format: users.view or users_view -> users.view)
+    const parts = requiredPermission.includes('_')
+        ? requiredPermission.split('_')
+        : requiredPermission.split('.');
+
+    if (parts.length === 2) {
+        const [module, action] = parts;
+        // Check if module.action is true OR if module is a boolean true
+        if (userPermissions[module]?.[action] === true || userPermissions[module] === true) {
+            return true;
+        }
+    }
+
+    // Check if module exists as object with any truthy permission
+    const moduleName = parts[0];
+    if (typeof userPermissions[moduleName] === 'object' && userPermissions[moduleName] !== null) {
+        // If action is 'view' or 'manage', check if that specific action exists
+        const action = parts[1];
+        if (action && userPermissions[moduleName][action] === true) {
+            return true;
+        }
+    }
+
+    return false;
+};
 
 /**
  * Middleware factory to check if user has required permission
@@ -13,13 +54,7 @@ export const checkPermission = (requiredPermission: string) => {
 
         const userPermissions = req.user?.role?.permissions || {};
 
-        // Check for 'all' permission (admin override)
-        if (userPermissions.all === true) {
-            return next();
-        }
-
-        // Check specific permission
-        if (userPermissions[requiredPermission] === true) {
+        if (checkPermissionInternal(userPermissions, requiredPermission)) {
             return next();
         }
 
@@ -46,7 +81,9 @@ export const checkAnyPermission = (...requiredPermissions: string[]) => {
             return next();
         }
 
-        const hasPermission = requiredPermissions.some(p => userPermissions[p] === true);
+        const hasPermission = requiredPermissions.some(p =>
+            checkPermissionInternal(userPermissions, p)
+        );
         if (hasPermission) {
             return next();
         }
@@ -74,7 +111,9 @@ export const checkAllPermissions = (...requiredPermissions: string[]) => {
             return next();
         }
 
-        const missingPermissions = requiredPermissions.filter(p => !userPermissions[p]);
+        const missingPermissions = requiredPermissions.filter(p =>
+            !checkPermissionInternal(userPermissions, p)
+        );
         if (missingPermissions.length === 0) {
             return next();
         }
@@ -93,5 +132,7 @@ export const checkAllPermissions = (...requiredPermissions: string[]) => {
 export const hasPermission = (user: any, permission: string): boolean => {
     if (user?.isMaster) return true;
     const perms = user?.role?.permissions || {};
-    return perms.all === true || perms[permission] === true;
+    return checkPermissionInternal(perms, permission);
 };
+
+

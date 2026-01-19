@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import prisma from '../config/database';
 import multer from 'multer';
 import path from 'path';
@@ -42,7 +42,8 @@ export const documentUpload = multer({
         const ext = path.extname(file.originalname).toLowerCase();
         const allowedExts = ['.pdf', '.dwg', '.dxf', '.jpg', '.jpeg', '.png', '.tif', '.tiff'];
 
-        if (allowedExts.includes(ext)) {
+        const isAllowed = allowedExts.includes(ext) || allowedMimes.includes(file.mimetype);
+        if (isAllowed) {
             cb(null, true);
         } else {
             cb(new Error(`Tipo de arquivo não permitido: ${ext}`));
@@ -351,3 +352,5 @@ export class DocumentController {
         }
     }
 }
+
+

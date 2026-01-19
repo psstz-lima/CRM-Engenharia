@@ -1,4 +1,4 @@
-
+﻿
 import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { ManageUnitsModal, ColumnDef } from './ManageUnitsModal';
@@ -48,7 +48,7 @@ function SortableFormItem({ id, children, style }: { id: string; children: React
                 }}
                 title="Arrastar para mover"
             >
-                ⋮⋮
+                â‹®â‹®
             </div>
             {children}
         </div>
@@ -74,45 +74,45 @@ type FormulaDef = { id: string; name: string; variables: { key: string; label: s
 const ENGINEERING_FORMULAS: Record<string, FormulaDef> = {
     'triangle': {
         id: 'triangle',
-        name: '📐 Área do Triângulo',
+        name: 'ðŸ“ Ãrea do Triângulo',
         variables: [{ key: 'B', label: 'Base (B)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (v.B * v.h) / 2,
-        title: "(B × h) ÷ 2"
+        title: "(B Ã— h) Ã· 2"
     },
     'trapezoid': {
         id: 'trapezoid',
-        name: '⬡ Área do Trapézio',
+        name: 'â¬¡ Ãrea do Trapézio',
         variables: [{ key: 'B', label: 'Base Maior (B)' }, { key: 'b', label: 'Base Menor (b)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => ((v.B + v.b) * v.h) / 2,
-        title: "(B + b) × h ÷ 2"
+        title: "(B + b) Ã— h Ã· 2"
     },
     'circle_perimeter': {
         id: 'circle_perimeter',
-        name: '⭕ Perímetro do Círculo',
+        name: 'â­• Perímetro do Círculo',
         variables: [{ key: 'r', label: 'Raio (r)' }],
         calculate: (v) => 2 * Math.PI * v.r,
-        title: "2 × π × r"
+        title: "2 Ã— Ï€ Ã— r"
     },
     'sphere_vol': {
         id: 'sphere_vol',
-        name: '🔵 Volume da Esfera',
+        name: 'ðŸ”µ Volume da Esfera',
         variables: [{ key: 'r', label: 'Raio (r)' }],
         calculate: (v) => (4 / 3) * Math.PI * Math.pow(v.r, 3),
-        title: "(4/3) × π × r³"
+        title: "(4/3) Ã— Ï€ Ã— rÂ³"
     },
     'cone_vol': {
         id: 'cone_vol',
-        name: '▲ Volume do Cone',
+        name: 'â–² Volume do Cone',
         variables: [{ key: 'r', label: 'Raio (r)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (1 / 3) * Math.PI * Math.pow(v.r, 2) * v.h,
-        title: "(1/3) × π × r² × h"
+        title: "(1/3) Ã— Ï€ Ã— rÂ² Ã— h"
     },
     'pyramid_vol': {
         id: 'pyramid_vol',
-        name: '🔺 Volume da Pirâmide',
-        variables: [{ key: 'A', label: 'Área da Base (A)' }, { key: 'h', label: 'Altura (h)' }],
+        name: 'ðŸ”º Volume da Pirâmide',
+        variables: [{ key: 'A', label: 'Ãrea da Base (A)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (v.A * v.h) / 3,
-        title: "(A × h) ÷ 3"
+        title: "(A Ã— h) Ã· 3"
     },
     'cylinder_vol': { // Adding Cylinder separately if it was missing or implied?
         // Converting the existing "Cilindro" button which was likely just 3.14 * r^2 * h?
@@ -120,10 +120,10 @@ const ENGINEERING_FORMULAS: Record<string, FormulaDef> = {
         // It might be missing from my view or I missed it.
         // I'll stick to replacing the visible ones first.
         id: 'cylinder_vol',
-        name: '🛢️ Volume do Cilindro',
+        name: 'ðŸ›¢ï¸ Volume do Cilindro',
         variables: [{ key: 'r', label: 'Raio (r)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => Math.PI * Math.pow(v.r, 2) * v.h,
-        title: "π × r² × h"
+        title: "Ï€ Ã— rÂ² Ã— h"
     }
 };
 
@@ -350,9 +350,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     ['comprimento', 'largura', 'altura', 'espessura', 'profundidade'].includes(lowerSourceLabel)) {
                     finalUnit = 'm';
                 } else if (lowerProp === 'area' || lowerSourceLabel.includes('área')) {
-                    finalUnit = 'm²';
+                    finalUnit = 'mÂ²';
                 } else if (lowerProp === 'volume' || lowerSourceLabel.includes('volume')) {
-                    finalUnit = 'm³';
+                    finalUnit = 'mÂ³';
                 } else if (lowerProp === 'km') {
                     finalUnit = 'km';
                 }
@@ -636,6 +636,141 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
         return Number(value.replace(/\./g, '').replace(',', '.'));
     };
 
+    const evaluateExpression = (expression: string): number => {
+        const tokens: string[] = [];
+        let i = 0;
+
+        const pushNumber = (value: string) => {
+            if (value.length > 0) tokens.push(value);
+        };
+
+        while (i < expression.length) {
+            const ch = expression[i];
+            if (/\s/.test(ch)) {
+                i += 1;
+                continue;
+            }
+
+            if (/\d|\./.test(ch)) {
+                let num = ch;
+                i += 1;
+                while (i < expression.length && /[\d.]/.test(expression[i])) {
+                    num += expression[i];
+                    i += 1;
+                }
+                pushNumber(num);
+                continue;
+            }
+
+            if (ch === '*' && expression[i + 1] === '*') {
+                tokens.push('**');
+                i += 2;
+                continue;
+            }
+
+            if ('+-*/()'.includes(ch)) {
+                tokens.push(ch);
+                i += 1;
+                continue;
+            }
+
+            return NaN;
+        }
+
+        const output: string[] = [];
+        const operators: string[] = [];
+        const precedence: Record<string, number> = { 'u-': 3, '**': 4, '*': 2, '/': 2, '+': 1, '-': 1 };
+        const rightAssoc = new Set(['**', 'u-']);
+        let prevType: 'number' | 'operator' | '(' | ')' | null = null;
+
+        const isOperator = (token: string) => ['+', '-', '*', '/', '**', 'u-'].includes(token);
+
+        tokens.forEach(token => {
+            if (!isNaN(Number(token))) {
+                output.push(token);
+                prevType = 'number';
+                return;
+            }
+
+            if (token === '(') {
+                operators.push(token);
+                prevType = '(';
+                return;
+            }
+
+            if (token === ')') {
+                while (operators.length > 0 && operators[operators.length - 1] !== '(') {
+                    output.push(operators.pop() as string);
+                }
+                if (operators.length > 0 && operators[operators.length - 1] === '(') {
+                    operators.pop();
+                }
+                prevType = ')';
+                return;
+            }
+
+            let op = token;
+            if (op === '-' && (prevType === null || prevType === 'operator' || prevType === '(')) {
+                op = 'u-';
+            }
+
+            while (operators.length > 0 && isOperator(operators[operators.length - 1])) {
+                const top = operators[operators.length - 1];
+                const precDiff = precedence[op] - precedence[top];
+                const shouldPop = rightAssoc.has(op) ? precDiff < 0 : precDiff <= 0;
+                if (!shouldPop) break;
+                output.push(operators.pop() as string);
+            }
+            operators.push(op);
+            prevType = 'operator';
+        });
+
+        while (operators.length > 0) {
+            const op = operators.pop() as string;
+            if (op === '(' || op === ')') return NaN;
+            output.push(op);
+        }
+
+        const stack: number[] = [];
+        for (const token of output) {
+            if (!isNaN(Number(token))) {
+                stack.push(Number(token));
+                continue;
+            }
+
+            if (token === 'u-') {
+                if (stack.length < 1) return NaN;
+                stack.push(-stack.pop()!);
+                continue;
+            }
+
+            if (stack.length < 2) return NaN;
+            const b = stack.pop() as number;
+            const a = stack.pop() as number;
+            switch (token) {
+                case '+':
+                    stack.push(a + b);
+                    break;
+                case '-':
+                    stack.push(a - b);
+                    break;
+                case '*':
+                    stack.push(a * b);
+                    break;
+                case '/':
+                    stack.push(b === 0 ? NaN : a / b);
+                    break;
+                case '**':
+                    stack.push(a ** b);
+                    break;
+                default:
+                    return NaN;
+            }
+        }
+
+        return stack.length === 1 ? stack[0] : NaN;
+    };
+
     const STATION_LENGTH = 20;
     const KM_LENGTH = 1000;
 
@@ -766,9 +901,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             if (formula.length > 0) {
                 const expression = formula.map(item => {
                     if (item.type === 'operator') {
-                        if (item.value === '×') return '*';
-                        if (item.value === '÷') return '/';
-                        if (item.value === '−') return '-';
+                        if (item.value === '×' || item.value === 'Ã—' || item.value === 'x') return '*';
+                        if (item.value === '÷' || item.value === 'Ã·') return '/';
+                        if (item.value === '−' || item.value === 'âˆ’') return '-';
                         if (item.value === '^') return '**';
                         return item.value;
                     } else {
@@ -779,7 +914,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 try {
                     // Safety check: only allow numbers and operators
                     if (/^[\d\.\s\+\-\*\/\(\)]+$/.test(expression)) {
-                        qty = eval(expression);
+                        qty = evaluateExpression(expression);
                     }
 
                     // Apply Extension Logic to Formula
@@ -941,9 +1076,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
             <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-3">
-                    {saveStatus === 'saving' && <span className="text-amber-600 text-sm">⏳ Salvando...</span>}
-                    {saveStatus === 'saved' && <span className="text-emerald-500 text-sm">✔️ Configuração salva</span>}
-                    {saveStatus === 'error' && <span className="text-red-500 text-sm">❌ Erro ao salvar</span>}
+                    {saveStatus === 'saving' && <span className="text-amber-600 text-sm">â³ Salvando...</span>}
+                    {saveStatus === 'saved' && <span className="text-emerald-500 text-sm">âœ”ï¸ Configuração salva</span>}
+                    {saveStatus === 'error' && <span className="text-red-500 text-sm">âŒ Erro ao salvar</span>}
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -956,7 +1091,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                         onClick={() => setShowLinkModal(true)}
                         className="btn btn-sm bg-green-100 text-green-800 hover:bg-green-200 border-none"
                     >
-                        🔗 Vincular Item
+                        ðŸ”— Vincular Item
                     </button>
                     {/* Distance Calculator Button - only for km unit items */}
                     {contractItemUnit?.toLowerCase().includes('km') && (
@@ -965,7 +1100,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             onClick={() => setShowDistanceCalculator(true)}
                             className="btn btn-sm bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-400 font-bold"
                         >
-                            📍 Calcular Distância
+                            ðŸ“ Calcular Distância
                         </button>
                     )}
                 </div>
@@ -1055,7 +1190,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             });
                                                         }}
                                                         className="px-2 py-0.5 bg-blue-500 text-gray-900 rounded text-xs hover:bg-blue-600"
-                                                        title="Adicionar à Fórmula"
+                                                        title="Adicionar Ã  Fórmula"
                                                     >
                                                         Usar
                                                     </button>
@@ -1065,7 +1200,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                         className="px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-300 rounded hover:bg-red-200"
                                                         title="Remover Item Vinculado"
                                                     >
-                                                        ✕
+                                                        âœ•
                                                     </button>
                                                 </div>
                                             </td>
@@ -1096,15 +1231,15 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 <div className="flex gap-2 flex-wrap">
                     <span className="text-xs text-slate-600 w-full">Operadores:</span>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">+</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">−</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '×' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">×</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '÷' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">÷</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">âˆ’</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ã—' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">Ã—</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ã·' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">Ã·</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">^</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">√</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'âˆš' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">âˆš</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">%</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">(</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">)</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} className="px-3 py-1 bg-violet-500 text-gray-900 rounded font-bold hover:bg-violet-600">π</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ï€' }])} className="px-3 py-1 bg-violet-500 text-gray-900 rounded font-bold hover:bg-violet-600">Ï€</button>
                 </div>
 
                 {/* Engineering Formulas */}
@@ -1370,9 +1505,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                                 let expression = formula.map(item => {
                                     if (item.type === 'operator') {
-                                        if (item.value === '×') return '*';
-                                        if (item.value === '÷') return '/';
-                                        if (item.value === '−') return '-';
+                                        if (item.value === '×' || item.value === 'Ã—' || item.value === 'x') return '*';
+                                        if (item.value === '÷' || item.value === 'Ã·') return '/';
+                                        if (item.value === '−' || item.value === 'âˆ’') return '-';
                                         if (item.value === '^') return '**';
                                         return item.value;
                                     } else {
@@ -1386,7 +1521,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     }
                                 }).join(' ');
                                 let result = 0;
-                                try { result = eval(expression); } catch { }
+                                try { result = evaluateExpression(expression); } catch { }
 
                                 // Extension Logic for Formula Preview
                                 const useStations = isVisible('stations');
@@ -1409,7 +1544,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 // Handle NaN or invalid result
                                 const validResult = (!isNaN(result) && isFinite(result)) ? result : 0;
 
-                                return <>Cálculo = {previewParts} {showExtension && <>× <span>Distância</span></>} = <strong>{validResult.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}</strong> {contractItemUnit}</>;
+                                return <>Cálculo = {previewParts} {showExtension && <>Ã— <span>Distância</span></>} = <strong>{validResult.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}</strong> {contractItemUnit}</>;
                             }
 
                             // 2. Custom Product Preview (Default)
@@ -1501,7 +1636,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontSize: '1em' }}
                                                             title="Editar"
                                                         >
-                                                            ✏️
+                                                            âœï¸
                                                         </button>
                                                         <button
                                                             type="button"
@@ -1509,7 +1644,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontSize: '1em' }}
                                                             title="Remover"
                                                         >
-                                                            ❌
+                                                            âŒ
                                                         </button>
                                                     </div>
                                                 )}
@@ -1927,7 +2062,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         if (!val) allFilled = false;
                                         calculationVars[v.key] = val ? Number(val.replace(/\./g, '').replace(',', '.')) : 0;
                                     });
-                                    if (!allFilled) return '—';
+                                    if (!allFilled) return 'â€”';
                                     const result = activeFormula.calculate(calculationVars);
                                     return isNaN(result) ? 'Erro' : result.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
                                 })()}
@@ -2020,7 +2155,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             id: `route_${Date.now()}`,
                             label: 'Distância de Transporte',
                             value: distanceKm,
-                            itemName: `${origin.split(',')[0]} → ${destination.split(',')[0]}`,
+                            itemName: `${origin.split(',')[0]} â†’ ${destination.split(',')[0]}`,
                             sourceBM: 'Maps',
                             property: 'Distância',
                             unit: 'km',
@@ -2030,7 +2165,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                         // Also set description with route info
                         setDescription(prev => {
-                            const routeInfo = `Transporte: ${origin.split(',')[0]} → ${destination.split(',')[0]} (${distanceKm.toFixed(2)} km)`;
+                            const routeInfo = `Transporte: ${origin.split(',')[0]} â†’ ${destination.split(',')[0]} (${distanceKm.toFixed(2)} km)`;
                             return prev ? `${prev} | ${routeInfo}` : routeInfo;
                         });
                     }}
@@ -2040,3 +2175,6 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
         </DraggableModal >
     );
 }
+
+
+

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { ExcelService } from '../services/excel.service';
 
@@ -31,7 +31,7 @@ export class ContractController {
                 include: { company: true }
             });
 
-            if (!contract) return res.status(404).json({ error: 'Contrato não encontrado' });
+            if (!contract) return res.status(404).json({ error: 'Contrato nÃ£o encontrado' });
 
             // Fetch generic flat items
             const items = await prisma.contractItem.findMany({
@@ -55,17 +55,29 @@ export class ContractController {
     static async create(req: Request, res: Response) {
         try {
             const { number, object, companyId, startDate, endDate } = req.body;
+            if (!number || !companyId || !startDate || !endDate) {
+                return res.status(400).json({ error: 'number, companyId, startDate e endDate são obrigatórios' });
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return res.status(400).json({ error: 'Datas inválidas' });
+            }
+            if (start > end) {
+                return res.status(400).json({ error: 'Data de início não pode ser maior que a data de fim' });
+            }
 
             const existing = await prisma.contract.findUnique({ where: { number } });
-            if (existing) return res.status(400).json({ error: 'Número de contrato já existe' });
+            if (existing) return res.status(400).json({ error: 'NÃºmero de contrato jÃ¡ existe' });
 
             const contract = await prisma.contract.create({
                 data: {
                     number,
                     object,
                     companyId,
-                    startDate: new Date(startDate),
-                    endDate: new Date(endDate),
+                    startDate: start,
+                    endDate: end,
                     totalValue: 0 // Initial value is 0
                 }
             });
@@ -81,8 +93,23 @@ export class ContractController {
             const { id } = req.params;
             const data = req.body;
 
-            if (data.startDate) data.startDate = new Date(data.startDate);
-            if (data.endDate) data.endDate = new Date(data.endDate);
+            if (data.startDate) {
+                const start = new Date(data.startDate);
+                if (isNaN(start.getTime())) {
+                    return res.status(400).json({ error: 'startDate invalida' });
+                }
+                data.startDate = start;
+            }
+            if (data.endDate) {
+                const end = new Date(data.endDate);
+                if (isNaN(end.getTime())) {
+                    return res.status(400).json({ error: 'endDate invalida' });
+                }
+                data.endDate = end;
+            }
+            if (data.startDate && data.endDate && data.startDate > data.endDate) {
+                return res.status(400).json({ error: 'Data de início não pode ser maior que a data de fim' });
+            }
 
             const contract = await prisma.contract.update({
                 where: { id },
@@ -98,7 +125,7 @@ export class ContractController {
         try {
             const { id } = req.params;
             const contract = await prisma.contract.findUnique({ where: { id } });
-            if (!contract) return res.status(404).json({ error: 'Contrato não encontrado' });
+            if (!contract) return res.status(404).json({ error: 'Contrato nÃ£o encontrado' });
 
             await prisma.contract.delete({ where: { id } });
             res.status(204).send();
@@ -140,20 +167,20 @@ export class ContractController {
             };
 
             if (type === 'STAGE') {
-                if (parentId) return res.status(400).json({ error: 'Etapa (STAGE) não pode ter pai' });
+                if (parentId) return res.status(400).json({ error: 'Etapa (STAGE) nÃ£o pode ter pai' });
             } else {
                 if (!parentId) return res.status(400).json({ error: `${type} deve ter um pai` });
 
                 const parent = await prisma.contractItem.findUnique({ where: { id: parentId } });
-                if (!parent) return res.status(404).json({ error: 'Item pai não encontrado' });
+                if (!parent) return res.status(404).json({ error: 'Item pai nÃ£o encontrado' });
 
                 const parentOrder = typeOrder[parent.type];
                 const childOrder = typeOrder[type];
 
-                if (!parentOrder || !childOrder) return res.status(400).json({ error: 'Tipo de item inválido' });
+                if (!parentOrder || !childOrder) return res.status(400).json({ error: 'Tipo de item invÃ¡lido' });
 
                 if (childOrder <= parentOrder) {
-                    return res.status(400).json({ error: `${type} não pode ser filho de ${parent.type} (deve ser um nível inferior)` });
+                    return res.status(400).json({ error: `${type} nÃ£o pode ser filho de ${parent.type} (deve ser um nÃ­vel inferior)` });
                 }
             }
 
@@ -203,7 +230,7 @@ export class ContractController {
             const data = req.body;
 
             const currentItem = await prisma.contractItem.findUnique({ where: { id } });
-            if (!currentItem) return res.status(404).json({ error: 'Item não encontrado' });
+            if (!currentItem) return res.status(404).json({ error: 'Item nÃ£o encontrado' });
 
             // Calculate new total if quantity/price changes
             if (currentItem.type === 'ITEM') {
@@ -231,7 +258,7 @@ export class ContractController {
         try {
             const { id } = req.params;
             const item = await prisma.contractItem.findUnique({ where: { id } });
-            if (!item) return res.status(404).json({ error: 'Item não encontrado' });
+            if (!item) return res.status(404).json({ error: 'Item nÃ£o encontrado' });
 
             await prisma.contractItem.delete({ where: { id } });
 
@@ -250,7 +277,7 @@ export class ContractController {
             const { items } = req.body; // Array of { id, orderIndex }
 
             if (!Array.isArray(items)) {
-                return res.status(400).json({ error: 'Formato inválido' });
+                return res.status(400).json({ error: 'Formato invÃ¡lido' });
             }
 
             // Verify existence first
@@ -265,7 +292,7 @@ export class ContractController {
             const validItems = items.filter((i: any) => foundIds.has(i.id));
 
             if (validItems.length === 0) {
-                return res.status(404).json({ error: 'Nenhum item válido encontrado' });
+                return res.status(404).json({ error: 'Nenhum item vÃ¡lido encontrado' });
             }
 
             // Execute in transaction with only valid items
@@ -355,12 +382,13 @@ export class ContractController {
     static async importExcel(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            if (!req.file) return res.status(400).json({ error: 'Arquivo inválido' });
+            if (!req.file) return res.status(400).json({ error: 'Arquivo invÃ¡lido' });
 
             await ExcelService.importContractExcel(id, req.file.buffer);
-            res.status(200).json({ message: 'Importação concluída com sucesso' });
+            res.status(200).json({ message: 'ImportaÃ§Ã£o concluÃ­da com sucesso' });
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
     }
 }
+

@@ -1,4 +1,4 @@
-import swaggerJsdoc from 'swagger-jsdoc';
+﻿import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Express } from 'express';
 
@@ -149,7 +149,9 @@ export function setupSwagger(app: Express) {
         res.send(specs);
     });
 
-    console.log('📚 Swagger docs available at /api/docs');
+    console.log('ðŸ“š Swagger docs available at /api/docs');
 }
 
 export default specs;
+
+

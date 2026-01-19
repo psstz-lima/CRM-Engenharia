@@ -4,18 +4,26 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ChevronRight, LogOut } from 'lucide-react';
 
 // Helper to check if user has a specific permission
+// Permission format can be: 'users_view' or 'users.view' -> checks perms.users.view
 const hasPermission = (user: any, permission: string): boolean => {
     if (user?.isMaster) return true;
     const perms = user?.role?.permissions || {};
-    return perms.all === true || perms[permission] === true;
+    if (perms.all === true) return true;
+
+    // Handle formats like 'contracts_view' -> 'contracts.view'
+    const parts = permission.includes('_') ? permission.split('_') : permission.split('.');
+    if (parts.length === 2) {
+        const [module, action] = parts;
+        return perms[module]?.[action] === true || perms[module] === true;
+    }
+    // Simple format: just check if module exists with any truthy value
+    return perms[permission] === true || (typeof perms[permission] === 'object' && perms[permission] !== null);
 };
 
 // Helper to check if user has any of the permissions
 const hasAnyPermission = (user: any, permissions: string[]): boolean => {
     if (user?.isMaster) return true;
-    const perms = user?.role?.permissions || {};
-    if (perms.all === true) return true;
-    return permissions.some(p => perms[p] === true);
+    return permissions.some(p => hasPermission(user, p));
 };
 
 export function Sidebar() {

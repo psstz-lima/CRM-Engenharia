@@ -1,5 +1,11 @@
-# SCRIPT DE INICIALIZAÇÃO DO SISTEMA
+﻿# SCRIPT DE INICIALIZAÃ‡ÃƒO DO SISTEMA
 # Inicia Backend e Frontend
+
+# Forca saida em UTF-8 para evitar textos quebrados no console
+chcp 65001 | Out-Null
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+
 
 Write-Host "========================================" -ForegroundColor Magenta
 Write-Host "  INICIALIZANDO CRM ENGENHARIA         " -ForegroundColor Magenta
@@ -36,7 +42,7 @@ else {
 }
 
 Write-Host ""
-Write-Host "[4/5] Instalando dependências do frontend..." -ForegroundColor Cyan
+Write-Host "[4/5] Instalando dependÃªncias do frontend..." -ForegroundColor Cyan
 cd "$rootPath\frontend"
 npm install --silent
 Write-Host "      OK - Frontend pronto!" -ForegroundColor Green

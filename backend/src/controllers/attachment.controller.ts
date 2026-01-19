@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import prisma from '../config/database';
 import multer from 'multer';
 import path from 'path';
@@ -79,6 +79,9 @@ export class AttachmentController {
                 return res.status(400).json({ error: 'Nenhum arquivo enviado' });
             }
 
+            if (!targetType || !targetId) {
+                return res.status(400).json({ error: 'targetType e targetId são obrigatórios' });
+            }
             const userId = req.user?.id;
             const userName = req.user?.fullName || 'Usuário';
 
@@ -179,3 +182,5 @@ export class AttachmentController {
         }
     }
 }
+
+

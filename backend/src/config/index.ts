@@ -25,9 +25,9 @@ export const config = {
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
     passwordPolicy: {
         minLength: parseInt(process.env.PASSWORD_MIN_LENGTH || '10', 10),
-        requireUppercase: process.env.PASSWORD_REQUIRE_UPPERCASE === 'true' || true,
-        requireLowercase: process.env.PASSWORD_REQUIRE_LOWERCASE === 'true' || true,
-        requireNumbers: process.env.PASSWORD_REQUIRE_NUMBERS === 'true' || true,
-        requireSpecial: process.env.PASSWORD_REQUIRE_SPECIAL === 'true' || true,
+        requireUppercase: (process.env.PASSWORD_REQUIRE_UPPERCASE ?? 'true') === 'true',
+        requireLowercase: (process.env.PASSWORD_REQUIRE_LOWERCASE ?? 'true') === 'true',
+        requireNumbers: (process.env.PASSWORD_REQUIRE_NUMBERS ?? 'true') === 'true',
+        requireSpecial: (process.env.PASSWORD_REQUIRE_SPECIAL ?? 'true') === 'true',
     },
 };
