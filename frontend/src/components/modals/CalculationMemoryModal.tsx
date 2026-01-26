@@ -1,4 +1,4 @@
-﻿
+
 import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { ManageUnitsModal, ColumnDef } from './ManageUnitsModal';
@@ -24,7 +24,7 @@ function SortableFormItem({ id, children, style }: { id: string; children: React
         transform: CSS.Transform.toString(transform),
         transition,
         position: 'relative' as 'relative',
-        zIndex: isDragging ? 50 : 'auto',
+        zIndex: isDragging ?50 : 'auto',
         ...style
     };
 
@@ -72,58 +72,54 @@ export interface CalculationMemoryModalProps {
 type FormulaDef = { id: string; name: string; variables: { key: string; label: string }[]; calculate: (v: Record<string, number>) => number; title: string };
 
 const ENGINEERING_FORMULAS: Record<string, FormulaDef> = {
-    'triangle': {
+    triangle: {
         id: 'triangle',
-        name: 'ðŸ“ Ãrea do Triângulo',
+        name: 'Área do Triângulo',
         variables: [{ key: 'B', label: 'Base (B)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (v.B * v.h) / 2,
-        title: "(B Ã— h) Ã· 2"
+        title: '(B × h) ÷ 2'
     },
-    'trapezoid': {
+    trapezoid: {
         id: 'trapezoid',
-        name: 'â¬¡ Ãrea do Trapézio',
+        name: 'Área do Trapézio',
         variables: [{ key: 'B', label: 'Base Maior (B)' }, { key: 'b', label: 'Base Menor (b)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => ((v.B + v.b) * v.h) / 2,
-        title: "(B + b) Ã— h Ã· 2"
+        title: '(B + b) × h ÷ 2'
     },
-    'circle_perimeter': {
+    circle_perimeter: {
         id: 'circle_perimeter',
-        name: 'â­• Perímetro do Círculo',
+        name: 'Perímetro do Círculo',
         variables: [{ key: 'r', label: 'Raio (r)' }],
         calculate: (v) => 2 * Math.PI * v.r,
-        title: "2 Ã— Ï€ Ã— r"
+        title: '2 × π × r'
     },
-    'sphere_vol': {
+    sphere_vol: {
         id: 'sphere_vol',
-        name: 'ðŸ”µ Volume da Esfera',
+        name: 'Volume da Esfera',
         variables: [{ key: 'r', label: 'Raio (r)' }],
         calculate: (v) => (4 / 3) * Math.PI * Math.pow(v.r, 3),
-        title: "(4/3) Ã— Ï€ Ã— rÂ³"
+        title: '(4/3) × π × r³'
     },
-    'cone_vol': {
+    cone_vol: {
         id: 'cone_vol',
-        name: 'â–² Volume do Cone',
+        name: 'Volume do Cone',
         variables: [{ key: 'r', label: 'Raio (r)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (1 / 3) * Math.PI * Math.pow(v.r, 2) * v.h,
-        title: "(1/3) Ã— Ï€ Ã— rÂ² Ã— h"
+        title: '(1/3) × π × r² × h'
     },
-    'pyramid_vol': {
+    pyramid_vol: {
         id: 'pyramid_vol',
-        name: 'ðŸ”º Volume da Pirâmide',
-        variables: [{ key: 'A', label: 'Ãrea da Base (A)' }, { key: 'h', label: 'Altura (h)' }],
+        name: 'Volume da Pirâmide',
+        variables: [{ key: 'A', label: 'Área da Base (A)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => (v.A * v.h) / 3,
-        title: "(A Ã— h) Ã· 3"
+        title: '(A × h) ÷ 3'
     },
-    'cylinder_vol': { // Adding Cylinder separately if it was missing or implied?
-        // Converting the existing "Cilindro" button which was likely just 3.14 * r^2 * h?
-        // Actually I don't see Cylinder in the code snippet I viewed earlier (lines 630-790).
-        // It might be missing from my view or I missed it.
-        // I'll stick to replacing the visible ones first.
+    cylinder_vol: {
         id: 'cylinder_vol',
-        name: 'ðŸ›¢ï¸ Volume do Cilindro',
+        name: 'Volume do Cilindro',
         variables: [{ key: 'r', label: 'Raio (r)' }, { key: 'h', label: 'Altura (h)' }],
         calculate: (v) => Math.PI * Math.pow(v.r, 2) * v.h,
-        title: "Ï€ Ã— rÂ² Ã— h"
+        title: 'π × r² × h'
     }
 };
 
@@ -181,13 +177,13 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             // Toggle prop in existing entry
             const hasP = existing.props.includes(prop);
             const newProps = hasP
-                ? existing.props.filter(p => p !== prop)
+                ?existing.props.filter(p => p !== prop)
                 : [...existing.props, prop];
             if (newProps.length === 0) {
                 // Remove entry if no props
                 return prev.filter(s => s.id !== memId);
             }
-            return prev.map(s => s.id === memId ? { ...s, props: newProps } : s);
+            return prev.map(s => s.id === memId ?{ ...s, props: newProps } : s);
         });
     };
 
@@ -306,7 +302,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     value = Number(mem.quantity) || 0;
                     sourceLabel = `${item?.code || 'Item'} Total`; // e.g. "1.1.1 Total" or just "Total"
                 } else if (prop === 'description') {
-                    const currentDesc = description ? description + ' ' : '';
+                    const currentDesc = description ?description + ' ' : '';
                     setDescription(currentDesc + (mem.description || ''));
                     newImportedFields['description'] = true;
                     continue;
@@ -331,12 +327,12 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 // This is the "Audit Trail" the user requested.
 
                 const uniqueLabel = linkedVariables.some(v => v.label === sourceLabel)
-                    ? `${sourceLabel} (${Date.now().toString().slice(-3)})`
+                    ?`${sourceLabel} (${Date.now().toString().slice(-3)})`
                     : sourceLabel;
 
                 const newItemName = (sourceMeasItem?.code && sourceMeasItem?.description)
-                    ? `${sourceMeasItem.code} - ${sourceMeasItem.description}`
-                    : (item?.code ? `${item.code} - ${item.description || ''}` : 'Item Referência');
+                    ?`${sourceMeasItem.code} - ${sourceMeasItem.description}`
+                    : (item?.code ?`${item.code} - ${item.description || ''}` : 'Item Referência');
 
                 const lineNum = sourceMemories.indexOf(mem) + 1;
                 const bmLabel = `BM ${String(lineNum).padStart(2, '0')}`;
@@ -350,9 +346,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     ['comprimento', 'largura', 'altura', 'espessura', 'profundidade'].includes(lowerSourceLabel)) {
                     finalUnit = 'm';
                 } else if (lowerProp === 'area' || lowerSourceLabel.includes('área')) {
-                    finalUnit = 'mÂ²';
+                    finalUnit = 'm?';
                 } else if (lowerProp === 'volume' || lowerSourceLabel.includes('volume')) {
-                    finalUnit = 'mÂ³';
+                    finalUnit = 'm?';
                 } else if (lowerProp === 'km') {
                     finalUnit = 'km';
                 }
@@ -584,7 +580,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     // Check if 'unit' column exists
                     const exists = prev.some(c => c.id === 'unit');
                     if (exists) {
-                        return prev.map(c => c.id === 'unit' ? { ...c, visible: true } : c);
+                        return prev.map(c => c.id === 'unit' ?{ ...c, visible: true } : c);
                     } else {
                         // Restore it if deleted
                         return [
@@ -717,7 +713,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             while (operators.length > 0 && isOperator(operators[operators.length - 1])) {
                 const top = operators[operators.length - 1];
                 const precDiff = precedence[op] - precedence[top];
-                const shouldPop = rightAssoc.has(op) ? precDiff < 0 : precDiff <= 0;
+                const shouldPop = rightAssoc.has(op) ?precDiff < 0 : precDiff <= 0;
                 if (!shouldPop) break;
                 output.push(operators.pop() as string);
             }
@@ -758,7 +754,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     stack.push(a * b);
                     break;
                 case '/':
-                    stack.push(b === 0 ? NaN : a / b);
+                    stack.push(b === 0 ?NaN : a / b);
                     break;
                 case '**':
                     stack.push(a ** b);
@@ -768,7 +764,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             }
         }
 
-        return stack.length === 1 ? stack[0] : NaN;
+        return stack.length === 1 ?stack[0] : NaN;
     };
 
     const STATION_LENGTH = 20;
@@ -816,8 +812,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
         const useKM = isVisible('km');
 
         if (useExtension && (useStations || useKM)) {
-            const start = useStations ? parseStation(startPoint) : parseKM(startPoint);
-            const end = useStations ? parseStation(endPoint) : parseKM(endPoint);
+            const start = useStations ?parseStation(startPoint) : parseKM(startPoint);
+            const end = useStations ?parseStation(endPoint) : parseKM(endPoint);
             const len = Math.abs(end - start);
 
             const compField = columnConfig.find(c => c.label.toLowerCase().includes('comprimento'));
@@ -884,12 +880,12 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 start = parseStation(startPoint);
                 end = parseStation(endPoint);
                 len = Math.abs(end - start);
-                finalDescription = description ? `${description} [Est]` : `[Est]`;
+                finalDescription = description ?`${description} [Est]` : `[Est]`;
             } else if (useKM) {
                 start = parseKM(startPoint);
                 end = parseKM(endPoint);
                 len = Math.abs(end - start);
-                finalDescription = description ? `${description} [KM]` : `[KM]`;
+                finalDescription = description ?`${description} [KM]` : `[KM]`;
             } else {
                 len = parseNumber(genericLength) || 1;
             }
@@ -901,8 +897,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             if (formula.length > 0) {
                 const expression = formula.map(item => {
                     if (item.type === 'operator') {
-                        if (item.value === '×' || item.value === 'Ã—' || item.value === 'x') return '*';
-                        if (item.value === '÷' || item.value === 'Ã·') return '/';
+                        if (item.value === '×' || item.value === '?' || item.value === 'x') return '*';
+                        if (item.value === '÷' || item.value === '?') return '/';
                         if (item.value === '−' || item.value === 'âˆ’') return '-';
                         if (item.value === '^') return '**';
                         return item.value;
@@ -957,17 +953,17 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             // Map variables to legacy schema as best effort (for persistence of partials)
             // We only have length, width, height.
             const values = Object.values(customValues);
-            const saveWidth = values.length > 0 ? values[0] : 0;
-            const saveHeight = values.length > 1 ? values[1] : 0;
+            const saveWidth = values.length > 0 ?values[0] : 0;
+            const saveHeight = values.length > 1 ?values[1] : 0;
 
             await api.post(`/contracts/measurements/${measurementId}/memories`, {
                 contractItemId,
                 description: finalDescription,
                 location: location || '',
-                unit: useUnit ? unit : '',
+                unit: useUnit ?unit : '',
                 operation,
-                startPoint: (useStations || useKM) ? start : 0,
-                endPoint: (useStations || useKM) ? end : 0,
+                startPoint: (useStations || useKM) ?start : 0,
+                endPoint: (useStations || useKM) ?end : 0,
                 length: len, // This is either from KM/Est or genericLength (if no custom fields?)
                 // Actually, if we have custom fields, 'len' might be redundant if not from KM.
                 // But we send it anyway.
@@ -1036,7 +1032,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             case '+': return acc + qty;
             case '-': return acc - qty;
             case 'x': return acc * qty;
-            case '/': return qty !== 0 ? acc / qty : acc;
+            case '/': return qty !== 0 ?acc / qty : acc;
             default: return acc + qty;
         }
     }, 0);
@@ -1121,14 +1117,14 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                 {/* Current Formula Display */}
                 <div className="flex gap-1.5 flex-wrap min-h-[40px] p-3 bg-amber-50/50 rounded mb-3 items-center border border-amber-200">
-                    {formula.length === 0 ? (
+                    {formula.length === 0 ?(
                         <span className="text-amber-800 text-sm">Clique nos campos e operadores abaixo para construir a fórmula</span>
                     ) : (
                         formula.map((item, idx) => (
                             <div
                                 key={idx}
                                 onClick={() => setFormula(formula.filter((_, i) => i !== idx))}
-                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-gray-900 ${item.type === 'operator' ? 'bg-amber-500' : (item.isLinked ? 'bg-violet-500' : 'bg-blue-500')
+                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-gray-900 ${item.type === 'operator' ?'bg-amber-500' : (item.isLinked ?'bg-violet-500' : 'bg-blue-500')
                                     }`}
                                 title="Clique para remover"
                             >
@@ -1190,7 +1186,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             });
                                                         }}
                                                         className="px-2 py-0.5 bg-blue-500 text-gray-900 rounded text-xs hover:bg-blue-600"
-                                                        title="Adicionar Ã  Fórmula"
+                                                        title="Adicionar ? Fórmula"
                                                     >
                                                         Usar
                                                     </button>
@@ -1232,8 +1228,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     <span className="text-xs text-slate-600 w-full">Operadores:</span>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">+</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">âˆ’</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ã—' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">Ã—</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ã·' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">Ã·</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">?</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">?</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">^</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'âˆš' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">âˆš</button>
                     <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">%</button>
@@ -1285,7 +1281,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             // Let's modify the map to include pseudo-columns for linked vars if they are active?
                             // No, that's complex.
-                            // Let's just render them before the button but AFTER the regular columns? 
+                            // Let's just render them before the button but AFTER the regular columns?
                             // Or better: The user wants them "as a column in the add line".
                             // The grid layout is auto-flow. Adding them as children of <form> works.
 
@@ -1365,7 +1361,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     <input required type="text" value={genericLength} onChange={e => setGenericLength(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setGenericLength(n.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 4 })); }
-                                    }} placeholder="0,000" className={`input py-1.5 text-sm ${importedFields['quantity'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
+                                    }} placeholder="0,000" className={`input py-1.5 text-sm ${importedFields['quantity'] ?'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
@@ -1375,7 +1371,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     <input required type="text" value={width} onChange={e => setWidth(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setWidth(n.toLocaleString('pt-BR', { maximumFractionDigits: 4 })); }
-                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['width'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
+                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['width'] ?'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
@@ -1385,7 +1381,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     <input required type="text" value={height} onChange={e => setHeight(e.target.value)} onBlur={e => {
                                         const v = e.target.value;
                                         if (v) { const n = parseNumber(v); if (!isNaN(n)) setHeight(n.toLocaleString('pt-BR', { maximumFractionDigits: 4 })); }
-                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['height'] ? 'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
+                                    }} placeholder="1,00" className={`input py-1.5 text-sm ${importedFields['height'] ?'border-2 border-emerald-500 bg-emerald-50' : ''}`} />
                                 </SortableFormItem>
                             );
 
@@ -1411,7 +1407,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 return (
                                     <SortableFormItem key={col.id} id={col.id}>
                                         <label className="label text-xs">
-                                            {col.label}{col.unitLabel ? ` (${col.unitLabel})` : ''}
+                                            {col.label}{col.unitLabel ?` (${col.unitLabel})` : ''}
                                         </label>
                                         {(() => {
                                             const useStations = isVisible('stations');
@@ -1439,9 +1435,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                     style={{
                                                         width: '100%',
                                                         padding: '6px',
-                                                        backgroundColor: isLocked ? '#f3f4f6' : (importedFields[col.id] ? '#f0fdf4' : 'white'),
-                                                        cursor: isLocked ? 'not-allowed' : 'text',
-                                                        border: importedFields[col.id] ? '2px solid #10b981' : '1px solid #ccc'
+                                                        backgroundColor: isLocked ?'#f3f4f6' : (importedFields[col.id] ?'#f0fdf4' : 'white'),
+                                                        cursor: isLocked ?'not-allowed' : 'text',
+                                                        border: importedFields[col.id] ?'2px solid #10b981' : '1px solid #ccc'
                                                     }}
                                                 />
                                             );
@@ -1462,7 +1458,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 return (
                                     <SortableFormItem key={col.id} id={col.id}>
                                         <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '4px', color: '#2563eb', fontWeight: 'bold' }}>
-                                            {linkedVar.label} {linkedVar.unit ? `(${linkedVar.unit})` : ''} <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#64748b' }}>(Vinculado)</span>
+                                            {linkedVar.label} {linkedVar.unit ?`(${linkedVar.unit})` : ''} <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#64748b' }}>(Vinculado)</span>
                                         </label>
                                         <input
                                             type="text"
@@ -1505,8 +1501,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                                 let expression = formula.map(item => {
                                     if (item.type === 'operator') {
-                                        if (item.value === '×' || item.value === 'Ã—' || item.value === 'x') return '*';
-                                        if (item.value === '÷' || item.value === 'Ã·') return '/';
+                                        if (item.value === '×' || item.value === '?' || item.value === 'x') return '*';
+                                        if (item.value === '÷' || item.value === '?') return '/';
                                         if (item.value === '−' || item.value === 'âˆ’') return '-';
                                         if (item.value === '^') return '**';
                                         return item.value;
@@ -1515,9 +1511,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         if (field?.id.startsWith('linked_')) {
                                             const linkedId = field.id.replace('linked_', '');
                                             const linkedVar = linkedVariables.find(v => v.id === linkedId);
-                                            return linkedVar ? linkedVar.value : 0;
+                                            return linkedVar ?linkedVar.value : 0;
                                         }
-                                        return field ? parseNumber(formulaVars[field.id] || '0') : 0;
+                                        return field ?parseNumber(formulaVars[field.id] || '0') : 0;
                                     }
                                 }).join(' ');
                                 let result = 0;
@@ -1530,8 +1526,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 let showExtension = false;
 
                                 if ((useStations || useKM) && useExtension) {
-                                    const start = useStations ? parseStation(startPoint) : parseKM(startPoint);
-                                    const end = useStations ? parseStation(endPoint) : parseKM(endPoint);
+                                    const start = useStations ?parseStation(startPoint) : parseKM(startPoint);
+                                    const end = useStations ?parseStation(endPoint) : parseKM(endPoint);
                                     len = Math.abs(end - start);
 
                                     const hasComprimento = productFields.some(c => c.label.toLowerCase().includes('comprimento'));
@@ -1542,9 +1538,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 }
 
                                 // Handle NaN or invalid result
-                                const validResult = (!isNaN(result) && isFinite(result)) ? result : 0;
+                                const validResult = (!isNaN(result) && isFinite(result)) ?result : 0;
 
-                                return <>Cálculo = {previewParts} {showExtension && <>Ã— <span>Distância</span></>} = <strong>{validResult.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}</strong> {contractItemUnit}</>;
+                                return <>Cálculo = {previewParts} {showExtension && <>? <span>Distância</span></>} = <strong>{validResult.toLocaleString('pt-BR', { minimumFractionDigits: 3 })}</strong> {contractItemUnit}</>;
                             }
 
                             // 2. Custom Product Preview (Default)
@@ -1555,8 +1551,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 let len = 0;
 
                                 if (useStations || useKM) {
-                                    const start = useStations ? parseStation(startPoint) : parseKM(startPoint);
-                                    const end = useStations ? parseStation(endPoint) : parseKM(endPoint);
+                                    const start = useStations ?parseStation(startPoint) : parseKM(startPoint);
+                                    const end = useStations ?parseStation(endPoint) : parseKM(endPoint);
                                     len = Math.abs(end - start);
                                 }
 
@@ -1627,7 +1623,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     <th key={`h_${col.id}`} style={{ padding: '8px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                <span>{col.label}{col.unitLabel ? ` (${col.unitLabel})` : ''}</span>
+                                                <span>{col.label}{col.unitLabel ?` (${col.unitLabel})` : ''}</span>
                                                 {col.isAuxiliary && (
                                                     <div style={{ display: 'inline-flex', gap: '4px' }}>
                                                         <button
@@ -1678,7 +1674,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     {(memories || []).map((mem, idx) => {
                         const isKM = mem.description && mem.description.includes('[KM]');
                         const isEst = mem.description && mem.description.includes('[Est]');
-                        const displayDesc = mem.description ? mem.description.replace('[KM]', '').replace('[Est]', '').trim() : '';
+                        const displayDesc = mem.description ?mem.description.replace('[KM]', '').replace('[Est]', '').trim() : '';
                         const unitDesc = availableUnits.find(u => u.code === mem.unit)?.description || '-';
 
                         return (
@@ -1695,25 +1691,25 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                                     if (col.id === 'stations') return (
                                         <React.Fragment key="c_st">
-                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isEst ? formatStation(Number(mem.startPoint)) : '-'}</td>
-                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isEst ? formatStation(Number(mem.endPoint)) : '-'}</td>
+                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isEst ?formatStation(Number(mem.startPoint)) : '-'}</td>
+                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isEst ?formatStation(Number(mem.endPoint)) : '-'}</td>
                                         </React.Fragment>
                                     );
                                     if (col.id === 'km') return (
                                         <React.Fragment key="c_km">
-                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isKM ? formatKM(Number(mem.startPoint)) : '-'}</td>
-                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isKM ? formatKM(Number(mem.endPoint)) : '-'}</td>
+                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isKM ?formatKM(Number(mem.startPoint)) : '-'}</td>
+                                            <td style={{ padding: '8px', textAlign: 'right' }}>{isKM ?formatKM(Number(mem.endPoint)) : '-'}</td>
                                         </React.Fragment>
                                     );
                                     if (col.id === 'quantity') return <td key="c_qty" style={{ padding: '8px', textAlign: 'right' }}>{Number(mem.length).toLocaleString('pt-BR', { minimumFractionDigits: 3 })}</td>;
-                                    if (col.id === 'width') return <td key="c_w" style={{ padding: '8px', textAlign: 'right' }}>{Number(mem.width) !== 0 ? Number(mem.width).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}</td>;
-                                    if (col.id === 'height') return <td key="c_h" style={{ padding: '8px', textAlign: 'right' }}>{Number(mem.height) !== 0 ? Number(mem.height).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}</td>;
+                                    if (col.id === 'width') return <td key="c_w" style={{ padding: '8px', textAlign: 'right' }}>{Number(mem.width) !== 0 ?Number(mem.width).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}</td>;
+                                    if (col.id === 'height') return <td key="c_h" style={{ padding: '8px', textAlign: 'right' }}>{Number(mem.height) !== 0 ?Number(mem.height).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}</td>;
 
                                     // Custom Unit Columns
                                     if (col.id.startsWith('unit_') && col.id !== 'unit_desc') {
                                         const matches = mem.unit === col.unitLabel;
                                         return <td key={`c_${col.id}`} style={{ padding: '8px', textAlign: 'right' }}>
-                                            {matches ? Number(mem.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
+                                            {matches ?Number(mem.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
                                         </td>;
                                     }
 
@@ -1723,16 +1719,16 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         if (mem.metadata?.customValues?.[col.id] !== undefined) {
                                             const val = Number(mem.metadata.customValues[col.id]);
                                             return <td key={`c_${col.id}`} style={{ padding: '8px', textAlign: 'right' }}>
-                                                {val !== 0 ? val.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
+                                                {val !== 0 ?val.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
                                             </td>;
                                         }
 
                                         // 2. Fallback to width/height based on index
                                         const customFields = columnConfig.filter(c => c.visible && c.id.startsWith('custom_'));
                                         const fieldIndex = customFields.findIndex(c => c.id === col.id);
-                                        const value = fieldIndex === 0 ? mem.width : mem.height;
+                                        const value = fieldIndex === 0 ?mem.width : mem.height;
                                         return <td key={`c_${col.id}`} style={{ padding: '8px', textAlign: 'right' }}>
-                                            {Number(value) !== 0 ? Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
+                                            {Number(value) !== 0 ?Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
                                         </td>;
                                     }
 
@@ -1752,7 +1748,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 </td>
                                 <td style={{ padding: '8px', textAlign: 'left', color: '#6b7280' }}>{displayDesc || '-'}</td>
                                 <td style={{ padding: '8px', textAlign: 'center', background: '#fffbeb', fontWeight: 'bold', color: '#b45309' }}>
-                                    {measurementNumber ? `BM nº ${String(measurementNumber).padStart(2, '0')}` : '-'}
+                                    {measurementNumber ?`BM nº ${String(measurementNumber).padStart(2, '0')}` : '-'}
                                 </td>
                                 <td style={{ padding: '8px', textAlign: 'center' }}>
                                     <button onClick={() => handleDelete(mem.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>Excluir</button>
@@ -1812,18 +1808,18 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     // Priority 1: Use explicit depth from backend if available
                                     // Priority 2: Infer from dots in code
                                     const dotCount = (i.code || '').split('.').length - 1;
-                                    const indentLevel = i.depth !== undefined ? i.depth : Math.max(0, dotCount);
+                                    const indentLevel = i.depth !== undefined ?i.depth : Math.max(0, dotCount);
 
                                     const indent = '\u00A0'.repeat(indentLevel * 4);
 
-                                    const label = i.code ? `${i.code} - ${i.description}` : i.description;
-                                    const truncated = label.substring(0, 100) + (label.length > 100 ? '...' : '');
+                                    const label = i.code ?`${i.code} - ${i.description}` : i.description;
+                                    const truncated = label.substring(0, 100) + (label.length > 100 ?'...' : '');
 
                                     // Styling based on hierarchy
                                     // Top levels (depth 0 or 1 with little dots) get bold/color
                                     const isHeader = indentLevel === 0;
                                     const style = isHeader
-                                        ? { fontWeight: 'bold', color: '#1e3a8a' } // Dark Blue for headers
+                                        ?{ fontWeight: 'bold', color: '#1e3a8a' } // Dark Blue for headers
                                         : { color: '#374151' }; // Gray for children
 
                                     return (
@@ -1859,7 +1855,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                     .map(col => (
                                                         <th key={col.id} style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>
                                                             {col.label}
-                                                            {col.unitLabel ? <small style={{ fontWeight: 'normal' }}> ({col.unitLabel})</small> : ''}
+                                                            {col.unitLabel ?<small style={{ fontWeight: 'normal' }}> ({col.unitLabel})</small> : ''}
                                                         </th>
                                                     ));
                                             })()}
@@ -1876,7 +1872,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                 <tr
                                                     key={m.id}
                                                     style={{
-                                                        background: linkSelections.some(s => s.id === m.id) ? '#eff6ff' : 'white',
+                                                        background: linkSelections.some(s => s.id === m.id) ?'#eff6ff' : 'white',
                                                         borderBottom: '1px solid #f3f4f6',
                                                         fontSize: '0.9em'
                                                     }}
@@ -1905,7 +1901,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             // For KM, show formatted range. value returned by helper is just 0 for KM usually unless specifically handled?
                                                             // My getValueFromMemory returns 0 for KM unless I change it.
                                                             // BUT, for KM we want to show "Start a End".
-                                                            // Only show text? And check box?
+                                                            // Only show text?And check box?
 
                                                             let displayValue: React.ReactNode = '';
                                                             if (isKM) {
@@ -1913,7 +1909,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                                 const e = formatKM(Number(m.endPoint) || 0);
                                                                 displayValue = `${s} a ${e}`;
                                                             } else {
-                                                                displayValue = value !== 0 ? value.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-';
+                                                                displayValue = value !== 0 ?value.toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-';
                                                             }
 
                                                             return (
@@ -1921,8 +1917,8 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                                                         {/* Value First */}
                                                                         <span style={{
-                                                                            fontWeight: col.id === 'quantity' ? 'bold' : 'normal',
-                                                                            color: col.id === 'quantity' ? '#059669' : 'inherit'
+                                                                            fontWeight: col.id === 'quantity' ?'bold' : 'normal',
+                                                                            color: col.id === 'quantity' ?'#059669' : 'inherit'
                                                                         }}>
                                                                             {displayValue}
                                                                         </span>
@@ -1943,7 +1939,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                     <td style={{ padding: '8px', textAlign: 'center', background: '#f8fafc' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                                             <span style={{ fontWeight: 'bold', color: '#15803d' }}>
-                                                                {m.quantity !== undefined ? Number(m.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
+                                                                {m.quantity !== undefined ?Number(m.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 3 }) : '-'}
                                                             </span>
                                                             <input
                                                                 type="checkbox"
@@ -2004,7 +2000,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             <button
                                 onClick={handleConfirmLink}
                                 disabled={!linkItemId}
-                                className={`btn bg-green-600 text-gray-900 hover:bg-green-500 ${!linkItemId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`btn bg-green-600 text-gray-900 hover:bg-green-500 ${!linkItemId ?'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Preencher Formulário
                             </button>
@@ -2017,7 +2013,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
             <DraggableModal
                 isOpen={showFormulaCalc && activeFormula !== null}
                 onClose={() => setShowFormulaCalc(false)}
-                title={activeFormula ? activeFormula.name : 'Fórmula'}
+                title={activeFormula ?activeFormula.name : 'Fórmula'}
                 width="fit-content"
             >
                 {activeFormula && (
@@ -2060,11 +2056,11 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     activeFormula.variables.forEach(v => {
                                         const val = formulaVars[v.key];
                                         if (!val) allFilled = false;
-                                        calculationVars[v.key] = val ? Number(val.replace(/\./g, '').replace(',', '.')) : 0;
+                                        calculationVars[v.key] = val ?Number(val.replace(/\./g, '').replace(',', '.')) : 0;
                                     });
                                     if (!allFilled) return 'â€”';
                                     const result = activeFormula.calculate(calculationVars);
-                                    return isNaN(result) ? 'Erro' : result.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+                                    return isNaN(result) ?'Erro' : result.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
                                 })()}
                             </div>
                         </div>
@@ -2087,7 +2083,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         const val = formulaVars[v.key];
                                         if (!val) allFilled = false;
                                         inputVars[v.key] = val || '';
-                                        calculationVars[v.key] = val ? Number(val.replace(/\./g, '').replace(',', '.')) : 0;
+                                        calculationVars[v.key] = val ?Number(val.replace(/\./g, '').replace(',', '.')) : 0;
                                     });
 
                                     const result = activeFormula.calculate(calculationVars);
@@ -2137,7 +2133,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 }}
                                 className="btn bg-emerald-600 text-gray-900 hover:bg-emerald-700 font-bold"
                             >
-                                {editingColumnId ? 'Salvar Alteração' : 'Adicionar Auxiliar'}
+                                {editingColumnId ?'Salvar Alteração' : 'Adicionar Auxiliar'}
                             </button>
                         </div>
                     </div>
@@ -2166,7 +2162,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                         // Also set description with route info
                         setDescription(prev => {
                             const routeInfo = `Transporte: ${origin.split(',')[0]} â†’ ${destination.split(',')[0]} (${distanceKm.toFixed(2)} km)`;
-                            return prev ? `${prev} | ${routeInfo}` : routeInfo;
+                            return prev ?`${prev} | ${routeInfo}` : routeInfo;
                         });
                     }}
                 />

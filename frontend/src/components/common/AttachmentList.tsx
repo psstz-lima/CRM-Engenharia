@@ -98,8 +98,8 @@ export function AttachmentList({ targetType, targetId, readOnly = false }: Attac
             {loading ? (
                 <div className="text-center py-8 text-gray-500">Carregando anexos...</div>
             ) : attachments.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
-                    <p className="text-gray-500">Nenhum anexo encontrado.</p>
+                <div className="text-center py-8 bg-[#f6efe4] rounded-lg border border-dashed border-[#e5dccf]">
+                    <p className="text-gray-600">Nenhum anexo encontrado.</p>
                 </div>
             ) : (
                 <div className="grid gap-3">

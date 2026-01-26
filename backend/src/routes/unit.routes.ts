@@ -1,5 +1,4 @@
-
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { UnitController } from '../controllers/unit.controller';
 
 const router = Router();
@@ -11,3 +10,4 @@ router.delete('/:id', controller.delete);
 router.put('/:id', controller.update);
 
 export default router;
+

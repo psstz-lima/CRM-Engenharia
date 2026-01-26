@@ -8,6 +8,9 @@ router.use(authMiddleware);
 
 // Categorias
 router.get('/categories', DocumentController.listCategories);
+router.post('/categories', DocumentController.createCategory);
+router.put('/categories/:id', DocumentController.updateCategory);
+router.delete('/categories/:id', DocumentController.deleteCategory);
 
 // Documentos (Geral)
 router.get('/', DocumentController.list);

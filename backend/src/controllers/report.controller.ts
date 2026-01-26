@@ -3,6 +3,57 @@ import prisma from '../config/database';
 import ExcelJS from 'exceljs';
 
 export class ReportController {
+    // Resumo financeiro de contrato (JSON)
+    static async contractFinancial(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const contract = await prisma.contract.findUnique({
+                where: { id },
+                include: { company: true }
+            });
+
+            if (!contract) {
+                return res.status(404).json({ error: 'Contrato não encontrado' });
+            }
+
+            const measuredItems = await prisma.measurementItem.findMany({
+                where: {
+                    measurement: {
+                        contractId: id,
+                        status: { in: ['CLOSED', 'APPROVED'] }
+                    }
+                },
+                select: {
+                    measuredQuantity: true,
+                    currentPrice: true
+                }
+            });
+
+            const measuredValue = measuredItems.reduce((acc, item) => {
+                const qty = Number(item.measuredQuantity || 0);
+                const price = Number(item.currentPrice || 0);
+                return acc + (qty * price);
+            }, 0);
+
+            const totalValue = Number(contract.totalValue || 0);
+            const remainingValue = totalValue - measuredValue;
+            const percentExecuted = totalValue > 0 ? (measuredValue / totalValue) * 100 : 0;
+
+            return res.json({
+                contract: {
+                    id: contract.id,
+                    number: contract.number,
+                    company: contract.company.name
+                },
+                totalValue,
+                measuredValue,
+                remainingValue,
+                percentExecuted: Number(percentExecuted.toFixed(2))
+            });
+        } catch (e: any) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
     // Exportar medição para Excel
     static async measurementToExcel(req: Request, res: Response) {
         try {

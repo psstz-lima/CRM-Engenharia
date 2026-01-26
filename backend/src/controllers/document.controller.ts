@@ -1,5 +1,6 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import prisma from '../config/database';
+import { ContractEventService } from '../services/contract-event.service';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -160,7 +161,16 @@ export class DocumentController {
                 include: { category: true }
             });
 
-            res.status(201).json(document);
+                        if (document.contractId) {
+                await ContractEventService.log(
+                    document.contractId,
+                    "DOCUMENT_UPLOADED",
+                    `Documento enviado: ${document.code}`,
+                    { documentId: document.id },
+                    req.user?.id
+                );
+            }
+res.status(201).json(document);
         } catch (e: any) {
             console.error('Upload error DETAILS:', e);
             res.status(500).json({ error: e.message || String(e) });
@@ -248,7 +258,16 @@ export class DocumentController {
                 data: updateData
             });
 
-            res.json(document);
+                        if (document.contractId) {
+                await ContractEventService.log(
+                    document.contractId,
+                    "DOCUMENT_STATUS_CHANGED",
+                    `Status do documento atualizado: ${document.code} -> ${status}`,
+                    { documentId: document.id, status },
+                    (req as any).user?.id
+                );
+            }
+res.json(document);
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
@@ -313,11 +332,105 @@ export class DocumentController {
     // Listar categorias
     static async listCategories(req: Request, res: Response) {
         try {
+            const includeInactive = String(req.query.all || '').toLowerCase() === 'true';
             const categories = await prisma.documentCategory.findMany({
-                where: { isActive: true },
-                orderBy: { orderIndex: 'asc' }
+                where: includeInactive ? {} : { isActive: true },
+                orderBy: [{ orderIndex: 'asc' }, { code: 'asc' }]
             });
             res.json(categories);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    static async createCategory(req: Request, res: Response) {
+        try {
+            const { code, name, description, color, icon, orderIndex, isActive } = req.body;
+
+            if (!code || !name) {
+                return res.status(400).json({ error: 'Código e nome são obrigatórios' });
+            }
+
+            const normalizedCode = String(code).trim().toUpperCase();
+            const normalizedName = String(name).trim();
+
+            const exists = await prisma.documentCategory.findUnique({ where: { code: normalizedCode } });
+            if (exists) {
+                return res.status(400).json({ error: 'Código já existe' });
+            }
+
+            const category = await prisma.documentCategory.create({
+                data: {
+                    code: normalizedCode,
+                    name: normalizedName,
+                    description: description ? String(description).trim() : null,
+                    color: color ? String(color).trim() : null,
+                    icon: icon ? String(icon).trim() : null,
+                    orderIndex: Number.isFinite(Number(orderIndex)) ? Number(orderIndex) : 0,
+                    isActive: typeof isActive === 'boolean' ? isActive : true,
+                }
+            });
+
+            res.status(201).json(category);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    static async updateCategory(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const { code, name, description, color, icon, orderIndex, isActive } = req.body;
+
+            const existing = await prisma.documentCategory.findUnique({ where: { id } });
+            if (!existing) {
+                return res.status(404).json({ error: 'Categoria não encontrada' });
+            }
+
+            let normalizedCode = existing.code;
+            if (code) {
+                normalizedCode = String(code).trim().toUpperCase();
+                if (normalizedCode !== existing.code) {
+                    const codeExists = await prisma.documentCategory.findUnique({ where: { code: normalizedCode } });
+                    if (codeExists) {
+                        return res.status(400).json({ error: 'Código já existe' });
+                    }
+                }
+            }
+
+            const category = await prisma.documentCategory.update({
+                where: { id },
+                data: {
+                    code: normalizedCode,
+                    name: name ? String(name).trim() : existing.name,
+                    description: description !== undefined ? (description ? String(description).trim() : null) : existing.description,
+                    color: color !== undefined ? (color ? String(color).trim() : null) : existing.color,
+                    icon: icon !== undefined ? (icon ? String(icon).trim() : null) : existing.icon,
+                    orderIndex: orderIndex !== undefined && Number.isFinite(Number(orderIndex)) ? Number(orderIndex) : existing.orderIndex,
+                    isActive: typeof isActive === 'boolean' ? isActive : existing.isActive,
+                }
+            });
+
+            res.json(category);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    }
+
+    static async deleteCategory(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const existing = await prisma.documentCategory.findUnique({ where: { id } });
+            if (!existing) {
+                return res.status(404).json({ error: 'Categoria não encontrada' });
+            }
+
+            const category = await prisma.documentCategory.update({
+                where: { id },
+                data: { isActive: false }
+            });
+
+            res.json(category);
         } catch (e: any) {
             res.status(500).json({ error: e.message });
         }
@@ -352,5 +465,8 @@ export class DocumentController {
         }
     }
 }
+
+
+
 
 

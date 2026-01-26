@@ -77,6 +77,9 @@ model User {
   devices            Device[]
   termsAcceptances   TermsAcceptance[]
   dataDeletionRequests DataDeletionRequest[]
+  tasksAssigned      Task[]               @relation("TaskAssignee")
+  tasksCreated       Task[]               @relation("TaskCreator")
+  contractEvents     ContractEvent[]
 
   @@map("users")
 }
@@ -132,6 +135,9 @@ enum NotificationType {
   MEASUREMENT_PENDING
   ACTION_REQUIRED
   SYSTEM_ALERT
+  DOCUMENT_OVERDUE
+  SLA_BREACH
+  TASK_ASSIGNED
 }
 
 model AuditLog {
@@ -209,6 +215,7 @@ model Contract {
   endDate      DateTime
   totalValue   Decimal   @default(0.0) @db.Decimal(15, 2)
   isActive     Boolean   @default(true)
+  accessRoles  String[]  @default([])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   
@@ -217,6 +224,11 @@ model Contract {
   measurements Measurement[]
   projectDocuments ProjectDocument[]
   grds         GRD[]
+  approvalFlows ContractApprovalFlow[]
+  events       ContractEvent[]
+  tasks        Task[]
+  alertRules   AlertRule[]
+  checklistItems ContractChecklistItem[]
 
   @@map("contracts")
 }
@@ -253,6 +265,7 @@ model ContractItem {
   unit           String?          
   unitPrice      Decimal?         @db.Decimal(15, 2)
   totalValue     Decimal?         @default(0.0) @db.Decimal(15, 2)
+  measurementCriteria String?     @map("measurement_criteria")
   
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -458,6 +471,7 @@ model ApprovalLevel {
   createdAt   DateTime @default(now())
   
   approvals   MeasurementApproval[]
+  contractApprovalSteps ContractApprovalStep[]
 
   @@map("approval_levels")
 }
@@ -473,6 +487,8 @@ model MeasurementApproval {
   approvedByName  String        // Nome do usuário (snapshot)
   approvedAt      DateTime      @default(now())
   notes           String?       // Observações da aprovação
+  signedAt        DateTime?
+  signatureHash   String?
   
   @@unique([measurementId, approvalLevelId])
   @@index([measurementId])
@@ -823,4 +839,158 @@ enum AnnotationType {
   STRIKEOUT   // Riscado
   RECTANGLE   // Retângulo
   FREEHAND    // Desenho livre
+}
+
+// ==========================================
+// FLUXO DE APROVAÇÃO POR CONTRATO
+// ==========================================
+
+model ContractApprovalFlow {
+  id         String                 @id @default(uuid())
+  contractId String
+  name       String
+  isActive   Boolean                @default(true)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  contract   Contract               @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  steps      ContractApprovalStep[]
+
+  @@index([contractId, isActive])
+  @@map("contract_approval_flows")
+}
+
+model ContractApprovalStep {
+  id              String              @id @default(uuid())
+  flowId          String
+  approvalLevelId String
+  orderIndex      Int
+  required        Boolean             @default(true)
+
+  flow            ContractApprovalFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  approvalLevel   ApprovalLevel        @relation(fields: [approvalLevelId], references: [id])
+
+  @@unique([flowId, approvalLevelId])
+  @@index([flowId])
+  @@map("contract_approval_steps")
+}
+
+// ==========================================
+// TASKS
+// ==========================================
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id            String       @id @default(uuid())
+  title         String
+  description   String?
+  status        TaskStatus   @default(TODO)
+  priority      TaskPriority @default(MEDIUM)
+  assignedToId  String?
+  createdById   String
+  contractId    String?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  assignedTo    User?        @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy     User         @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  contract      Contract?    @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([assignedToId, status])
+  @@index([contractId])
+  @@map("tasks")
+}
+
+// ==========================================
+// ALERTAS
+// ==========================================
+
+enum AlertRuleType {
+  CONTRACT_EXPIRING
+  MEASUREMENT_PENDING
+  DOCUMENT_OVERDUE
+  SLA_BREACH
+}
+
+model AlertRule {
+  id           String        @id @default(uuid())
+  name         String
+  type         AlertRuleType
+  isActive     Boolean       @default(true)
+  thresholdDays Int?
+  metadata     Json?
+  contractId   String?
+  contract     Contract?     @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([type, isActive])
+  @@index([contractId])
+  @@map("alert_rules")
+}
+
+model ContractChecklistItem {
+  id          String    @id @default(uuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  title       String
+  isRequired  Boolean   @default(true)
+  isDone      Boolean   @default(false)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([contractId, isDone])
+  @@map("contract_checklist_items")
+}
+
+// ==========================================
+// TIMELINE DE CONTRATO
+// ==========================================
+
+enum ContractEventType {
+  CONTRACT_CREATED
+  CONTRACT_UPDATED
+  MEASUREMENT_CREATED
+  MEASUREMENT_CLOSED
+  MEASUREMENT_APPROVED
+  DOCUMENT_UPLOADED
+  DOCUMENT_STATUS_CHANGED
+  GRD_SENT
+  TASK_CREATED
+  TASK_COMPLETED
+}
+
+model ContractEvent {
+  id          String            @id @default(uuid())
+  contractId  String
+  type        ContractEventType
+  message     String
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  createdById String?
+
+  contract    Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([contractId, createdAt])
+  @@index([type])
+  @@map("contract_events")
 }

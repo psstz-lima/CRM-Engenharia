@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -25,12 +25,27 @@ import documentRoutes from './routes/document.routes';
 import criticalAnalysisRoutes from './routes/critical-analysis.routes';
 import grdRoutes from './routes/grd.routes';
 import dwgRoutes from './routes/dwg.routes';
+import taskRoutes from './routes/task.routes';
+import alertRuleRoutes from './routes/alert-rule.routes';
+import approvalFlowRoutes from './routes/approval-flow.routes';
+import contractEventRoutes from './routes/contract-event.routes';
 import { setupSwagger } from './config/swagger';
 
 const app = express();
 
 // Setup Swagger API Docs
 setupSwagger(app);
+const frontendOrigins = [
+    config.frontendUrl,
+    ...(process.env.FRONTEND_URLS?.split(',').map(origin => origin.trim()).filter(Boolean) ?? [])
+].filter(Boolean);
+
+const isAllowedOrigin = (origin: string) => {
+    if (frontendOrigins.includes(origin)) return true;
+    if (/^http:\/\/(localhost|127\.0\.0\.1):3000$/.test(origin)) return true;
+    if (/^http:\/\/172\.16\.\d+\.\d+:3000$/.test(origin)) return true;
+    return false;
+};
 
 // RATE LIMITERS
 const globalLimiter = rateLimit({
@@ -46,7 +61,15 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     crossOriginEmbedderPolicy: false
 }));
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || isAllowedOrigin(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('CORS bloqueado'));
+    },
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 // Serve uploads from backend/uploads with cross-origin headers
@@ -79,6 +102,10 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/critical-analysis', criticalAnalysisRoutes);
 app.use('/api/grd', grdRoutes);
 app.use('/api', dwgRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/alert-rules', alertRuleRoutes);
+app.use('/api', approvalFlowRoutes);
+app.use('/api', contractEventRoutes);
 
 import { initScheduledJobs } from './modules/scheduled-jobs';
 
@@ -96,3 +123,7 @@ app.listen(config.port, () => {
     console.log(`Server running on port ${config.port}`);
 });
 // Force restart timestamp: 2026-01-08T15:38:00
+
+
+
+

@@ -39,7 +39,7 @@ export function PageHeader({ title, subtitle, icon, actions, breadcrumb, center 
                 <div className={`${center ? 'text-center w-full' : ''}`}>
                     <h1 className={`page-title ${center ? 'justify-center' : ''}`}>
                         {icon && <span className="text-2xl">{icon}</span>}
-                        <span className="bg-gradient-to-r from- to- bg-clip-text text-transparent">
+                        <span className="page-title-accent">
                             {title}
                         </span>
                     </h1>

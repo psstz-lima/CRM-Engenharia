@@ -1,7 +1,21 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database';
+import { seedDocumentCategories } from './document-categories';
 
 async function main() {
+    const adminPermissions = {
+        contracts: { view: true, create: true, edit: true, delete: true },
+        reports: { export: true },
+        addendums: { view: true, create: true, approve: true },
+        measurements: { view: true, create: true, edit: true, close: true },
+        users: { view: true, manage: true },
+        companies: { view: true, manage: true },
+        tasks: { view: true, manage: true },
+        admin_roles: true,
+        admin_audit: true,
+        admin_settings: true,
+    };
+
     const ownerCompany = await prisma.company.upsert({
         where: { id: 'default-company' },
         update: {},
@@ -10,11 +24,14 @@ async function main() {
 
     const adminRole = await prisma.role.upsert({
         where: { name: 'Admin' },
-        update: {},
+        update: {
+            description: 'Administrador do sistema',
+            permissions: adminPermissions,
+        },
         create: {
             name: 'Admin',
             description: 'Administrador do sistema',
-            permissions: { contracts: { view: true, create: true, edit: true, delete: true } },
+            permissions: adminPermissions,
         },
     });
 
@@ -46,6 +63,8 @@ async function main() {
             create: al,
         });
     }
+
+    await seedDocumentCategories();
 
     console.log('✅ Seed completo! Email: master@crm.com | Senha: Master@2024');
     console.log('✅ Níveis de aprovação criados: Fiscalização, Gerência, Diretoria');

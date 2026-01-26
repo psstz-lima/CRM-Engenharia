@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ContractController } from '../controllers/contract.controller';
 import { AddendumController } from '../controllers/addendum.controller';
+import { ContractChecklistController } from '../controllers/contract-checklist.controller';
 import { MeasurementController } from '../controllers/measurement.controller';
 import { PhotoController } from '../controllers/photo.controller';
 import { ExcelService } from '../services/excel.service';
@@ -50,7 +51,10 @@ router.use(authMiddleware);
 // --- CONTRATOS ---
 router.get('/', checkPermission('contracts_view'), ContractController.list);
 router.get('/:id', checkPermission('contracts_view'), ContractController.getById);
+router.get('/:id/access', checkPermission('contracts_edit'), ContractController.getAccess);
 router.post('/', checkPermission('contracts_create'), ContractController.create);
+router.put('/:id', checkPermission('contracts_edit'), ContractController.update);
+router.put('/:id/access', checkPermission('contracts_edit'), ContractController.updateAccess);
 router.delete('/:id', checkPermission('contracts_delete'), ContractController.delete);
 
 // --- ITENS DE CONTRATO ---
@@ -58,6 +62,12 @@ router.put('/items/reorder', checkPermission('contracts_edit'), ContractControll
 router.post('/:contractId/items', checkPermission('contracts_edit'), ContractController.addItem);
 router.put('/items/:id', checkPermission('contracts_edit'), ContractController.updateItem);
 router.delete('/items/:id', checkPermission('contracts_edit'), ContractController.deleteItem);
+
+// Contract checklist
+router.get('/:contractId/checklist', checkPermission('contracts_view'), ContractChecklistController.list);
+router.post('/:contractId/checklist', checkPermission('contracts_edit'), ContractChecklistController.create);
+router.patch('/checklist/:itemId', checkPermission('contracts_edit'), ContractChecklistController.update);
+router.delete('/checklist/:itemId', checkPermission('contracts_edit'), ContractChecklistController.delete);
 
 // --- IMPORT/EXPORT ---
 router.get('/template/download', checkPermission('contracts_view'), ContractController.downloadTemplate);
@@ -76,6 +86,7 @@ router.post('/addendums/:id/cancel', checkPermission('addendums_approve'), Adden
 
 // --- MEDIÇÕES ---
 router.get('/:contractId/measurements', checkPermission('measurements_view'), MeasurementController.list);
+router.get('/:contractId/measurement-item-status', checkPermission('measurements_view'), MeasurementController.itemStatusByContract);
 router.post('/:contractId/measurements', checkPermission('measurements_create'), MeasurementController.create);
 router.get('/measurements/:id', checkPermission('measurements_view'), MeasurementController.getById);
 router.post('/measurements/:id/items', checkPermission('measurements_edit'), MeasurementController.updateItem);

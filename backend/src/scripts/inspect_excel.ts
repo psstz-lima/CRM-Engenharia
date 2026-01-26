@@ -1,9 +1,8 @@
-
-import ExcelJS from 'exceljs';
+﻿import ExcelJS from 'exceljs';
 
 async function inspect() {
     const workbook = new ExcelJS.Workbook();
-    const filePath = 'c:\\Users\\paulo.lima\\CRM-Engenharia\\.instruções-sistema\\03. BM 03 - 24.09 A 23.10 - rev02.xlsx';
+    const filePath = 'c:\\Users\\paulo.lima\\CRM-Engenharia\\.instruÃ§Ãµes-sistema\\03. BM 03 - 24.09 A 23.10 - rev02.xlsx';
 
     try {
         await workbook.xlsx.readFile(filePath);
@@ -34,3 +33,4 @@ async function inspect() {
 }
 
 inspect();
+

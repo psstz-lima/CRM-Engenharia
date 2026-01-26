@@ -43,7 +43,7 @@ function Kill-Port ($port, $name) {
         }
     }
     else {
-        Write-Host " [NAO RODANDO]" -ForegroundColor Gray
+        Write-Host " [NÃO RODANDO]" -ForegroundColor Gray
     }
 }
 

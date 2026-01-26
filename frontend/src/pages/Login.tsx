@@ -1,12 +1,15 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Card } from '../components/ui/Card';
 
 export function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -25,39 +28,23 @@ export function Login() {
     };
 
     return (
-        <div
-            className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-
-        >
-            <div className="max-w-md w-full relative z-10">
-                {/* Logo Card */}
-                <div className="text-center mb-8 animate-fadeIn">
-                    <div>
+        <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden login-page">
+            <div className="w-full relative z-10">
+                <div className="text-center mb-1 animate-fadeIn login-hero mx-auto w-full max-w-3xl">
+                    <div className="flex justify-center mb-0">
                         <img
                             src="/construsys-logo.png"
                             alt="ConstruSys"
-                            width="200"
+                            width="640"
+                            className="login-logo drop-shadow-lg"
                         />
                     </div>
-                    <h1>
-                        ConstruSys
-                    </h1>
-                    <p>
-                        Bem-vindo de volta! Faça login para continuar.
-                    </p>
                 </div>
 
-                {/* Login Card */}
-                <div
-                    className="card p-8 animate-fadeIn"
-
-                >
+                <Card className="p-8 animate-fadeIn login-card bg-white/70 backdrop-blur-xl border border-[#e5dccd] shadow-[0_24px_60px_rgba(40,30,10,0.18)] mx-auto w-full max-w-md mt-0">
                     {error && (
-                        <div
-                            className="p-4 rounded-xl mb-6 text-sm flex items-center gap-3"
-
-                        >
-                            <span className="text-lg">⚠️</span>
+                        <div className="p-4 rounded-xl mb-6 text-sm flex items-center gap-3 bg-red-500/10 text-red-600 border border-red-500/20">
+                            <ShieldCheck size={18} />
                             <div>
                                 {error}
                                 {error === 'Network Error' && (
@@ -87,30 +74,40 @@ export function Login() {
                                 <label className="label mb-0">Senha</label>
                                 <Link
                                     to="/forgot-password"
-                                    className="text-sm transition-colors"
-
+                                    className="text-sm text-gray-600 hover:text- transition-colors"
                                 >
                                     Esqueceu?
                                 </Link>
                             </div>
-                            <input
-                                type="password"
-                                className="input"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="input pr-12"
+                                    placeholder="Digite sua senha"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(prev => !prev)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text- transition-colors"
+                                    aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                                    title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
                         <button
                             type="submit"
-                            className="w-full btn btn-primary py-3 text-base font-semibold"
+                            className="w-full btn btn-primary py-3 text-base font-semibold login-primary bg-gradient-to-r from-amber-600 to-amber-800 text-[#20170a] shadow-[0_12px_28px_rgba(126,94,24,0.35)]"
                             disabled={loading}
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <span className="animate-spin">⏳</span> Entrando...
+                                    <Loader2 size={18} className="animate-spin" /> Entrando...
                                 </span>
                             ) : (
                                 'Entrar'
@@ -118,39 +115,10 @@ export function Login() {
                         </button>
                     </form>
 
-                    {/* Divider */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full" ></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span
-                                className="px-3"
+                </Card>
 
-                            >
-                                ou
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Master Login */}
-                    <button
-                        onClick={(e: any) => handleSubmit(e, true)}
-                        className="w-full btn btn-secondary text-sm"
-                        disabled={loading}
-                    >
-                        <span className="flex items-center justify-center gap-2">
-                            <span>⭐</span> Login Administrador (Demo)
-                        </span>
-                    </button>
-                </div>
-
-                {/* Footer */}
-                <p
-                    className="text-center mt-6 text-sm animate-fadeIn"
-
-                >
-                    © 2026 ConstruSys. Todos os direitos reservados.
+                <p className="text-center mt-5 text-sm text-gray-600 animate-fadeIn">
+                    (c) 2026 ConstruSys. Todos os direitos reservados.
                 </p>
             </div>
         </div>

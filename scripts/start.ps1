@@ -1,4 +1,9 @@
-﻿# SCRIPT DE INICIALIZAÃ‡ÃƒO DO SISTEMA
+﻿# SCRIPT DE INICIALIZACAO DO SISTEMA
+
+param(
+    [switch]$NoWait
+)
+
 # Inicia Backend e Frontend
 
 # Forca saida em UTF-8 para evitar textos quebrados no console
@@ -14,6 +19,7 @@ Write-Host "========================================" -ForegroundColor Magenta
 Write-Host ""
 
 $ErrorActionPreference = "Continue"
+$rootPath = Split-Path -Parent $PSScriptRoot
 
 Write-Host "[1/5] Verificando ambiente..." -ForegroundColor Cyan
 Write-Host "      Sistema configurado para PostgreSQL" -ForegroundColor Green
@@ -21,14 +27,25 @@ Start-Sleep -Seconds 1
 
 Write-Host ""
 Write-Host "[2/5] Gerando Prisma Client..." -ForegroundColor Cyan
-$rootPath = Split-Path -Parent $PSScriptRoot
-cd "$rootPath\backend"
+# Encerra processos anteriores para liberar o query_engine do Prisma
+& "$rootPath\scripts\stop.ps1" | Out-Null
+
+Set-Location "$rootPath\backend"
 npm run db:generate
 if ($LASTEXITCODE -eq 0) {
     Write-Host "      OK - Client gerado!" -ForegroundColor Green
 }
 else {
-    Write-Host "      Erro ao gerar client" -ForegroundColor Red
+    Write-Host "      Erro ao gerar client, tentando limpar cache Prisma..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force "$rootPath\backend\node_modules\.prisma" -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+    npm run db:generate
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "      OK - Client gerado apos limpeza!" -ForegroundColor Green
+    }
+    else {
+        Write-Host "      Erro ao gerar client" -ForegroundColor Red
+    }
 }
 
 Write-Host ""
@@ -42,8 +59,8 @@ else {
 }
 
 Write-Host ""
-Write-Host "[4/5] Instalando dependÃªncias do frontend..." -ForegroundColor Cyan
-cd "$rootPath\frontend"
+Write-Host "[4/5] Instalando dependencias do frontend..." -ForegroundColor Cyan
+Set-Location "$rootPath\frontend"
 npm install --silent
 Write-Host "      OK - Frontend pronto!" -ForegroundColor Green
 
@@ -82,5 +99,12 @@ Write-Host "SISTEMA RODANDO!" -ForegroundColor Green
 Write-Host "Backend: http://localhost:3001" -ForegroundColor White
 Write-Host "Frontend: http://localhost:3000 (abrindo...)" -ForegroundColor White
 Write-Host ""
-Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+if (-not $NoWait) {
+    Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
+
+
+
+
+

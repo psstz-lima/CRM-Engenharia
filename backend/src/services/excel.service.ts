@@ -133,7 +133,7 @@ export class ExcelService {
     }
 
     static async importContractExcel(contractId: string, buffer: Buffer) {
-        // First delete existing items? Or update?
+        // First delete existing items?Or update?
         // User request implied "Import", typically replacing or appending.
         // For simplicity and safety in maintaining hierarchy integrity, let's assume valid "Code" based Upsert or Clean Insert.
         // Let's go with: Delete All and Re-create is dangerous.
@@ -174,8 +174,8 @@ export class ExcelService {
                     code: code, // Keep empty if no code provided
                     description,
                     unit: row.getCell(4).text?.trim(), // D
-                    quantity: row.getCell(5).value ? Number(row.getCell(5).value) : null, // E
-                    unitPrice: row.getCell(6).value ? Number(row.getCell(6).value) : null, // F
+                    quantity: row.getCell(5).value ?Number(row.getCell(5).value) : null, // E
+                    unitPrice: row.getCell(6).value ?Number(row.getCell(6).value) : null, // F
                     costCenter: row.getCell(8).text?.trim(), // H
                     techSpecs: row.getCell(9).text?.trim(), // I
                 });

@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { Login } from '../pages/Login';
+import { Dashboard } from '../pages/Dashboard';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../components/layout/MainLayout';
 import { Card } from '../components/ui/Card';
@@ -38,10 +40,8 @@ const Loading = () => (
 const MeasurementContracts = lazy(() => import('../pages/MeasurementContracts').then(m => ({ default: m.MeasurementContracts })));
 const Measurements = lazy(() => import('../pages/Measurements').then(m => ({ default: m.Measurements })));
 const MeasurementDetails = lazy(() => import('../pages/MeasurementDetails').then(m => ({ default: m.MeasurementDetails })));
-const Login = lazy(() => import('../pages/Login').then(m => ({ default: m.Login })));
 const ForgotPassword = lazy(() => import('../pages/ForgotPassword').then(m => ({ default: m.ForgotPassword })));
 const TermsOfUse = lazy(() => import('../pages/TermsOfUse').then(m => ({ default: m.TermsOfUse })));
-const Dashboard = lazy(() => import('../pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const Profile = lazy(() => import('../pages/Profile').then(m => ({ default: m.Profile })));
 const Notifications = lazy(() => import('../pages/Notifications').then(m => ({ default: m.Notifications })));
 const Users = lazy(() => import('../pages/Users').then(m => ({ default: m.Users })));
@@ -55,12 +55,18 @@ const Contracts = lazy(() => import('../pages/Contracts').then(m => ({ default: 
 const ContractDetails = lazy(() => import('../pages/ContractDetails').then(m => ({ default: m.ContractDetails })));
 const Import = lazy(() => import('../pages/Import').then(m => ({ default: m.Import })));
 const Documents = lazy(() => import('../pages/Documents'));
+const DocumentCategories = lazy(() => import('../pages/DocumentCategories'));
 const DocumentDetails = lazy(() => import('../pages/DocumentDetails'));
 const GRDList = lazy(() => import('../pages/GRDList'));
 const GRDDetails = lazy(() => import('../pages/GRDDetails'));
 const Projects = lazy(() => import('../pages/Projects'));
 const CriticalAnalysis = lazy(() => import('../pages/CriticalAnalysis'));
 const DocumentSLADashboard = lazy(() => import('../pages/DocumentSLADashboard'));
+const Tasks = lazy(() => import('../pages/Tasks').then(m => ({ default: m.Tasks })));
+const ContractTimeline = lazy(() => import('../pages/ContractTimeline').then(m => ({ default: m.ContractTimeline })));
+const ContractFinancial = lazy(() => import('../pages/ContractFinancial').then(m => ({ default: m.ContractFinancial })));
+const ContractApprovalFlow = lazy(() => import('../pages/ContractApprovalFlow').then(m => ({ default: m.ContractApprovalFlow })));
+const AlertRules = lazy(() => import('../pages/AlertRules').then(m => ({ default: m.AlertRules })));
 
 export function AppRoutes() {
     return (
@@ -84,11 +90,16 @@ export function AppRoutes() {
                     <Route path="/admin/approval-levels" element={<ApprovalLevels />} />
                     <Route path="/admin/units" element={<MeasurementUnits />} />
                     <Route path="/admin/audit-logs" element={<AuditLogs />} />
+                    <Route path="/admin/alert-rules" element={<AlertRules />} />
                     <Route path="/contracts" element={<Contracts />} />
                     <Route path="/contracts/:id" element={<ContractDetails />} />
+                    <Route path="/contracts/:id/timeline" element={<ContractTimeline />} />
+                    <Route path="/contracts/:id/financial" element={<ContractFinancial />} />
+                    <Route path="/contracts/:id/approval-flow" element={<ContractApprovalFlow />} />
                     <Route path="/measurements" element={<MeasurementContracts />} />
                     <Route path="/contracts/:id/measurements" element={<Measurements />} />
                     <Route path="/measurements/:id" element={<MeasurementDetails />} />
+                    <Route path="/tasks" element={<Tasks />} />
 
                     {/* Projetos */}
                     <Route path="/projects" element={<Projects />} />
@@ -97,6 +108,7 @@ export function AppRoutes() {
 
                     {/* Documentos */}
                     <Route path="/documents" element={<Documents />} />
+                    <Route path="/documents/categories" element={<DocumentCategories />} />
                     <Route path="/contracts/:contractId/documents" element={<Documents />} />
                     <Route path="/documents/:id" element={<DocumentDetails />} />
 

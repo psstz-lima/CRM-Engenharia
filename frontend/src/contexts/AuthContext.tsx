@@ -82,9 +82,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data } = await api.post(endpoint, { email, password });
         localStorage.setItem('token', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        return data.user;
+        let resolvedUser = data.user;
+        try {
+            const profileRes = await api.get('/profile');
+            resolvedUser = profileRes.data;
+        } catch (err) {
+            // fallback to login payload if profile fails
+            console.error('Falha ao carregar perfil após login', err);
+        }
+        localStorage.setItem('user', JSON.stringify(resolvedUser));
+        setUser(resolvedUser);
+        return resolvedUser;
     };
 
     const logout = async () => {

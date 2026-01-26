@@ -12,6 +12,7 @@ router.get('/measurement/:id/excel', checkPermission('reports_export'), ReportCo
 
 // Exportar resumo de contrato
 router.get('/contract/:id/excel', checkPermission('reports_export'), ReportController.contractSummaryToExcel);
+router.get('/contract/:id/financial', checkPermission('reports_export'), ReportController.contractFinancial);
 
 // Relatório geral de medições (filtrado por período/status)
 router.get('/measurements', checkPermission('reports_export'), ReportController.measurementsReport);

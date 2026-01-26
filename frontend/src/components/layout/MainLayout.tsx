@@ -11,11 +11,11 @@ export function MainLayout() {
     }
 
     return (
-        <div>
+        <div className="app-shell">
             <Sidebar />
-            <div>
+            <div className="app-main">
                 <Navbar />
-                <main>
+                <main className="app-content">
                     <Outlet />
                 </main>
             </div>

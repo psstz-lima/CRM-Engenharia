@@ -149,7 +149,7 @@ export function setupSwagger(app: Express) {
         res.send(specs);
     });
 
-    console.log('ðŸ“š Swagger docs available at /api/docs');
+    console.log('Swagger docs available at /api/docs');
 }
 
 export default specs;

@@ -78,12 +78,10 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
     if (!isOpen) return null;
 
     return ReactDOM.createPortal(
-        <div
-            className="fixed inset-0 z-[1100] flex justify-center items-center pointer-events-none"
-        >
+        <div className="modal-backdrop pointer-events-none">
             <div
                 ref={modalRef}
-                className={`flex flex-col rounded-lg shadow-2xl bg-gray-50 border border-gray-300 pointer-events-auto max-h-[90vh] ${className || ''}`}
+                className={`modal-shell pointer-events-auto ${className || ''}`}
                 style={{
                     width: width,
                     maxWidth: maxWidth,
@@ -95,20 +93,20 @@ export const DraggableModal: React.FC<DraggableModalProps> = ({
                 {/* Header - Drag Handle */}
                 <div
                     onMouseDown={handleMouseDown}
-                    className={`flex justify-between items-center px-5 py-3 border-b border-gray-300 bg-gray-100 rounded-t-lg select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'
-                        }`}
+                    className={`modal-header select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                 >
-                    <h3 className="text-lg font-bold text-gray-900 m-0">{title}</h3>
+                    <h3 className="modal-title">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-600 hover:text-gray-900 text-2xl leading-none border-none bg-transparent cursor-pointer ml-4"
+                        className="modal-close"
+                        aria-label="Fechar"
                     >
-                        ×
+                        &times;
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 overflow-y-auto flex-1 custom-scrollbar text-gray-700">
+                <div className="modal-body custom-scrollbar">
                     {children}
                 </div>
             </div>

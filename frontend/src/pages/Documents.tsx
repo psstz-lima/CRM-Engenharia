@@ -1,11 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    FileText, Upload, Filter, Search, Grid, List,
-    ChevronRight, Download, Eye, MoreVertical, Trash2,
-    FolderOpen, Clock, CheckCircle, AlertCircle, XCircle
+    FileCode2,
+    FileImage,
+    FileText,
+    Filter,
+    FolderOpen,
+    Grid,
+    List,
+    Search,
+    Trash2,
+    Upload,
+    Eye,
+    Download,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    XCircle
 } from 'lucide-react';
 import api from '../services/api';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Card } from '../components/ui/Card';
 import DocumentUpload from '../components/documents/DocumentUpload';
 
 interface Document {
@@ -31,13 +46,13 @@ interface Category {
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
-    RECEIVED: { label: 'Recebido', color: 'bg-blue-100 text-blue-700', icon: Clock },
-    IN_ANALYSIS: { label: 'Em Análise', color: 'bg-yellow-100 text-yellow-700', icon: Clock },
-    APPROVED: { label: 'Aprovado', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-    APPROVED_NOTES: { label: 'Aprovado c/ Ressalvas', color: 'bg-orange-100 text-orange-700', icon: AlertCircle },
-    REJECTED: { label: 'Reprovado', color: 'bg-red-100 text-red-700', icon: XCircle },
-    DISTRIBUTED: { label: 'Distribuído', color: 'bg-purple-100 text-purple-700', icon: CheckCircle },
-    RELEASED: { label: 'Liberado', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle }
+    RECEIVED: { label: 'Recebido', color: 'bg-blue-500/10 text-blue-600', icon: Clock },
+    IN_ANALYSIS: { label: 'Em análise', color: 'bg-amber-500/10 text-amber-600', icon: Clock },
+    APPROVED: { label: 'Aprovado', color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle },
+    APPROVED_NOTES: { label: 'Aprovado c/ ressalvas', color: 'bg-orange-500/10 text-orange-600', icon: AlertCircle },
+    REJECTED: { label: 'Reprovado', color: 'bg-red-500/10 text-red-600', icon: XCircle },
+    DISTRIBUTED: { label: 'Distribuído', color: 'bg-purple-500/10 text-purple-600', icon: CheckCircle },
+    RELEASED: { label: 'Liberado', color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle }
 };
 
 export default function Documents() {
@@ -84,10 +99,10 @@ export default function Documents() {
     };
 
     const getFileIcon = (mimeType: string) => {
-        if (mimeType.includes('pdf')) return '📄';
-        if (mimeType.includes('dwg') || mimeType.includes('autocad')) return '📐';
-        if (mimeType.includes('image')) return '🖼️';
-        return '📁';
+        if (mimeType.includes('pdf')) return FileText;
+        if (mimeType.includes('dwg') || mimeType.includes('autocad')) return FileCode2;
+        if (mimeType.includes('image')) return FileImage;
+        return FileText;
     };
 
     const handleDownload = async (doc: Document) => {
@@ -118,61 +133,48 @@ export default function Documents() {
         }
     };
 
-    const groupedByCategory = documents.reduce((acc, doc) => {
-        const catCode = doc.category?.code || 'SEM_CATEGORIA';
-        if (!acc[catCode]) acc[catCode] = [];
-        acc[catCode].push(doc);
-        return acc;
-    }, {} as Record<string, Document[]>);
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-" />
             </div>
         );
     }
 
     return (
-        <div className="p-6">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <FileText className="text-blue-500" />
-                        {contractId ? 'Documentos do Contrato' : 'Todos os Documentos'}
-                    </h1>
-                    <p className="text-gray-500">{documents.length} documentos encontrados</p>
-                </div>
-                <button
-                    onClick={() => setShowUploadModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                    <Upload size={18} />
-                    Upload
-                </button>
-            </div>
+        <div className="p-6 max-w-[1600px] mx-auto space-y-6">
+            <PageHeader
+                title={contractId ? 'Documentos do Contrato' : 'Todos os Documentos'}
+                subtitle={`${documents.length} documentos encontrados`}
+                icon={<FileText className="text-" />}
+                actions={
+                    <button
+                        onClick={() => setShowUploadModal(true)}
+                        className="btn btn-primary flex items-center gap-2"
+                    >
+                        <Upload size={16} />
+                        Upload
+                    </button>
+                }
+            />
 
-            {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
+            <Card className="p-4">
                 <div className="flex flex-wrap gap-4 items-center">
-                    {/* Search */}
-                    <div className="relative flex-1 min-w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <div className="relative flex-1 min-w-[240px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-" size={18} />
                         <input
                             type="text"
                             placeholder="Buscar por código ou título..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900"
+                            className="input pl-10"
                         />
                     </div>
 
-                    {/* Category Filter */}
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900"
+                        className="input w-[220px]"
                     >
                         <option value="">Todas as categorias</option>
                         {categories.map(cat => (
@@ -182,11 +184,10 @@ export default function Documents() {
                         ))}
                     </select>
 
-                    {/* Status Filter */}
                     <select
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900"
+                        className="input w-[200px]"
                     >
                         <option value="">Todos os status</option>
                         {Object.entries(statusConfig).map(([key, { label }]) => (
@@ -194,123 +195,130 @@ export default function Documents() {
                         ))}
                     </select>
 
-                    {/* View Mode */}
-                    <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-50 dark:bg-gray-900'}`}
-                        >
-                            <List size={18} />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-50 dark:bg-gray-900'}`}
-                        >
-                            <Grid size={18} />
-                        </button>
+                    <div className="flex items-center gap-2">
+                        <Filter size={16} className="text-" />
+                        <div className="flex border border- rounded-lg overflow-hidden">
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`p-2 ${viewMode === 'list' ? 'bg- text-gray-900' : 'bg-'}`}
+                            >
+                                <List size={18} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-2 ${viewMode === 'grid' ? 'bg- text-gray-900' : 'bg-'}`}
+                            >
+                                <Grid size={18} />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Card>
 
-            {/* Documents List */}
             {viewMode === 'list' ? (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-900">
-                            <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rev.</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tamanho</th>
-                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {documents.map(doc => {
-                                const status = statusConfig[doc.status] || statusConfig.RECEIVED;
-                                const StatusIcon = status.icon;
-                                return (
-                                    <tr
-                                        key={doc.id}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                                        onClick={() => navigate(`/documents/${doc.id}`)}
-                                    >
-                                        <td className="px-4 py-3">
-                                            <span className="font-mono text-sm font-medium text-blue-600">
-                                                {getFileIcon(doc.mimeType)} {doc.code}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm">{doc.title}</td>
-                                        <td className="px-4 py-3">
-                                            {doc.category && (
-                                                <span
-                                                    className="px-2 py-1 rounded-full text-xs font-medium"
-                                                    style={{ backgroundColor: doc.category.color + '20', color: doc.category.color }}
-                                                >
-                                                    {doc.category.icon} {doc.category.code}
+                <Card className="overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">Código</th>
+                                    <th className="px-4 py-3 text-left">Título</th>
+                                    <th className="px-4 py-3 text-left">Categoria</th>
+                                    <th className="px-4 py-3 text-left">Rev.</th>
+                                    <th className="px-4 py-3 text-left">Status</th>
+                                    <th className="px-4 py-3 text-left">Tamanho</th>
+                                    <th className="px-4 py-3 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-">
+                                {documents.map(doc => {
+                                    const status = statusConfig[doc.status] || statusConfig.RECEIVED;
+                                    const StatusIcon = status.icon;
+                                    const FileIcon = getFileIcon(doc.mimeType);
+                                    return (
+                                        <tr
+                                            key={doc.id}
+                                            className="hover:bg- transition-colors cursor-pointer"
+                                            onClick={() => navigate(`/documents/${doc.id}`)}
+                                        >
+                                            <td className="px-4 py-3">
+                                                <span className="inline-flex items-center gap-2 font-mono text-sm font-semibold text-">
+                                                    <FileIcon size={16} className="text-" />
+                                                    {doc.code}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 font-mono text-sm">{doc.revision}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit ${status.color}`}>
-                                                <StatusIcon size={12} />
-                                                {status.label}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500">{formatFileSize(doc.fileSize)}</td>
-                                        <td className="px-4 py-3 text-right">
-                                            <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
-                                                <button
-                                                    onClick={() => navigate(`/documents/${doc.id}`)}
-                                                    className="p-1 text-gray-500 hover:text-blue-500"
-                                                    title="Visualizar"
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDownload(doc)}
-                                                    className="p-1 text-gray-500 hover:text-green-500"
-                                                    title="Download"
-                                                >
-                                                    <Download size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(doc)}
-                                                    className="p-1 text-gray-500 hover:text-red-500"
-                                                    title="Excluir"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                    {documents.length === 0 && (
-                        <div className="text-center py-12 text-gray-500">
-                            <FolderOpen size={48} className="mx-auto mb-4 opacity-50" />
-                            <p>Nenhum documento encontrado</p>
-                        </div>
-                    )}
-                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-">{doc.title}</td>
+                                            <td className="px-4 py-3">
+                                                {doc.category && (
+                                                    <span
+                                                        className="px-2 py-1 rounded-full text-xs font-medium"
+                                                        style={{ backgroundColor: `${doc.category.color}22`, color: doc.category.color }}
+                                                    >
+                                                        {doc.category.icon} {doc.category.code}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 font-mono text-sm">{doc.revision}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-fit ${status.color}`}>
+                                                    <StatusIcon size={12} />
+                                                    {status.label}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-500">{formatFileSize(doc.fileSize)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
+                                                    <button
+                                                        onClick={() => navigate(`/documents/${doc.id}`)}
+                                                        className="p-1 text- hover:text- transition-colors"
+                                                        title="Visualizar"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDownload(doc)}
+                                                        className="p-1 text- hover:text-emerald-600 transition-colors"
+                                                        title="Download"
+                                                    >
+                                                        <Download size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(doc)}
+                                                        className="p-1 text- hover:text-red-600 transition-colors"
+                                                        title="Excluir"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        {documents.length === 0 && (
+                            <div className="text-center py-12 text-gray-500">
+                                <FolderOpen size={48} className="mx-auto mb-4 opacity-50" />
+                                <p>Nenhum documento encontrado</p>
+                            </div>
+                        )}
+                    </div>
+                </Card>
             ) : (
-                /* Grid View */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {documents.map(doc => {
                         const status = statusConfig[doc.status] || statusConfig.RECEIVED;
+                        const FileIcon = getFileIcon(doc.mimeType);
                         return (
-                            <div
+                            <Card
                                 key={doc.id}
+                                className="p-4 hover:shadow-md transition-shadow cursor-pointer"
                                 onClick={() => navigate(`/documents/${doc.id}`)}
-                                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer"
                             >
                                 <div className="flex items-start justify-between mb-3">
-                                    <span className="text-3xl">{getFileIcon(doc.mimeType)}</span>
+                                    <div className="tile-icon tile-icon--cool">
+                                        <FileIcon size={18} />
+                                    </div>
                                     <span className={`px-2 py-1 rounded-full text-xs ${status.color}`}>
                                         {status.label}
                                     </span>
@@ -325,13 +333,12 @@ export default function Documents() {
                                         </span>
                                     )}
                                 </div>
-                            </div>
+                            </Card>
                         );
                     })}
                 </div>
             )}
 
-            {/* Upload Modal */}
             {showUploadModal && (
                 <DocumentUpload
                     contractId={contractId}

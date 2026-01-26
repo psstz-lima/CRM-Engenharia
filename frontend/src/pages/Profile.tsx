@@ -1,4 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
+import { PencilLine } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -161,15 +162,23 @@ export function Profile() {
 
                             {/* Upload de foto */}
                             <form onSubmit={handlePhotoUpload} className="mt-6 pt-6 border-t border-">
-                                <input
-                                    type="file"
-                                    onChange={e => setPhoto(e.target.files?.[0] || null)}
-                                    accept="image/*"
-                                    className="text-sm text- file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg- file:text- hover:file:bg- file:cursor-pointer file:transition-all"
-                                />
+                                <div className="flex items-center gap-3">
+                                    <label className="btn btn-secondary cursor-pointer">
+                                        Escolher foto
+                                        <input
+                                            type="file"
+                                            onChange={e => setPhoto(e.target.files?.[0] || null)}
+                                            accept="image/*"
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    <span className="text-xs text-">
+                                        {photo?.name || 'Nenhuma foto selecionada'}
+                                    </span>
+                                </div>
                                 {photo && (
                                     <button type="submit" className="btn btn-primary mt-3 w-full">
-                                        📤 Enviar Foto
+                                        Enviar foto
                                     </button>
                                 )}
                             </form>
@@ -187,7 +196,7 @@ export function Profile() {
                         <div className="flex items-center justify-between mb-6">
                             <CardTitle icon="📝">Informações Pessoais</CardTitle>
                             {!editing && (
-                                <button onClick={handleEditClick} className="btn btn-ghost text-sm">
+                                <button onClick={handleEditClick} className="btn btn-secondary text-sm flex items-center gap-2">
                                     ✏️ Editar
                                 </button>
                             )}

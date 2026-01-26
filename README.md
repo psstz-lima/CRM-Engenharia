@@ -2,7 +2,7 @@
 
 Sistema de gerenciamento de contratos de engenharia com controle de medições, aditivos e permissões granulares.
 
-> **POLÍTICA DE ESTILO:** o frontend usa classes utilitárias e `index.css`. Evite CSS global novo; prefira estilos locais por componente e documente exceções.
+> **POLÍTICA DE ESTILO:** o frontend usa classes utilitárias e `index.css`. Evite CSS global novo; prefira estilos locais por componente e documente exceções. Exceção atual: tema premium define tokens e componentes base em `frontend/src/index.css`.
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green)
 ![React](https://img.shields.io/badge/React-18-blue)

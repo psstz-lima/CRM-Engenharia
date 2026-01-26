@@ -113,7 +113,11 @@ export class AuthController {
                     profilePhoto: user.profilePhoto,
                     isMaster: user.isMaster,
                     company: { id: user.company?.id, name: user.company?.name },
-                    role: { id: user.role?.id, name: user.role?.name },
+                    role: {
+                        id: user.role?.id,
+                        name: user.role?.name,
+                        permissions: user.role?.permissions
+                    },
                     preferences: user.preferences,
                     termsAccepted: !!(await prisma.termsAcceptance.findFirst({ where: { userId: user.id, termsVersion: '1.0' } }))
                 },
@@ -162,7 +166,11 @@ export class AuthController {
                     fullName: user.fullName,
                     isMaster: user.isMaster,
                     company: { id: user.company?.id, name: user.company?.name },
-                    role: { id: user.role?.id, name: user.role?.name },
+                    role: {
+                        id: user.role?.id,
+                        name: user.role?.name,
+                        permissions: user.role?.permissions
+                    },
                     preferences: user.preferences,
                     termsAccepted: !!(await prisma.termsAcceptance.findFirst({ where: { userId: user.id, termsVersion: '1.0' } }))
                 },

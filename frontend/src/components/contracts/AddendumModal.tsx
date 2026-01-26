@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Addendum, AddendumOperation } from '../../types/addendum';
-import { X, Plus, Trash2, Save, CheckCircle } from 'lucide-react';
+import { Save, CheckCircle } from 'lucide-react';
+import { DraggableModal } from '../common/DraggableModal';
 
 interface AddendumModalProps {
     isOpen: boolean;
@@ -82,108 +83,100 @@ export function AddendumModal({ isOpen, onClose, contractId, addendum, onSuccess
         }
     };
 
-    // Simplified Operation Handler for now (real logic would need item selection)
-    // For this POC, we might implemented a VERY basic operation add form inside here
-    // But given the complexity, maybe just showing "Work in Progress" for operations or a rudimentary text list is acceptable for Step 1?
-    // Let's implement a placeholder for operations management or a simple "Add" button that mocks an operation for testing.
-
-    // ...
-
     if (!isOpen) return null;
 
     const isReadOnly = currentAddendum?.status && currentAddendum.status !== 'DRAFT';
+    const title = currentAddendum ? `Aditivo #${currentAddendum.number}` : 'Novo Aditivo';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-                <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-xl font-bold">
-                        {currentAddendum ? `Aditivo #${currentAddendum.number}` : 'Novo Aditivo'}
-                    </h2>
-                    <button onClick={onClose}><X size={24} /></button>
+        <DraggableModal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={title}
+            width="960px"
+            className="max-w-[96vw]"
+        >
+            <div className="grid gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                        <label className="label">Descrição / Justificativa</label>
+                        <input
+                            type="text"
+                            className="input"
+                            value={formData.description}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            disabled={!!currentAddendum || isReadOnly}
+                        />
+                    </div>
+                    <div>
+                        <label className="label">Data</label>
+                        <input
+                            type="date"
+                            className="input"
+                            value={formData.date}
+                            onChange={e => setFormData({ ...formData, date: e.target.value })}
+                            disabled={!!currentAddendum || isReadOnly}
+                        />
+                    </div>
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1 space-y-6">
-                    {/* Header Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Descrição / Justificativa</label>
-                            <input
-                                type="text"
-                                className="w-full border rounded-lg p-2"
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                disabled={!!currentAddendum || isReadOnly} // Disable if created (for now) or readonly
-                            />
+                {!currentAddendum && (
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleCreateDraft}
+                            disabled={loading || !formData.description}
+                            className="btn btn-primary"
+                        >
+                            <Save size={18} /> Criar rascunho
+                        </button>
+                    </div>
+                )}
+
+                {currentAddendum && (
+                    <div className="grid gap-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <h3 className="text-lg font-semibold text-">Operações do aditivo</h3>
+                            {!isReadOnly && (
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    disabled
+                                    title="Funcionalidade de adicionar itens em desenvolvimento"
+                                >
+                                    + Adicionar operação (em breve)
+                                </button>
+                            )}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Data</label>
-                            <input
-                                type="date"
-                                className="w-full border rounded-lg p-2"
-                                value={formData.date}
-                                onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                disabled={!!currentAddendum || isReadOnly}
-                            />
+
+                        <div className="card p-4 text-sm text-gray-600">
+                            {operations.length === 0 ? (
+                                <p>Nenhuma operação registrada.</p>
+                            ) : (
+                                operations.map(op => (
+                                    <div key={op.id}>{op.newItemDescription || 'Item alterado'} ...</div>
+                                ))
+                            )}
                         </div>
                     </div>
+                )}
 
-                    {!currentAddendum && (
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleCreateDraft}
-                                disabled={loading || !formData.description}
-                                className="btn bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-                            >
-                                <Save size={18} /> Criar Rascunho
-                            </button>
-                        </div>
-                    )}
+                <div className="modal-divider" />
 
-                    {currentAddendum && (
-                        <div className="border-t pt-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-semibold text-lg">Operações do Aditivo</h3>
-                                {/* Operations Add Button - Placeholder */}
-                                {!isReadOnly && (
-                                    <button
-                                        className="btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-                                        disabled
-                                        title="Funcionalidade de adicionar itens em desenvolvimento"
-                                    >
-                                        + Adicionar Operação (Em Breve)
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Operations List */}
-                            <div className="bg-gray-50 rounded-lg p-4 border text-center text-gray-500">
-                                {operations.length === 0 ? (
-                                    <p>Nenhuma operação registrada.</p>
-                                ) : (
-                                    operations.map(op => (
-                                        <div key={op.id}>{op.newItemDescription || 'Item alterado'} ...</div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-xl">
-                    <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg">
+                <div className="flex flex-wrap justify-end gap-3">
+                    <button onClick={onClose} className="btn btn-secondary">
                         Fechar
                     </button>
                     {currentAddendum?.status === 'DRAFT' && (
                         <button
                             onClick={handleApprove}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-2"
+                            className="btn btn-success"
                         >
-                            <CheckCircle size={18} /> Aprovar Aditivo
+                            <CheckCircle size={18} /> Aprovar aditivo
                         </button>
                     )}
                 </div>
             </div>
-        </div>
+        </DraggableModal>
     );
 }
+
+

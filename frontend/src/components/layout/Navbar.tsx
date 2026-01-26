@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationBell } from '../common/NotificationBell';
+import { LogOut } from 'lucide-react';
 
 export function Navbar() {
     const { user, logout } = useAuth();
@@ -12,36 +13,27 @@ export function Navbar() {
     };
 
     return (
-        <nav>
+        <nav className="topbar">
             {/* Left side: Current date */}
-            <div>
-                <div>
-                    {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
+            <div className="topbar-date">
+                {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
 
             {/* Right side: Actions & Profile */}
-            <ul>
-                {/* Notifications */}
+            <ul className="topbar-actions">
                 {/* Notifications */}
                 <li>
                     <NotificationBell />
                 </li>
 
                 {/* Divider */}
-                <li></li>
+                <li className="topbar-divider"></li>
 
                 {/* User Info */}
                 <li>
-                    <div>
-                        <span>
-                            {user?.fullName}
-                        </span>
-                        {user?.isMaster && (
-                            <span>
-                                ⭐ Master
-                            </span>
-                        )}
+                    <div className="topbar-user">
+                        <span>{user?.fullName}</span>
+                        {user?.isMaster && <span>Master</span>}
                     </div>
                 </li>
 
@@ -50,8 +42,9 @@ export function Navbar() {
                     <button
                         onClick={handleLogout}
                         title="Sair"
+                        className="icon-button"
                     >
-                        <span>🚪</span>
+                        <LogOut size={18} />
                     </button>
                 </li>
             </ul>
