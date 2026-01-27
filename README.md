@@ -1,8 +1,8 @@
 ﻿# CRM Engenharia
 
-Sistema de gerenciamento de contratos de engenharia com controle de medições, aditivos e permissões granulares.
+Sistema de gerenciamento de contratos de engenharia com controle de medições, aditivos, documentos, tarefas e permissões granulares.
 
-> **POLÍTICA DE ESTILO:** o frontend usa classes utilitárias e `index.css`. Evite CSS global novo; prefira estilos locais por componente e documente exceções. Exceção atual: tema premium define tokens e componentes base em `frontend/src/index.css`.
+> **Política de estilo (frontend):** use classes utilitárias e `frontend/src/index.css`. Evite CSS global novo; prefira estilos locais por componente e documente exceções. Exceção atual: o tema premium define tokens e componentes base em `frontend/src/index.css`.
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green)
 ![React](https://img.shields.io/badge/React-18-blue)
@@ -10,131 +10,156 @@ Sistema de gerenciamento de contratos de engenharia com controle de medições, 
 ![Prisma](https://img.shields.io/badge/Prisma-5-purple)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 
-## Funcionalidades
+## Stack e arquitetura
 
-### Contratos
-- Cadastro e gerenciamento de contratos
-- Planilha hierárquica de itens (grupos e composições)
-- Importação de planilhas Excel (com validação e proteção)
-- Cálculo automático de valores (quantidade x preço unitário)
-- **Aditivos contratuais**: controle de aditivos de valor e prazo
+- Backend: Node.js + Express + TypeScript + Prisma + PostgreSQL
+- Frontend: React 18 + Vite + TypeScript + React Router
+- Padrão: camadas por domínio (`routes` → `controllers` → `services`)
+- Documentação da API: Swagger em `/api/docs`
 
-### Medições
-- Criação de medições vinculadas a contratos
-- **Workflow visual**: Em Elaboração → Em Aprovação → Aprovado → Concluído
-- Lançamento de quantidades medidas
-- Galeria de fotos com metadados
-- Cálculo automático de valores medidos
+Pontos de entrada:
+- Backend: `backend/src/server.ts`
+- Frontend: `frontend/src/main.tsx`
 
-### Sistema
-- **Notificações em tempo real**: alertas visuais e central de notificações
-- Sistema de permissões granular (19 permissões / 7 categorias)
-- Perfis de acesso: Admin, Gestor, Engenheiro, Visualizador
+## Funcionalidades principais
 
-### Gestão corporativa
-- Cadastro de empresas e unidades
-- Níveis de aprovação configuráveis
-- Auditoria de ações (logs do sistema)
+- Contratos: cadastro, itens hierárquicos, importação Excel, aditivos
+- Medições: workflow, lançamentos, fotos, cálculos
+- Documentos: categorias, SLA, visualização e uploads
+- Governança: permissões, perfis, auditoria, notificações, tarefas
 
-## Tecnologias
+## Pré-requisitos
 
-### Backend
-- **Node.js** + **Express** - API REST
-- **TypeScript** - Tipagem estática
-- **Prisma** - ORM para banco de dados
-- **PostgreSQL** - Banco de dados relacional
-- **JWT** - Autenticação e segurança
-- **Services Pattern** - Arquitetura em camadas (Controller/Service)
-
-### Frontend
-- **React 18** - Interface de usuário
-- **TypeScript** - Tipagem estática
-- **React Router** - Navegação SPA
-- **Context API** - Gerenciamento de estado (Auth)
-
-## Instalação
-
-### Pré-requisitos
 - Node.js 18+
 - PostgreSQL 15+
-- npm ou yarn
+- npm
 - (Opcional) ODA File Converter ou LibreDWG para converter DWG/DXF
 
-### 1. Clone o repositório
-```bash
-git clone https://github.com/psstz-lima/CRM-Engenharia.git
-cd CRM-Engenharia
-```
+## Configuração de ambiente
 
-### 2. Configure as variáveis de ambiente
+Backend (`backend/.env`):
 
-**Backend** (`backend/.env`):
 ```env
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/crm_engenharia"
 JWT_SECRET="sua-chave-secreta"
 PORT=3001
+FRONTEND_URL="http://localhost:3000"
 ```
 
-**Frontend** (opcional):
+Frontend (opcional, `frontend/.env`):
+
 ```env
 VITE_API_URL=http://localhost:3001/api
 ```
 
-### 3. Instale as dependências
-```bash
-# Backend
+## Como rodar (recomendado)
+
+Na raiz do repositório:
+
+```powershell
+.\scripts\start.ps1
+```
+
+O script:
+- encerra processos anteriores nas portas 3000/3001,
+- gera o Prisma Client,
+- aplica migrações,
+- instala dependências do frontend,
+- sobe backend e frontend.
+
+URLs padrão:
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:3001`
+- Swagger: `http://localhost:3001/api/docs`
+
+Para parar os servidores:
+
+```powershell
+.\scripts\stop.ps1
+```
+
+## Como rodar (manual)
+
+Backend:
+
+```powershell
 cd backend
 npm install
-npx prisma migrate dev
-npx prisma db seed
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
 
-# Frontend
-cd ../frontend
+Frontend (em outro terminal):
+
+```powershell
+cd frontend
 npm install
+npm run dev
 ```
 
-### 4. Inicie a aplicação
-```bash
-# Script automático (recomendado)
-.\scripts\start.ps1
+## Scripts úteis
 
-# Manualmente:
-# Terminal 1: cd backend && npm run dev
-# Terminal 2: cd frontend && npm run dev
-```
+Na raiz:
+- `scripts/start.ps1`: sobe o sistema completo
+- `scripts/stop.ps1`: encerra processos nas portas 3000 e 3001
+- `scripts/backup.ps1` e `scripts/restore.ps1`: utilitários de banco
 
-## Estrutura do projeto
+No backend (`backend/package.json`):
+- `npm run dev`: servidor em modo watch (`tsx watch`)
+- `npm run db:generate`: gera Prisma Client
+- `npm run db:migrate`: aplica migrações
+- `npm run db:seed`: popula dados iniciais
+- `npm test`: roda testes com Jest
 
-```
+No frontend (`frontend/package.json`):
+- `npm run dev`: servidor Vite
+- `npm run build`: build de produção
+- `npm run preview`: preview do build
+
+## Estrutura do projeto (visão rápida)
+
+```text
 CRM-Engenharia/
-├── backend/
-│   └── src/
-│       ├── controllers/      # Controladores de rota
-│       ├── services/         # Regras de negócio
-│       ├── routes/           # Definição de endpoints
-│       └── models/           # Tipos e interfaces
-├── frontend/
-│   └── src/
-│       ├── components/       # Componentes React
-│       │   ├── layout/       # Sidebar, Navbar
-│       │   └── common/       # Notificações, Inputs
-│       ├── pages/            # Telas do sistema
-│       └── contexts/         # Estado global
-└── scripts/                  # Automação (PowerShell)
+├─ backend/
+│  ├─ prisma/              # schema e migrações
+│  └─ src/
+│     ├─ config/           # config, banco, swagger, logger
+│     ├─ controllers/      # handlers HTTP
+│     ├─ middlewares/      # auth, permissões, upload, auditoria
+│     ├─ modules/          # jobs agendados, auditoria
+│     ├─ routes/           # endpoints
+│     └─ services/         # regras de negócio
+├─ frontend/
+│  ├─ public/
+│  └─ src/
+│     ├─ components/
+│     ├─ contexts/
+│     ├─ pages/
+│     ├─ routes/
+│     └─ services/
+└─ scripts/                # automações PowerShell
 ```
+
+## Testes
+
+Backend:
+
+```powershell
+cd backend
+npm test
+```
+
+Observação: há testes que dependem de mocks do Prisma. Se algum suite falhar por mock incompleto, revise `backend/tests/setup.ts`.
 
 ## Contribuição
 
-1. Fork o projeto
-2. Crie sua branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m "Adiciona nova funcionalidade"`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+1. Crie uma branch: `git checkout -b feature/minha-feature`
+2. Faça commits pequenos e descritivos
+3. Rode backend e frontend localmente
+4. Abra um Pull Request
 
 ## Licença
 
 Este projeto está sob a licença MIT.
-
----
-
-Desenvolvido com carinho por Paulo Lima
