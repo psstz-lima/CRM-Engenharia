@@ -1,408 +1,6263 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import { ContractSpreadsheet } from '../components/contracts/ContractSpreadsheet';
-import { AddendumComparison } from '../components/contracts/AddendumComparison';
-import { ContractChecklist } from '../components/contracts/ContractChecklist';
-import { ContractAlerts } from '../components/contracts/ContractAlerts';
-import { ContractAccess } from '../components/contracts/ContractAccess';
-import { PageHeader } from '../components/ui/PageHeader';
-import { Card } from '../components/ui/Card';
-import { FavoriteToggle } from '../components/common/FavoriteToggle';
-import { AttachmentList } from '../components/common/AttachmentList';
-import {
-    Download,
-    Upload,
-    FileSpreadsheet,
-    Building2,
-    Calendar,
-    DollarSign,
-    FileText,
-    AlertCircle,
-    Paperclip,
-    FolderOpen,
-    Clock,
-    BarChart3,
-    CheckCircle
-} from 'lucide-react';
-
-export function ContractDetails() {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [contract, setContract] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'spreadsheet' | 'attachments' | 'comparison' | 'checklist' | 'alerts' | 'access' | 'documents'>('spreadsheet');
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [printing, setPrinting] = useState(false);
-
-    useEffect(() => {
-        loadContract();
-    }, [id]);
-
-    const loadContract = async () => {
-        if (!id) return;
-        try {
-            const { data } = await api.get(`/contracts/${id}`);
-            setContract(data);
-        } catch (error) {
-            console.error('Error loading contract:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleExport = async () => {
-        try {
-            const response = await api.get(`/contracts/${id}/export`, { responseType: 'blob' });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `contract-${id}.xlsx`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (err) {
-            alert('Erro ao exportar');
-        }
-    };
-
-    const handleDownloadTemplate = async () => {
-        try {
-            const response = await api.get('/contracts/template/download', { responseType: 'blob' });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'modelo_importacao_contrato.xlsx');
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (err) {
-            alert('Erro ao baixar modelo');
-        }
-    };
-
-    const handleOfficialReport = () => {
-        if (!contract) return;
-        setPrinting(true);
-        const win = window.open('', '_blank');
-        if (!win) {
-            setPrinting(false);
-            alert('NÃ£o foi possÃ­vel abrir a janela de impressÃ£o.');
-            return;
-        }
-
-        const content = `
-            <html>
-            <head>
-                <title>RelatÃ³rio Oficial - Contrato ${contract.number}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-                    h1 { margin: 0 0 6px 0; font-size: 22px; }
-                    h2 { margin: 0 0 16px 0; font-size: 14px; color: #555; }
-                    .section { margin-top: 18px; }
-                    .label { font-size: 12px; color: #777; }
-                    .value { font-size: 14px; font-weight: 600; }
-                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-                    .box { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
-                    .total { font-size: 18px; color: #0f766e; }
-                </style>
-            </head>
-            <body>
-                <h1>RelatÃ³rio Oficial de Contrato</h1>
-                <h2>Contrato: ${contract.number}</h2>
-                <div class="section grid">
-                    <div class="box">
-                        <div class="label">Empresa</div>
-                        <div class="value">${contract.company.name || '-'}</div>
-                    </div>
-                    <div class="box">
-                        <div class="label">Objeto</div>
-                        <div class="value">${contract.object || '-'}</div>
-                    </div>
-                    <div class="box">
-                        <div class="label">VigÃªncia</div>
-                        <div class="value">${new Date(contract.startDate).toLocaleDateString()} a ${new Date(contract.endDate).toLocaleDateString()}</div>
-                    </div>
-                    <div class="box">
-                        <div class="label">Valor Total</div>
-                        <div class="value total">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}</div>
-                    </div>
-                </div>
-                <div class="section">
-                    <div class="label">Emitido em</div>
-                    <div class="value">${new Date().toLocaleString('pt-BR')}</div>
-                </div>
-            </body>
-            </html>
-        `;
-
-        win.document.write(content);
-        win.document.close();
-        win.focus();
-        win.print();
-        win.close();
-        setPrinting(false);
-    };
-
-    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
-
-        if (!confirm('ATENÃÃO: A importaÃ§Ã£o irÃ¡ APAGAR todos os itens atuais e substituir pelos do Excel. Deseja continuar')) {
-            e.target.value = ''; // Reset
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', e.target.files[0]);
-
-        try {
-            setLoading(true);
-            await api.post(`/contracts/${id}/import`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            alert('ImportaÃ§Ã£o realizada com sucesso!');
-            loadContract();
-            setRefreshKey(prev => prev + 1);
-        } catch (err: any) {
-            alert(err.response.data.error || 'Erro ao importar');
-        } finally {
-            setLoading(false);
-            e.target.value = ''; // Reset
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-"></div>
-            </div>
-        );
-    }
-
-    if (!contract) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text- gap-4">
-                <AlertCircle size={48} className="opacity-50" />
-                <h2 className="text-xl font-semibold">Contrato nÃ£o encontrado</h2>
-            </div>
-        );
-    }
-
-    return (
-        <div className="p-6 max-w-[1920px] mx-auto space-y-6 animate-fadeIn">
-            <PageHeader
-                title={`Contrato: ${contract.number}`}
-                subtitle="GestÃ£o detalhada do contrato e planilha orÃ§amentÃ¡ria."
-                icon={<FileText className="text-" />}
-                breadcrumb={[
-                    { label: 'Contratos', href: '/contracts' },
-                    { label: contract.number || 'Detalhes' }
-                ]}
-                actions={
-                    <div className="flex items-center gap-3">
-                        <FavoriteToggle targetType="CONTRACT" targetId={contract.id} />
-
-                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-gray-900 flex items-center gap-2">
-                            <Download size={16} />
-                            Exportar Excel
-                        </button>
-                        <button
-                            onClick={handleOfficialReport}
-                            disabled={printing}
-                            className="btn bg-slate-700 hover:bg-slate-800 text-gray-100 flex items-center gap-2"
-                        >
-                            <FileText size={16} />
-                            RelatÃ³rio Oficial
-                        </button>
-
-                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-gray-900 flex items-center gap-2">
-                            <FileSpreadsheet size={16} />
-                            Modelo
-                        </button>
-
-                        <label className="btn bg-amber-600 hover:bg-amber-700 text-gray-900 cursor-pointer flex items-center gap-2">
-                            <Upload size={16} />
-                            Importar Excel
-                            <input
-                                type="file"
-                                accept=".xlsx"
-                                onChange={handleImport}
-                                className="hidden"
-                            />
-                        </label>
-                    </div>
-                }
-            />
-
-            <Card className="p-6 bg-gradient-to-br from- to- border-">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="space-y-1">
-                        <p className="text-sm text- flex items-center gap-2">
-                            <Building2 size={14} />
-                            Empresa
-                        </p>
-                        <p className="font-semibold text- truncate" title={contract.company.name}>
-                            {contract.company.name || '-'}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-sm text- flex items-center gap-2">
-                            <FileText size={14} />
-                            Objeto
-                        </p>
-                        <p className="font-semibold text- truncate" title={contract.object}>
-                            {contract.object || '-'}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-sm text- flex items-center gap-2">
-                            <Calendar size={14} />
-                            VigÃªncia
-                        </p>
-                        <p className="font-semibold text-">
-                            {new Date(contract.startDate).toLocaleDateString()} a {new Date(contract.endDate).toLocaleDateString()}
-                        </p>
-                    </div>
-
-                    <div className="space-y-1">
-                        <p className="text-sm text- flex items-center gap-2">
-                            <DollarSign size={14} />
-                            Valor Total
-                        </p>
-                        <p className="text-xl font-bold text-emerald-500">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}
-                        </p>
-                    </div>
-                </div>
-            </Card>
-
-            <div className="flex gap-4 border-b border- mb-4">
-                <button
-                    onClick={() => setActiveTab('spreadsheet')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'spreadsheet'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <FileText size={18} />
-                    Itens do Contrato
-                </button>
-                <button
-                    onClick={() => setActiveTab('attachments')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'attachments'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <Paperclip size={18} />
-                    Anexos
-                </button>
-                <button
-                    onClick={() => setActiveTab('comparison')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'comparison'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <BarChart3 size={18} />
-                    Comparativo Base x Ativo
-                </button>
-                <button
-                    onClick={() => setActiveTab('checklist')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'checklist'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <CheckCircle size={18} />
-                    Checklist
-                </button>
-                <button
-                    onClick={() => setActiveTab('alerts')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'alerts'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <AlertCircle size={18} />
-                    Alertas
-                </button>
-                <button
-                    onClick={() => setActiveTab('access')}
-                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'access'
-                         'border-blue-500 text-blue-500 font-medium'
-                        : 'border-transparent text- hover:text- hover:border-'}`}
-                >
-                    <CheckCircle size={18} />
-                    Acesso
-                </button>
-                <button
-                    onClick={() => navigate(`/contracts/${id}/documents`)}
-                    className="pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 border-transparent text- hover:text-blue-500 hover:border-blue-500"
-                >
-                    <FolderOpen size={18} />
-                    Documentos TÃ©cnicos
-                </button>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-                <button
-                    onClick={() => navigate(`/contracts/${id}/timeline`)}
-                    className="btn btn-secondary flex items-center gap-2"
-                >
-                    <Clock size={16} />
-                    Timeline
-                </button>
-                <button
-                    onClick={() => navigate(`/contracts/${id}/financial`)}
-                    className="btn btn-secondary flex items-center gap-2"
-                >
-                    <BarChart3 size={16} />
-                    Financeiro
-                </button>
-                <button
-                    onClick={() => navigate(`/contracts/${id}/approval-flow`)}
-                    className="btn btn-secondary flex items-center gap-2"
-                >
-                    <CheckCircle size={16} />
-                    Fluxo de AprovaÃ§Ã£o
-                </button>
-            </div>
-
-            {id && (
-                <>
-                    <div className={activeTab === 'spreadsheet'  'block' : 'hidden'}>
-                        <ContractSpreadsheet
-                            key={refreshKey}
-                            contractId={id}
-                            onContractUpdate={loadContract}
-                        />
-                    </div>
-                    {activeTab === 'attachments' && (
-                        <Card className="p-6">
-                            <AttachmentList targetType="CONTRACT" targetId={id} />
-                        </Card>
-                    )}
-                    {activeTab === 'comparison' && (
-                        <Card className="p-6">
-                            <AddendumComparison contractId={id} />
-                        </Card>
-                    )}
-                    {activeTab === 'checklist' && (
-                        <Card className="p-6">
-                            <ContractChecklist contractId={id} />
-                        </Card>
-                    )}
-                    {activeTab === 'alerts' && (
-                        <Card className="p-6">
-                            <ContractAlerts contractId={id} />
-                        </Card>
-                    )}
-                    {activeTab === 'access' && (
-                        <Card className="p-6">
-                            <ContractAccess contractId={id} />
-                        </Card>
-                    )}
-                </>
-            )}
-        </div>
-    );
-}
+import { useState, useEffect } from 'react';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { useParams, useNavigate } from 'react-router-dom';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import api from '../services/api';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { ContractSpreadsheet } from '../components/contracts/ContractSpreadsheet';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { AddendumComparison } from '../components/contracts/AddendumComparison';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { ContractChecklist } from '../components/contracts/ContractChecklist';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { ContractAlerts } from '../components/contracts/ContractAlerts';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { ContractAccess } from '../components/contracts/ContractAccess';
+import Documents from './Documents';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { PageHeader } from '../components/ui/PageHeader';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { Card } from '../components/ui/Card';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { FavoriteToggle } from '../components/common/FavoriteToggle';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { AttachmentList } from '../components/common/AttachmentList';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Download,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Upload,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    FileSpreadsheet,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Building2,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Calendar,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    DollarSign,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    FileText,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    AlertCircle,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Paperclip,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    FolderOpen,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Clock,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    BarChart3,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    CheckCircle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+} from 'lucide-react';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export function ContractDetails() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const { id } = useParams();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const navigate = useNavigate();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [contract, setContract] = useState<any>(null);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [loading, setLoading] = useState(true);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [activeTab, setActiveTab] = useState<'spreadsheet' | 'attachments' | 'comparison' | 'checklist' | 'alerts' | 'access' | 'documents'>('spreadsheet');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [refreshKey, setRefreshKey] = useState(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [printing, setPrinting] = useState(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    useEffect(() => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        loadContract();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }, [id]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const loadContract = async () => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (!id) return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const { data } = await api.get(`/contracts/${id}`);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setContract(data);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } catch (error) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            console.error('Error loading contract:', error);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } finally {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setLoading(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const handleExport = async () => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const response = await api.get(`/contracts/${id}/export`, { responseType: 'blob' });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const link = document.createElement('a');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.href = url;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.setAttribute('download', `contract-${id}.xlsx`);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            document.body.appendChild(link);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.click();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.remove();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            alert('Erro ao exportar');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const handleDownloadTemplate = async () => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const response = await api.get('/contracts/template/download', { responseType: 'blob' });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            const link = document.createElement('a');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.href = url;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.setAttribute('download', 'modelo_importacao_contrato.xlsx');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            document.body.appendChild(link);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.click();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            link.remove();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            window.URL.revokeObjectURL(url);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            alert('Erro ao baixar modelo');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const handleOfficialReport = () => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (!contract) return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        setPrinting(true);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const win = window.open('', '_blank');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (!win) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setPrinting(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            alert('Não foi possível abrir a janela de impressão.');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const content = `
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <title>Relatório Oficial - Contrato ${contract.number}</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    h1 { margin: 0 0 6px 0; font-size: 22px; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    h2 { margin: 0 0 16px 0; font-size: 14px; color: #555; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .section { margin-top: 18px; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .label { font-size: 12px; color: #777; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .value { font-size: 14px; font-weight: 600; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .box { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    .total { font-size: 18px; color: #0f766e; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <h1>Relatório Oficial de Contrato</h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <h2>Contrato: ${contract.number}</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <div class="section grid">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="box">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="label">Empresa</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="value">${contract.company.name || '-'}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="box">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="label">Objeto</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="value">${contract.object || '-'}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="box">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="label">Vigência</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="value">${new Date(contract.startDate).toLocaleDateString()} a ${new Date(contract.endDate).toLocaleDateString()}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="box">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="label">Valor Total</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="value total">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <div class="section">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="label">Emitido em</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="value">${new Date().toLocaleString('pt-BR')}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        `;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        win.document.write(content);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        win.document.close();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        win.focus();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        win.print();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        win.close();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        setPrinting(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (!e.target.files || e.target.files.length === 0) return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        if (!confirm('ATENÇÃO: A importação irá APAGAR todos os itens atuais e substituir pelos do Excel. Deseja continuar')) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            e.target.value = ''; // Reset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const formData = new FormData();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        formData.append('file', e.target.files[0]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setLoading(true);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            await api.post(`/contracts/${id}/import`, formData, {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                headers: { 'Content-Type': 'multipart/form-data' }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            alert('Importação realizada com sucesso!');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            loadContract();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setRefreshKey(prev => prev + 1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } catch (err: any) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            alert(err.response.data.error || 'Erro ao importar');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        } finally {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            setLoading(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            e.target.value = ''; // Reset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (loading) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div className="flex items-center justify-center min-h-screen">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (!contract) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text- gap-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <AlertCircle size={48} className="opacity-50" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <h2 className="text-xl font-semibold">Contrato não encontrado</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div className="p-6 max-w-[1920px] mx-auto space-y-6 animate-fadeIn">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <PageHeader
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                title={`Contrato: ${contract.number}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                subtitle="Gestão detalhada do contrato e planilha orçamentária."
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                icon={<FileText className="text-" />}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                breadcrumb={[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    { label: 'Contratos', href: '/contracts' },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    { label: contract.number || 'Detalhes' }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                ]}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                actions={
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className="flex items-center gap-3">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <FavoriteToggle targetType="CONTRACT" targetId={contract.id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-gray-900 flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <Download size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Exportar Excel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            onClick={handleOfficialReport}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            disabled={printing}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            className="btn bg-slate-700 hover:bg-slate-800 text-gray-100 flex items-center gap-2"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <FileText size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Relatório Oficial
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-gray-900 flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <FileSpreadsheet size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Modelo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <label className="btn bg-amber-600 hover:bg-amber-700 text-gray-900 cursor-pointer flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <Upload size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Importar Excel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <input
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                type="file"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                accept=".xlsx"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                onChange={handleImport}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                className="hidden"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </label>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <Card className="p-6 bg-gradient-to-br from- to- border-">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className="space-y-1">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="text-sm text- flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <Building2 size={14} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Empresa
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="font-semibold text- truncate" title={contract.company.name}>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {contract.company.name || '-'}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className="space-y-1">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="text-sm text- flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <FileText size={14} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Objeto
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="font-semibold text- truncate" title={contract.object}>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {contract.object || '-'}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className="space-y-1">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="text-sm text- flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <Calendar size={14} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Vigência
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="font-semibold text-">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {new Date(contract.startDate).toLocaleDateString()} a {new Date(contract.endDate).toLocaleDateString()}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className="space-y-1">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="text-sm text- flex items-center gap-2">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <DollarSign size={14} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            Valor Total
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <p className="text-xl font-bold text-emerald-500">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contract.totalValue || 0)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div className="flex gap-4 border-b border- mb-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('spreadsheet')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'spreadsheet' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <FileText size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Itens do Contrato
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('attachments')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'attachments' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <Paperclip size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Anexos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('comparison')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'comparison' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <BarChart3 size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Comparativo Base x Ativo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('checklist')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'checklist' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <CheckCircle size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Checklist
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('alerts')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'alerts' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <AlertCircle size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Alertas
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('access')}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'access' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <CheckCircle size={18} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Acesso
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => setActiveTab('documents')}
+                    className={`pb-2 px-1 border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'documents' ? 'border-blue-500 text-blue-500 font-medium' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                >
+                    <FolderOpen size={18} />
+                    Documentos Técnicos
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div className="flex flex-wrap gap-3">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => navigate(`/contracts/${id}/timeline`)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className="btn btn-secondary flex items-center gap-2"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <Clock size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Timeline
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => navigate(`/contracts/${id}/financial`)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className="btn btn-secondary flex items-center gap-2"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <BarChart3 size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Financeiro
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    onClick={() => navigate(`/contracts/${id}/approval-flow`)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    className="btn btn-secondary flex items-center gap-2"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <CheckCircle size={16} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    Fluxo de Aprovação
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {id && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div className={activeTab === 'spreadsheet' ? 'block' : 'hidden'}>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <ContractSpreadsheet
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            key={refreshKey}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            contractId={id}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            onContractUpdate={loadContract}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {activeTab === 'attachments' && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <Card className="p-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <AttachmentList targetType="CONTRACT" targetId={id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {activeTab === 'comparison' && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <Card className="p-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <AddendumComparison contractId={id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {activeTab === 'checklist' && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <Card className="p-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <ContractChecklist contractId={id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {activeTab === 'alerts' && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <Card className="p-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <ContractAlerts contractId={id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    {activeTab === 'access' && (
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <Card className="p-6">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            <ContractAccess contractId={id} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    )}
+
+                    {activeTab === 'documents' && (
+                        <Card className="p-6">
+                            <Documents embedded contractIdOverride={id} />
+                        </Card>
+                    )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                </>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+

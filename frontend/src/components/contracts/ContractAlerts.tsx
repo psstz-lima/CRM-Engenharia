@@ -50,7 +50,7 @@ export function ContractAlerts({ contractId }: ContractAlertsProps) {
         await api.post('/alert-rules', {
             name: name.trim(),
             type,
-            thresholdDays: thresholdDays  Number(thresholdDays) : null,
+            thresholdDays: thresholdDays ? Number(thresholdDays) : null,
             contractId
         });
         setName('');
@@ -90,29 +90,29 @@ export function ContractAlerts({ contractId }: ContractAlertsProps) {
                 </button>
             </form>
 
-            {loading  (
+            {loading ? (
                 <div className="text-sm text-gray-500">Carregando alertas...</div>
-            ) : rules.length === 0  (
+            ) : rules.length === 0 ? (
                 <div className="text-sm text-gray-500">Nenhuma regra cadastrada.</div>
             ) : (
                 <div className="space-y-2">
                     {rules.map(rule => (
                         <div key={rule.id} className="flex items-center justify-between p-3 bg-white/80 border border-gray-200 rounded-lg">
                             <div className="flex items-center gap-3">
-                                <ShieldAlert size={18} className={rule.isActive  'text-amber-600' : 'text-gray-400'} />
+                                <ShieldAlert size={18} className={rule.isActive ? 'text-amber-600' : 'text-gray-400'} />
                                 <div>
                                     <div className="text-sm font-semibold text-gray-800">{rule.name}</div>
                                     <div className="text-xs text-gray-500">
                                         {alertTypes.find(t => t.value === rule.type).label || rule.type}
-                                        {rule.thresholdDays  ` · ${rule.thresholdDays} dias` : ''}
+                                        {rule.thresholdDays ? ` · ${rule.thresholdDays} dias` : ''}
                                     </div>
                                 </div>
                             </div>
                             <button
                                 onClick={() => toggleActive(rule)}
-                                className={`btn btn-xs ${rule.isActive  'btn-secondary' : 'btn-primary'}`}
+                                className={`btn btn-xs ${rule.isActive ? 'btn-secondary' : 'btn-primary'}`}
                             >
-                                {rule.isActive  'Desativar' : 'Ativar'}
+                                {rule.isActive ? 'Desativar' : 'Ativar'}
                             </button>
                         </div>
                     ))}

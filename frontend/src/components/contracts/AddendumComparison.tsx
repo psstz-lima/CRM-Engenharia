@@ -35,7 +35,7 @@ export function AddendumComparison({ contractId }: AddendumComparisonProps) {
     const { items, addendums } = data;
 
     const displayItems = showOnlyModified
-         items.filter((item: any) =>
+        ? items.filter((item: any) =>
             item.isSuppressed ||
             item.isAddedByAddendum ||
             item.variation.quantity !== 0 ||
@@ -135,19 +135,19 @@ export function AddendumComparison({ contractId }: AddendumComparisonProps) {
 
                             const isContainer = item.type !== 'ITEM';
                             const rowBg = isContainer
-                                 '#fbf7f0'
+                                ? '#fbf7f0'
                                 : item.isSuppressed
-                                     '#fdf4f4'
+                                    ? '#fdf4f4'
                                     : item.isAddedByAddendum
-                                         '#f3fbf5'
-                                        : (idx % 2 === 0  '#ffffff' : '#fcfaf6');
+                                        ? '#f3fbf5'
+                                        : (idx % 2 === 0 ? '#ffffff' : '#fcfaf6');
 
                             const getAddendumQuantityDelta = (addendumId: string) => {
                                 const historyEntry = item.history.find((h: any) => h.addendumId === addendumId);
                                 if (!historyEntry) return null;
                                 const historyIndex = item.history.findIndex((h: any) => h.addendumId === addendumId);
-                                const prevEntry = historyIndex > 0  item.history[historyIndex - 1] : null;
-                                const prevQty = prevEntry  prevEntry.quantity : baseQty;
+                                const prevEntry = historyIndex > 0 ? item.history[historyIndex - 1] : null;
+                                const prevQty = prevEntry ? prevEntry.quantity : baseQty;
                                 return historyEntry.quantity - prevQty;
                             };
 
@@ -155,8 +155,8 @@ export function AddendumComparison({ contractId }: AddendumComparisonProps) {
                                 const historyEntry = item.history.find((h: any) => h.addendumId === addendumId);
                                 if (!historyEntry) return null;
                                 const historyIndex = item.history.findIndex((h: any) => h.addendumId === addendumId);
-                                const prevEntry = historyIndex > 0  item.history[historyIndex - 1] : null;
-                                const prevValue = prevEntry  prevEntry.totalValue : baseValue;
+                                const prevEntry = historyIndex > 0 ? item.history[historyIndex - 1] : null;
+                                const prevValue = prevEntry ? prevEntry.totalValue : baseValue;
                                 return historyEntry.totalValue - prevValue;
                             };
 
@@ -174,46 +174,46 @@ export function AddendumComparison({ contractId }: AddendumComparisonProps) {
                                         {item.description}
                                     </td>
                                     <td className="p-2 border border-gray-300 text-center text-gray-600">
-                                        {isContainer  '' : item.unit}
+                                        {isContainer ? '' : item.unit}
                                     </td>
                                     <td className="p-2 border border-gray-300 text-right text-gray-700">
-                                        {isContainer  '' : formatCurrency(basePrice)}
+                                        {isContainer ? '' : formatCurrency(basePrice)}
                                     </td>
                                     <td className="p-2 border border-gray-300 text-right text-gray-700">
-                                        {isContainer  '' : item.isAddedByAddendum  '-' : formatNumber(baseQty)}
+                                        {isContainer ? '' : item.isAddedByAddendum ? '-' : formatNumber(baseQty)}
                                     </td>
                                     {addendums.map((add: any) => {
                                         const delta = getAddendumQuantityDelta(add.id);
                                         return (
                                             <td key={`qty-${add.id}`} className="p-2 border border-gray-300 text-right">
-                                                {isContainer  '' : delta !== null  (
-                                                    <span className={delta > 0  'text-emerald-700' : delta < 0  'text-red-600' : 'text-gray-400'}>
-                                                        {delta > 0  '+' : ''}{formatNumber(delta)}
+                                                {isContainer ? '' : delta !== null ? (
+                                                    <span className={delta > 0 ? 'text-emerald-700' : delta < 0 ? 'text-red-600' : 'text-gray-400'}>
+                                                        {delta > 0 ? '+' : ''}{formatNumber(delta)}
                                                     </span>
                                                 ) : '-'}
                                             </td>
                                         );
                                     })}
                                     <td className="p-2 border border-gray-300 text-right font-semibold text-gray-700">
-                                        {isContainer  '' : item.isSuppressed  <span className="text-red-600">0</span> : formatNumber(item.vigentQuantity)}
+                                        {isContainer ? '' : item.isSuppressed ? <span className="text-red-600">0</span> : formatNumber(item.vigentQuantity)}
                                     </td>
                                     <td className="p-2 border border-gray-300 text-right text-gray-700">
-                                        {isContainer  formatCurrency(baseValue) : item.isAddedByAddendum  '-' : formatCurrency(baseValue)}
+                                        {isContainer ? '' : item.isAddedByAddendum ? '-' : formatCurrency(baseValue)}
                                     </td>
                                     {addendums.map((add: any) => {
                                         const delta = getAddendumValueDelta(add.id);
                                         return (
                                             <td key={`val-${add.id}`} className="p-2 border border-gray-300 text-right">
-                                                {delta !== null  (
-                                                    <span className={delta > 0  'text-emerald-700' : delta < 0  'text-red-600' : 'text-gray-400'}>
-                                                        {delta > 0  '+' : ''}{formatCurrency(delta)}
+                                                {delta !== null ? (
+                                                    <span className={delta > 0 ? 'text-emerald-700' : delta < 0 ? 'text-red-600' : 'text-gray-400'}>
+                                                        {delta > 0 ? '+' : ''}{formatCurrency(delta)}
                                                     </span>
                                                 ) : '-'}
                                             </td>
                                         );
                                     })}
                                     <td className="p-2 border border-gray-300 text-right font-semibold text-gray-700">
-                                        {item.isSuppressed  <span className="text-red-600">R$ 0,00</span> : formatCurrency(item.vigentTotalValue || 0)}
+                                        {item.isSuppressed ? <span className="text-red-600">R$ 0,00</span> : formatCurrency(item.vigentTotalValue || 0)}
                                     </td>
                                 </tr>
                             );
@@ -236,8 +236,8 @@ export function AddendumComparison({ contractId }: AddendumComparisonProps) {
                             </td>
                             {addendums.map((add: any) => (
                                 <td key={`tot-val-${add.id}`} className="p-2 border border-gray-300 text-right">
-                                    <span className={Number(add.netValue) >= 0  'text-emerald-700' : 'text-red-600'}>
-                                        {Number(add.netValue) > 0  '+' : ''}{formatCurrency(Number(add.netValue))}
+                                    <span className={Number(add.netValue) >= 0 ? 'text-emerald-700' : 'text-red-600'}>
+                                        {Number(add.netValue) > 0 ? '+' : ''}{formatCurrency(Number(add.netValue))}
                                     </span>
                                 </td>
                             ))}

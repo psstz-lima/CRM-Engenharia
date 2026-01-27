@@ -79,9 +79,9 @@ export function ContractChecklist({ contractId }: ContractChecklistProps) {
                 </button>
             </form>
 
-            {loading  (
+            {loading ? (
                 <div className="text-sm text-gray-500">Carregando checklist...</div>
-            ) : items.length === 0  (
+            ) : items.length === 0 ? (
                 <div className="text-sm text-gray-500">Nenhum item cadastrado.</div>
             ) : (
                 <div className="space-y-2">
@@ -90,10 +90,10 @@ export function ContractChecklist({ contractId }: ContractChecklistProps) {
                             <button
                                 onClick={() => toggleDone(item)}
                                 className="flex items-center gap-2 text-left"
-                                title={item.isDone  'Marcar como pendente' : 'Marcar como concluído'}
+                                title={item.isDone ? 'Marcar como pendente' : 'Marcar como concluído'}
                             >
-                                {item.isDone  <CheckCircle2 size={18} className="text-emerald-600" /> : <Circle size={18} className="text-gray-400" />}
-                                <span className={`text-sm ${item.isDone  'line-through text-gray-400' : 'text-gray-800'}`}>
+                                {item.isDone ? <CheckCircle2 size={18} className="text-emerald-600" /> : <Circle size={18} className="text-gray-400" />}
+                                <span className={`text-sm ${item.isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>
                                     {item.title}
                                 </span>
                                 {item.isRequired && (

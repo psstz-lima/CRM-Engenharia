@@ -36,7 +36,7 @@ export function ContractAccess({ contractId }: ContractAccessProps) {
     }, [contractId]);
 
     const toggleRole = (roleId: string) => {
-        setAccessRoles(prev => prev.includes(roleId)  prev.filter(r => r !== roleId) : [...prev, roleId]);
+        setAccessRoles(prev => prev.includes(roleId) ? prev.filter(r => r !== roleId) : [...prev, roleId]);
     };
 
     const handleSave = async () => {

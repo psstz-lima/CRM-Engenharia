@@ -55,8 +55,14 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
     RELEASED: { label: 'Liberado', color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle }
 };
 
-export default function Documents() {
+type DocumentsProps = {
+    embedded?: boolean;
+    contractIdOverride?: string;
+};
+
+export default function Documents({ embedded = false, contractIdOverride }: DocumentsProps = {}) {
     const { contractId } = useParams();
+    const resolvedContractId = contractIdOverride || contractId;
     const navigate = useNavigate();
     const [documents, setDocuments] = useState<Document[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -69,12 +75,12 @@ export default function Documents() {
 
     useEffect(() => {
         loadData();
-    }, [contractId, selectedCategory, selectedStatus, searchTerm]);
+    }, [resolvedContractId, selectedCategory, selectedStatus, searchTerm]);
 
     const loadData = async () => {
         try {
-            const url = contractId
-                ? `/documents/contract/${contractId}`
+            const url = resolvedContractId
+                ? `/documents/contract/${resolvedContractId}`
                 : '/documents';
 
             const [docsRes, catsRes] = await Promise.all([
@@ -143,20 +149,22 @@ export default function Documents() {
 
     return (
         <div className="p-6 max-w-[1600px] mx-auto space-y-6">
-            <PageHeader
-                title={contractId ? 'Documentos do Contrato' : 'Todos os Documentos'}
-                subtitle={`${documents.length} documentos encontrados`}
-                icon={<FileText className="text-" />}
-                actions={
-                    <button
-                        onClick={() => setShowUploadModal(true)}
-                        className="btn btn-primary flex items-center gap-2"
-                    >
-                        <Upload size={16} />
-                        Upload
-                    </button>
-                }
-            />
+            {!embedded && (
+                <PageHeader
+                    title={resolvedContractId ? 'Documentos do Contrato' : 'Todos os Documentos'}
+                    subtitle={`${documents.length} documentos encontrados`}
+                    icon={<FileText className="text-" />}
+                    actions={
+                        <button
+                            onClick={() => setShowUploadModal(true)}
+                            className="btn btn-primary flex items-center gap-2"
+                        >
+                            <Upload size={16} />
+                            Upload
+                        </button>
+                    }
+                />
+            )}
 
             <Card className="p-4">
                 <div className="flex flex-wrap gap-4 items-center">
