@@ -1,12 +1,12 @@
-import { useState, useEffect, FormEvent } from 'react';
-import { PencilLine } from 'lucide-react';
+﻿import { useState, useEffect, FormEvent } from 'react';
+import { UserCircle2 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardTitle } from '../components/ui/Card';
 
 export function Profile() {
-    const { updateUser } = useAuth(); // Get updateUser from AuthContext
+    const { updateUser } = useAuth();
     const [profile, setProfile] = useState<any>(null);
     const [editing, setEditing] = useState(false);
     const [fullName, setFullName] = useState('');
@@ -25,9 +25,10 @@ export function Profile() {
             const { data } = await api.get('/profile');
             setProfile(data);
             setFullName(data.fullName);
-            // Sync global user state with latest data from backend
             updateUser(data);
-        } catch { }
+        } catch {
+            // ignore
+        }
     };
 
     const handleUpdateProfile = async (e: FormEvent) => {
@@ -35,10 +36,10 @@ export function Profile() {
         setError('');
         setSuccess('');
         try {
-            const { data } = await api.patch('/profile', { fullName });
+            await api.patch('/profile', { fullName });
             setSuccess('Perfil atualizado com sucesso!');
             setEditing(false);
-            loadProfile(); // This will also update global state via loadProfile
+            loadProfile();
         } catch (err: any) {
             setError(err.response?.data?.error || 'Erro ao atualizar perfil');
         }
@@ -66,15 +67,11 @@ export function Profile() {
         try {
             const formData = new FormData();
             formData.append('photo', photo);
-            const { data } = await api.post('/profile/photo', formData, {
+            await api.post('/profile/photo', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setSuccess('Foto atualizada com sucesso!');
             setPhoto(null);
-
-            // Start of fix: Force update of profile rendering immediately
-            // Often backend returns the new photo URL in 'data'
-            // If not, loadProfile() will fetch it.
             loadProfile();
         } catch (err: any) {
             setError(err.response?.data?.error || 'Erro ao enviar foto');
@@ -82,7 +79,7 @@ export function Profile() {
     };
 
     const handleLogoutAll = async () => {
-        if (!window.confirm('Tem certeza? Isso desconectará você de todos os dispositivos, incluindo este.')) return;
+        if (!window.confirm('Tem certeza? Isso desconectara voce de todos os dispositivos, incluindo este.')) return;
         try {
             await api.post('/auth/logout-all');
             alert('Desconectado de todos os dispositivos.');
@@ -103,40 +100,37 @@ export function Profile() {
         setFullName(profile?.fullName || '');
     };
 
-    if (!profile) return (
-        <div className="flex items-center justify-center h-64">
-            <div className="text-">Carregando...</div>
-        </div>
-    );
+    if (!profile) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-">Carregando...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">
             <PageHeader
                 title="Meu Perfil"
                 subtitle="Gerencie suas informações pessoais e configurações"
-                icon="👤"
+                icon={<UserCircle2 className="text-" />}
             />
 
-            {/* Mensagens de feedback */}
             {success && (
                 <div className="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-xl flex items-center gap-2 animate-fadeIn">
-                    <span>✓</span> {success}
+                    <span>OK</span> {success}
                 </div>
             )}
             {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl flex items-center gap-2 animate-fadeIn">
-                    <span>✕</span> {error}
+                    <span>X</span> {error}
                 </div>
             )}
 
-            {/* Grid principal */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Coluna 1: Foto e Info */}
                 <div className="lg:col-span-1 space-y-6">
                     <Card>
                         <div className="text-center">
-                            {/* Avatar */}
                             <div className="relative inline-block mb-4">
                                 {profile.profilePhoto ? (
                                     <img
@@ -146,7 +140,7 @@ export function Profile() {
                                     />
                                 ) : (
                                     <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from- to- flex items-center justify-center text-5xl text-gray-900 shadow-xl">
-                                        {profile.fullName?.charAt(0)?.toUpperCase() || '👤'}
+                                        {profile.fullName?.charAt(0)?.toUpperCase() || 'U'}
                                     </div>
                                 )}
                             </div>
@@ -160,7 +154,6 @@ export function Profile() {
                                 </span>
                             )}
 
-                            {/* Upload de foto */}
                             <form onSubmit={handlePhotoUpload} className="mt-6 pt-6 border-t border-">
                                 <div className="flex items-center gap-3">
                                     <label className="btn btn-secondary cursor-pointer">
@@ -186,18 +179,13 @@ export function Profile() {
                     </Card>
                 </div>
 
-                {/* Coluna 2: Formulários */}
                 <div className="lg:col-span-2 space-y-6">
-
-
-
-                    {/* Informações Pessoais */}
                     <Card>
                         <div className="flex items-center justify-between mb-6">
-                            <CardTitle icon="📝">Informações Pessoais</CardTitle>
+                            <CardTitle icon={<UserCircle2 className="text-" />}>Informacoes Pessoais</CardTitle>
                             {!editing && (
                                 <button onClick={handleEditClick} className="btn btn-secondary text-sm flex items-center gap-2">
-                                    ✏️ Editar
+                                    Editar
                                 </button>
                             )}
                         </div>
@@ -221,13 +209,13 @@ export function Profile() {
                                     disabled
                                     className="input opacity-60"
                                 />
-                                <p className="text-xs text- mt-1">O email não pode ser alterado</p>
+                                <p className="text-xs text- mt-1">O email nao pode ser alterado</p>
                             </div>
 
                             {editing && (
                                 <div className="flex gap-3 pt-2">
                                     <button type="submit" className="btn btn-primary">
-                                        💾 Salvar
+                                        Salvar
                                     </button>
                                     <button type="button" onClick={handleCancelEdit} className="btn btn-secondary">
                                         Cancelar
@@ -237,9 +225,8 @@ export function Profile() {
                         </form>
                     </Card>
 
-                    {/* Alterar Senha */}
                     <Card>
-                        <CardTitle icon="🔐">Alterar Senha</CardTitle>
+                        <CardTitle icon={<UserCircle2 className="text-" />}>Alterar Senha</CardTitle>
                         <form onSubmit={handleChangePassword} className="space-y-5 mt-6">
                             <div>
                                 <label className="label">Senha Atual</label>
@@ -249,7 +236,7 @@ export function Profile() {
                                     onChange={e => setCurrentPassword(e.target.value)}
                                     required
                                     className="input"
-                                    placeholder="••••••••"
+                                    placeholder="--------"
                                 />
                             </div>
                             <div>
@@ -260,23 +247,22 @@ export function Profile() {
                                     onChange={e => setNewPassword(e.target.value)}
                                     required
                                     className="input"
-                                    placeholder="••••••••"
+                                    placeholder="--------"
                                 />
                             </div>
                             <button type="submit" className="btn btn-primary">
-                                🔑 Alterar Senha
+                                Alterar Senha
                             </button>
                         </form>
                     </Card>
 
-                    {/* Zona de Perigo */}
                     <Card className="border-red-500/20 bg-red-500/5">
-                        <CardTitle icon="⚠️" className="text-red-400">Zona de Perigo</CardTitle>
+                        <CardTitle icon={<UserCircle2 className="text-" />} className="text-red-400">Zona de Perigo</CardTitle>
                         <p className="text-sm text- mt-2 mb-4">
-                            Caso suspeite de acesso não autorizado, você pode desconectar de todos os dispositivos.
+                            Caso suspeite de acesso nao autorizado, voce pode desconectar de todos os dispositivos.
                         </p>
                         <button onClick={handleLogoutAll} className="btn btn-danger">
-                            🚪 Sair de todos os dispositivos
+                            Sair de todos os dispositivos
                         </button>
                     </Card>
                 </div>
@@ -284,3 +270,4 @@ export function Profile() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Download, Upload, Edit, Trash2, Eye,
@@ -370,3 +370,6 @@ export default function DocumentDetails() {
         </div>
     );
 }
+
+
+

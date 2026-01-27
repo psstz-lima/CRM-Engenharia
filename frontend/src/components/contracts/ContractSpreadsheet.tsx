@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 
 
@@ -65,6 +65,34 @@ const typeLabels: Record<string, string> = {
 
     'GROUP': 'GRUPO', 'SUBGROUP': 'SUB-GRUPO', 'ITEM': 'ITEM'
 
+};
+const DEFAULT_COLUMN_WIDTHS = {
+    drag: 30,
+    type: 120,
+    code: 140,
+    description: 360,
+    unit: 80,
+    unitPrice: 140,
+    baseQty: 120,
+    baseValue: 180,
+    activeQty: 120,
+    activeValue: 180,
+    actions: 120,
+} as const;
+
+type ColumnKey = keyof typeof DEFAULT_COLUMN_WIDTHS;
+
+const MIN_COLUMN_WIDTHS: Partial<Record<ColumnKey, number>> = {
+    type: 100,
+    code: 110,
+    description: 260,
+    unit: 70,
+    unitPrice: 110,
+    baseQty: 90,
+    baseValue: 130,
+    activeQty: 90,
+    activeValue: 130,
+    actions: 100,
 };
 
 
@@ -323,6 +351,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
     const [searchFilter, setSearchFilter] = useState('');
+    const [qualityFilter, setQualityFilter] = useState<'all' | 'missing-unit' | 'missing-qty' | 'missing-price' | 'missing-criteria'>('all');
+    const [groupFilterId, setGroupFilterId] = useState<string | null>(null);
 
 
 
@@ -335,6 +365,121 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+    const [visibleAddendumIds, setVisibleAddendumIds] = useState<Set<string>>(new Set());
+    const addendumVisibilityInitializedRef = useRef(false);
+    const editLockInitializedRef = useRef(false);
+    const [editLocked, setEditLocked] = useState(false);
+    const prefsKey = `contract-spreadsheet-prefs:${contractId}`;
+    const prefsInitializedRef = useRef(false);
+
+    const [columnWidths, setColumnWidths] = useState<Record<ColumnKey, number>>(() => ({ ...DEFAULT_COLUMN_WIDTHS }));
+    const resizeStateRef = useRef<{ key: ColumnKey; startX: number; startWidth: number } | null>(null);
+    const layoutStorageKey = `contract-spreadsheet-layout:${contractId}`;
+
+    const clampWidth = useCallback((key: ColumnKey, width: number) => {
+        const min = MIN_COLUMN_WIDTHS[key] ?? 80;
+        return Math.max(min, Math.round(width));
+    }, []);
+
+    const handleResizeMove = useCallback((event: MouseEvent) => {
+        const state = resizeStateRef.current;
+        if (!state) return;
+        const deltaX = event.clientX - state.startX;
+        const nextWidth = clampWidth(state.key, state.startWidth + deltaX);
+        setColumnWidths(prev => (prev[state.key] === nextWidth ? prev : { ...prev, [state.key]: nextWidth }));
+    }, [clampWidth]);
+
+    const stopResize = useCallback(() => {
+        resizeStateRef.current = null;
+        window.removeEventListener('mousemove', handleResizeMove);
+        window.removeEventListener('mouseup', stopResize);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    }, [handleResizeMove]);
+
+    const startResize = useCallback((key: ColumnKey) => (event: React.MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const header = (event.currentTarget as HTMLElement).parentElement as HTMLElement | null;
+        const measuredWidth = header?.getBoundingClientRect().width;
+        const startWidth = columnWidths[key] ?? measuredWidth ?? DEFAULT_COLUMN_WIDTHS[key];
+        resizeStateRef.current = { key, startX: event.clientX, startWidth };
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        window.addEventListener('mousemove', handleResizeMove);
+        window.addEventListener('mouseup', stopResize);
+    }, [columnWidths, handleResizeMove, stopResize]);
+
+    useEffect(() => {
+        return () => {
+            window.removeEventListener('mousemove', handleResizeMove);
+            window.removeEventListener('mouseup', stopResize);
+        };
+    }, [handleResizeMove, stopResize]);
+
+    useEffect(() => {
+        try {
+            const raw = window.localStorage.getItem(layoutStorageKey);
+            if (!raw) {
+                setColumnWidths({ ...DEFAULT_COLUMN_WIDTHS });
+                return;
+            }
+            const parsed = JSON.parse(raw) as Partial<Record<ColumnKey, number>>;
+            const next: Record<ColumnKey, number> = { ...DEFAULT_COLUMN_WIDTHS };
+            (Object.keys(DEFAULT_COLUMN_WIDTHS) as ColumnKey[]).forEach((key) => {
+                const candidate = parsed[key];
+                if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+                    next[key] = clampWidth(key, candidate);
+                }
+            });
+            setColumnWidths(next);
+        } catch {
+            setColumnWidths({ ...DEFAULT_COLUMN_WIDTHS });
+        }
+    }, [layoutStorageKey, clampWidth]);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(layoutStorageKey, JSON.stringify(columnWidths));
+        } catch {
+            // ignore storage errors
+        }
+    }, [layoutStorageKey, columnWidths]);
+
+    const getColumnStyle = useCallback((key: ColumnKey) => {
+        const width = columnWidths[key];
+        return {
+            width: `${width}px`,
+            minWidth: `${width}px`,
+            maxWidth: `${width}px`,
+            position: 'relative' as const,
+        };
+    }, [columnWidths]);
+
+    const columnsAreDefault = React.useMemo(() => (
+        (Object.keys(DEFAULT_COLUMN_WIDTHS) as ColumnKey[]).every((key) => {
+            const current = columnWidths[key];
+            const expected = DEFAULT_COLUMN_WIDTHS[key];
+            return Math.abs(current - expected) < 1;
+        })
+    ), [columnWidths]);
+
+    const resetColumnWidths = useCallback(() => {
+        setColumnWidths({ ...DEFAULT_COLUMN_WIDTHS });
+    }, []);
+
+    const renderResizeHandle = useCallback((key: ColumnKey) => (
+        <div
+            onMouseDown={startResize(key)}
+            className="absolute top-0 right-0 h-full w-3 cursor-col-resize select-none group flex items-stretch justify-center"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={`Redimensionar coluna ${key}`}
+        >
+            <div className="h-full w-full rounded-sm bg-transparent transition-colors group-hover:bg-amber-50/80" />
+            <div className="pointer-events-none absolute inset-y-0 w-px bg-amber-400/90 opacity-0 transition-opacity group-hover:opacity-100 group-hover:shadow-[0_0_0_1px_rgba(217,119,6,0.18)]" />
+        </div>
+    ), [startResize]);
 
 
 
@@ -494,6 +639,21 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
+    }
+    // Flatten items ignoring collapsed state (used for totals and quality stats)
+    function flattenAllItems(items: any[]): any[] {
+        let flat: any[] = [];
+
+        items.forEach(i => {
+            const hasChildren = i.children && i.children.length > 0;
+            flat.push({ ...i, hasChildren, isCollapsed: false });
+
+            if (hasChildren) {
+                flat = flat.concat(flattenAllItems(i.children));
+            }
+        });
+
+        return flat;
     }
 
 
@@ -902,6 +1062,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
     const flatRawItems = flattenItems(rawItems);
+    const allFlatItems = React.useMemo(() => flattenAllItems(treeItems), [treeItems]);
+    const activeAddendums = addendums.filter((a: any) => a.status !== 'CANCELLED');
 
 
 
@@ -982,6 +1144,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
         e.preventDefault();
+        if (!ensureEditable()) return;
 
 
 
@@ -1014,6 +1177,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
         e.preventDefault();
+        if (!ensureEditable()) return;
 
 
 
@@ -1111,6 +1275,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
     function openItemModal(item?: any, parentId?: string | null) {
 
+        if (!ensureEditable()) return;
+
 
 
         if (item) {
@@ -1162,6 +1328,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
         e.preventDefault();
+        if (!ensureEditable()) return;
 
 
 
@@ -1223,6 +1390,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
     async function handleDeleteItem(itemId: string) {
 
+        if (!ensureEditable()) return;
+
 
 
         if (!confirm('Excluir')) return;
@@ -1256,6 +1425,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
     async function handleSaveCriteria(e: React.FormEvent) {
         e.preventDefault();
+        if (!ensureEditable()) return;
         if (!criteriaItem) return;
 
         try {
@@ -1274,6 +1444,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
     function openOperationModal(item: any, addendum: any) {
+
+        if (!ensureEditable()) return;
 
 
 
@@ -1305,7 +1477,280 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-    if (loading) return <div className="p-10 text-center text-gray-600">Carregando planilha...</div>;
+        const parseNumeric = useCallback((value: unknown) => {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (!trimmed) return 0;
+            const compact = trimmed.replace(/\s/g, '');
+            const hasComma = compact.includes(',');
+            const hasDot = compact.includes('.');
+
+            if (hasComma) {
+                const normalized = compact.replace(/\./g, '').replace(',', '.');
+                const parsed = Number(normalized);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            if (hasDot) {
+                const parts = compact.split('.');
+                const fractional = parts[parts.length - 1];
+                if (/^\d+$/.test(fractional) && fractional.length <= 2) {
+                    const parsed = Number(compact);
+                    return Number.isFinite(parsed) ? parsed : 0;
+                }
+                const normalized = compact.replace(/\./g, '');
+                const parsed = Number(normalized);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            const parsed = Number(compact);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+        return 0;
+    }, []);
+
+    const summary = React.useMemo(() => {
+        const items = allFlatItems.filter((i: any) => String(i.type ?? '').toUpperCase() === 'ITEM');
+        const baseTotal = items
+            .filter((i: any) => !i.isAddedByAddendum)
+            .reduce((s: number, i: any) => s + (parseNumeric(i.quantity) * parseNumeric(i.unitPrice)), 0);
+        const activeTotal = items
+            .filter((i: any) => !i.isSuppressed)
+            .reduce((s: number, i: any) => {
+                const baseValue = parseNumeric(i.quantity) * parseNumeric(i.unitPrice);
+                const activeValue = parseNumeric(i.vigentTotalValue) || baseValue;
+                return s + activeValue;
+            }, 0);
+        const missingCount = items.filter((i: any) => {
+            if (!i.unit) return true;
+            if (!(parseNumeric(i.vigentQuantity ?? i.quantity) > 0)) return true;
+            if (!(parseNumeric(i.unitPrice) > 0)) return true;
+            if (!i.measurementCriteria?.trim()) return true;
+            return false;
+        }).length;
+        return {
+            baseTotal,
+            activeTotal,
+            addendumNet: activeTotal - baseTotal,
+            missingCount,
+            itemCount: items.length,
+        };
+    }, [allFlatItems, parseNumeric]);
+
+    const qualityStats = React.useMemo(() => {
+        const items = allFlatItems.filter((i: any) => String(i.type ?? '').toUpperCase() === 'ITEM');
+        let withoutUnit = 0;
+        let withoutQuantity = 0;
+        let withoutPrice = 0;
+        let withoutCriteria = 0;
+        items.forEach((i: any) => {
+            const effectiveQuantity = parseNumeric(i.vigentQuantity ?? i.quantity);
+            const effectivePrice = parseNumeric(i.unitPrice);
+            if (!i.unit) withoutUnit += 1;
+            if (!(effectiveQuantity > 0)) withoutQuantity += 1;
+            if (!(effectivePrice > 0)) withoutPrice += 1;
+            if (!i.measurementCriteria?.trim()) withoutCriteria += 1;
+        });
+        return { withoutUnit, withoutQuantity, withoutPrice, withoutCriteria };
+    }, [allFlatItems, parseNumeric]);
+
+        const matchesQualityFilter = useCallback((item: any) => {
+        if (qualityFilter === 'all') return true;
+        if (String(item?.type ?? '').toUpperCase() !== 'ITEM') return true;
+        const qty = parseNumeric(item.vigentQuantity ?? item.quantity);
+        const price = parseNumeric(item.unitPrice);
+        switch (qualityFilter) {
+            case 'missing-unit':
+                return !item.unit;
+            case 'missing-qty':
+                return !(qty > 0);
+            case 'missing-price':
+                return !(price > 0);
+            case 'missing-criteria':
+                return !item.measurementCriteria?.trim();
+            default:
+                return true;
+        }
+    }, [qualityFilter, parseNumeric]);
+
+    const matchesSearchFilter = useCallback((item: any) => {
+        const term = searchFilter.trim().toLowerCase();
+        if (!term) return true;
+        const code = String(item?.code ?? '').toLowerCase();
+        const description = String(item?.description ?? '').toLowerCase();
+        return code.includes(term) || description.includes(term);
+    }, [searchFilter]);
+
+    const anyFilterActive = searchFilter.trim() !== '' || qualityFilter !== 'all' || !!groupFilterId;
+
+    const visibleItemIds = React.useMemo(() => {
+        if (!anyFilterActive) return null;
+
+        const findNodeById = (nodes: any[], id: string): any | null => {
+            for (const node of nodes) {
+                if (String(node?.id) === id) return node;
+                const children: any[] = Array.isArray(node?.children) ? node.children : [];
+                const found = children.length ? findNodeById(children, id) : null;
+                if (found) return found;
+            }
+            return null;
+        };
+
+        const roots = (() => {
+            const baseRoots = treeItems || [];
+            if (!groupFilterId) return baseRoots;
+            const target = findNodeById(baseRoots, groupFilterId);
+            return target ? [target] : [];
+        })();
+
+        const visible = new Set<string>();
+        const walk = (node: any): boolean => {
+            const children: any[] = Array.isArray(node?.children) ? node.children : [];
+            let childVisible = false;
+            children.forEach((child) => {
+                if (walk(child)) childVisible = true;
+            });
+            const selfVisible = matchesQualityFilter(node) && matchesSearchFilter(node);
+            const isVisible = selfVisible || childVisible;
+            if (isVisible && node?.id) visible.add(String(node.id));
+            return isVisible;
+        };
+
+        roots.forEach((root) => walk(root));
+        return visible;
+    }, [anyFilterActive, groupFilterId, matchesQualityFilter, matchesSearchFilter, treeItems]);
+    const groupComparisons = React.useMemo(() => {
+        const isItem = (node: any) => String(node?.type ?? '').toUpperCase() === 'ITEM';
+        const computeTotals = (node: any): { base: number; active: number } => {
+            const children: any[] = Array.isArray(node?.children) ? node.children : [];
+            if (children.length === 0 || isItem(node)) {
+                const baseQty = parseNumeric(node?.quantity);
+                const basePrice = parseNumeric(node?.unitPrice);
+                const baseValue = !node?.isAddedByAddendum ? baseQty * basePrice : 0;
+                const activeValue = node?.isSuppressed
+                    ? 0
+                    : (parseNumeric(node?.vigentTotalValue) || baseValue);
+                return { base: baseValue, active: activeValue };
+            }
+            return children.reduce(
+                (acc, child) => {
+                    const totals = computeTotals(child);
+                    return { base: acc.base + totals.base, active: acc.active + totals.active };
+                },
+                { base: 0, active: 0 },
+            );
+        };
+
+        const topContainers = (treeItems || []).filter((n: any) => !isItem(n));
+        const comparisons = topContainers.map((group: any) => {
+            const totals = computeTotals(group);
+            const delta = totals.active - totals.base;
+            const deltaPct = totals.base > 0 ? (delta / totals.base) * 100 : 0;
+            return {
+                id: String(group.id),
+                code: group.code || '-',
+                description: group.description || 'Grupo',
+                base: totals.base,
+                active: totals.active,
+                delta,
+                deltaPct,
+            };
+        });
+
+        return comparisons
+            .filter((c) => c.base !== 0 || c.active !== 0)
+            .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+            .slice(0, 4);
+    }, [treeItems, parseNumeric]);
+        useEffect(() => {
+        if (prefsInitializedRef.current) return;
+        try {
+            const raw = window.localStorage.getItem(prefsKey);
+            if (raw) {
+                const parsed = JSON.parse(raw) as any;
+                const allowedQuality = new Set(['all', 'missing-unit', 'missing-qty', 'missing-price', 'missing-criteria']);
+                if (allowedQuality.has(parsed?.qualityFilter)) setQualityFilter(parsed.qualityFilter);
+                if (parsed?.groupFilterId) setGroupFilterId(String(parsed.groupFilterId));
+                if (typeof parsed?.editLocked === 'boolean') {
+                    setEditLocked(parsed.editLocked);
+                    editLockInitializedRef.current = true;
+                }
+                if (Array.isArray(parsed?.visibleAddendumIds)) {
+                    setVisibleAddendumIds(new Set(parsed.visibleAddendumIds.map((id: any) => String(id))));
+                    addendumVisibilityInitializedRef.current = true;
+                }
+            }
+        } catch {
+            // ignore storage errors
+        } finally {
+            prefsInitializedRef.current = true;
+        }
+    }, [prefsKey]);
+
+    useEffect(() => {
+        if (!prefsInitializedRef.current) return;
+        try {
+            const payload = {
+                qualityFilter,
+                groupFilterId,
+                editLocked,
+                visibleAddendumIds: Array.from(visibleAddendumIds),
+            };
+            window.localStorage.setItem(prefsKey, JSON.stringify(payload));
+        } catch {
+            // ignore storage errors
+        }
+    }, [prefsKey, qualityFilter, groupFilterId, editLocked, visibleAddendumIds]);
+
+    const hasApprovedAddendum = activeAddendums.some((a: any) => a.status === 'APPROVED');
+
+    useEffect(() => {
+        if (editLockInitializedRef.current) return;
+        setEditLocked(hasApprovedAddendum);
+        editLockInitializedRef.current = true;
+    }, [hasApprovedAddendum]);
+
+    const ensureEditable = useCallback(() => {
+        if (!editLocked) return true;
+        alert('Edição bloqueada: existem aditivos aprovados. Desbloqueie no topo para editar.');
+        return false;
+    }, [editLocked]);
+
+    useEffect(() => {
+        const activeIds = new Set(activeAddendums.map((a: any) => String(a.id)));
+        setVisibleAddendumIds(prev => {
+            if (!addendumVisibilityInitializedRef.current) {
+                addendumVisibilityInitializedRef.current = true;
+                return activeIds;
+            }
+            const next = new Set<string>();
+            activeIds.forEach(id => {
+                if (prev.has(id)) next.add(id);
+            });
+            return next;
+        });
+    }, [activeAddendums]);
+
+    const visibleActiveAddendums = activeAddendums.filter((a: any) => visibleAddendumIds.has(String(a.id)));
+
+    const toggleAddendumVisibility = useCallback((id: string) => {
+        setVisibleAddendumIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const showAllAddendums = useCallback(() => {
+        setVisibleAddendumIds(new Set(activeAddendums.map((a: any) => String(a.id))));
+    }, [activeAddendums]);
+
+    const hideAllAddendums = useCallback(() => {
+        setVisibleAddendumIds(new Set());
+    }, []);
+if (loading) return <div className="p-10 text-center text-gray-600">Carregando planilha...</div>;
 
 
 
@@ -1313,7 +1758,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-    const activeAddendums = addendums.filter((a: any) => a.status !== 'CANCELLED');
+    
 
     const getMeasurementBadge = (itemId: string) => {
         const status = measurementStatusMap[itemId]?.status;
@@ -1333,7 +1778,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-        <div className="card border border- bg-white/70 overflow-hidden">
+        <div className="card border border-gray-200 bg-white/70 overflow-hidden">
 
 
 
@@ -1341,7 +1786,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-            <div className="p-4 bg-white/70 border-b border- flex flex-wrap justify-between items-center gap-4">
+            <div className="p-4 bg-white/70 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
 
 
 
@@ -1517,6 +1962,144 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
+                        <div className="sticky top-0 z-30 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+                {/* Summary Bar */}
+                <div className="px-4 py-2 bg-white/80 border-b border-gray-200 flex flex-wrap items-center gap-4 text-sm">
+                    <div className="font-semibold text-gray-700">Resumo:</div>
+                    <div className="text-gray-700">
+                        <span className="text-gray-500">Base</span>{' '}
+                        <span className="font-mono font-semibold">{formatCurrency(summary.baseTotal)}</span>
+                    </div>
+                    <div className="text-gray-700">
+                        <span className="text-gray-500">Ativo</span>{' '}
+                        <span className="font-mono font-semibold">{formatCurrency(summary.activeTotal)}</span>
+                    </div>
+                    <div className={summary.addendumNet >= 0 ? 'text-emerald-700' : 'text-red-600'}>
+                        <span className="text-gray-500">Δ Aditivos</span>{' '}
+                        <span className="font-mono font-semibold">
+                            {summary.addendumNet >= 0 ? '+' : ''}{formatCurrency(summary.addendumNet)}
+                        </span>
+                    </div>
+                    <div className={summary.missingCount > 0 ? 'text-amber-700' : 'text-gray-600'}>
+                        <span className="text-gray-500">Pendências</span>{' '}
+                        <span className="font-semibold">{summary.missingCount}</span>
+                        <span className="text-gray-500">/{summary.itemCount}</span>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                        {!columnsAreDefault && (
+                            <button
+                                type="button"
+                                onClick={resetColumnWidths}
+                                className="btn btn-xs btn-secondary"
+                                title="Restaurar largura padrão das colunas"
+                            >
+                                Resetar colunas
+                            </button>
+                        )}
+                        {hasApprovedAddendum && (
+                            <>
+                                <span className={`text-xs font-semibold ${editLocked ? 'text-amber-700' : 'text-emerald-700'}`}>
+                                    {editLocked ? 'Somente leitura' : 'Edição liberada'}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditLocked(prev => !prev)}
+                                    className="btn btn-xs btn-secondary"
+                                >
+                                    {editLocked ? 'Desbloquear' : 'Bloquear'}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Group Comparison */}
+                {groupComparisons.length > 0 && (
+                    <div className="px-4 py-2 bg-white/70 border-b border-gray-200 flex flex-wrap items-center gap-2 text-xs">
+                        <span className="font-semibold text-gray-700">Maiores variações:</span>
+                        {groupFilterId && (
+                            <button type="button" onClick={() => setGroupFilterId(null)} className="btn btn-xs btn-secondary">Limpar filtro</button>
+                        )}
+                        {groupComparisons.map((g) => {
+                            const isActive = groupFilterId === g.id;
+                            return (
+                            <button
+                                key={g.id}
+                                type="button"
+                                onClick={() => setGroupFilterId(prev => (prev === g.id ? null : g.id))}
+                                className={`px-2 py-1 rounded border text-left transition-colors ${isActive ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white/80 hover:border-gray-300'}`}
+                            >
+                                <span className="font-semibold text-gray-800">{g.code}</span>
+                                <span className="text-gray-500"> · {g.description}</span>
+                                <span className={`ml-2 font-mono font-semibold ${g.delta >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                                    {g.delta >= 0 ? '+' : ''}{formatCurrency(g.delta)}
+                                </span>
+                                {g.base > 0 && (
+                                    <span className={`ml-1 font-semibold ${g.delta >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                                        ({g.delta >= 0 ? '+' : ''}{g.deltaPct.toFixed(1)}%)
+                                    </span>
+                                )}
+                            </button>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Quality Bar */}
+                <div className="px-4 py-2 bg-amber-50/40 border-b border-amber-100 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-semibold text-amber-800">Qualidade:</span>
+
+                    <button
+                        type="button"
+                        onClick={() => setQualityFilter('all')}
+                        className={`px-2 py-0.5 rounded border ${qualityFilter === 'all' ? 'bg-amber-200 text-amber-900 border-amber-300' : 'bg-white/70 text-amber-800 border-amber-200'}`}
+                    >
+                        Todos
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setQualityFilter('missing-unit')}
+                        className={`px-2 py-0.5 rounded border ${qualityFilter === 'missing-unit' ? 'bg-amber-200 text-amber-900 border-amber-300' : 'bg-amber-100 text-amber-800 border-amber-200'}`}
+                    >
+                        Sem unidade: {qualityStats.withoutUnit}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setQualityFilter('missing-qty')}
+                        className={`px-2 py-0.5 rounded border ${qualityFilter === 'missing-qty' ? 'bg-amber-200 text-amber-900 border-amber-300' : 'bg-amber-100 text-amber-800 border-amber-200'}`}
+                    >
+                        Sem quantidade: {qualityStats.withoutQuantity}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setQualityFilter('missing-price')}
+                        className={`px-2 py-0.5 rounded border ${qualityFilter === 'missing-price' ? 'bg-amber-200 text-amber-900 border-amber-300' : 'bg-amber-100 text-amber-800 border-amber-200'}`}
+                    >
+                        Sem preço: {qualityStats.withoutPrice}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setQualityFilter('missing-criteria')}
+                        className={`px-2 py-0.5 rounded border ${qualityFilter === 'missing-criteria' ? 'bg-amber-200 text-amber-900 border-amber-300' : 'bg-amber-100 text-amber-800 border-amber-200'}`}
+                    >
+                        Sem critério: {qualityStats.withoutCriteria}
+                    </button>
+
+                    {qualityStats.withoutUnit === 0 &&
+                        qualityStats.withoutQuantity === 0 &&
+                        qualityStats.withoutPrice === 0 &&
+                        qualityStats.withoutCriteria === 0 && (
+                            <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                                Sem pendências de qualidade
+                            </span>
+                        )}
+                </div>
+            </div>
+
             {/* Addendums Bar */}
 
 
@@ -1527,80 +2110,66 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
                 <div className="px-4 py-2 bg-amber-50/70 border-b border-amber-200/60 flex gap-4 overflow-x-auto">
 
+                <div className="flex items-center gap-2 text-xs text-amber-900/80 whitespace-nowrap">
+                    <span className="font-semibold">Visíveis {visibleActiveAddendums.length}/{activeAddendums.length}</span>
+                    <button type="button" onClick={showAllAddendums} className="btn btn-xs btn-secondary">Todos</button>
+                    <button type="button" onClick={hideAllAddendums} className="btn btn-xs btn-secondary">Ocultar</button>
+                </div>
 
 
-                    {activeAddendums.map((add: any) => (
 
 
-
+                    {activeAddendums.map((add: any) => {
+                        const addId = String(add.id);
+                        const isVisible = visibleAddendumIds.has(addId);
+                        return (
                         <div
                             key={add.id}
-                            className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-medium border ${
+                            className={`flex items-center gap-2 px-3 py-1 rounded text-xs font-medium border transition-opacity ${
                                 add.status === 'APPROVED'
                                     ? 'bg-emerald-100/60 text-emerald-700 border-emerald-200'
                                     : 'bg-amber-50/70 text-amber-700 border-amber-200'
-                            }`}
+                            } ${isVisible ? 'opacity-100' : 'opacity-50 grayscale'}`}
                         >
-
-
 
                             <span className="font-bold">Aditivo {add.number}</span>
 
-
-
                             <span className="opacity-70">{new Date(add.date).toLocaleDateString('pt-BR')}</span>
-
-
 
                             <span className={`text-[11px] font-semibold ${add.status === 'APPROVED' ? 'text-emerald-700' : 'text-amber-700'}`}>
 
-
-
                                 {add.status === 'APPROVED' ? 'Aprovado' : 'Rascunho'}
-
-
 
                             </span>
 
-
-
                             {add.status === 'DRAFT' && (
-
-
 
                                 <>
 
-
-
                                     <button onClick={() => handleApprove(add.id)} className="ml-2 btn btn-xs btn-success">Aprovar</button>
-
-
 
                                     <button onClick={() => handleCancel(add.id, false)} className="ml-1 btn btn-xs btn-danger">
 
-
-
                                         <X size={14} />
-
-
 
                                     </button>
 
-
-
                                 </>
-
-
 
                             )}
 
-
+                            <button
+                                type="button"
+                                onClick={() => toggleAddendumVisibility(addId)}
+                                className="ml-2 btn btn-xs btn-secondary"
+                                title={isVisible ? 'Ocultar aditivo na planilha' : 'Mostrar aditivo na planilha'}
+                            >
+                                {isVisible ? 'Ocultar' : 'Mostrar'}
+                            </button>
 
                         </div>
-
-
-
-                    ))}
+                        );
+                    })}
 
 
 
@@ -1632,7 +2201,13 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                    <thead className="sticky top-0 z-20">
+                    <thead
+                        className="sticky top-0 z-20"
+                        style={{
+                            backgroundColor: '#f6efe4',
+                            boxShadow: 'inset 0 -1px 0 #d1d5db',
+                        }}
+                    >
 
 
 
@@ -1652,35 +2227,41 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                            <th rowSpan={2} className="p-3 w-28 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">Tipo</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('type')}><span>Tipo</span>{renderResizeHandle('type')}</th>
 
 
 
-                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">Código</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('code')}><span>Código</span>{renderResizeHandle('code')}</th>
 
 
 
-                            <th rowSpan={2} className="p-3 text-center min-w-[280px] text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">Descrição</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('description')}><span>Descrição</span>{renderResizeHandle('description')}</th>
 
 
 
-                            <th rowSpan={2} className="p-3 w-16 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">UN</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('unit')}><span>UN</span>{renderResizeHandle('unit')}</th>
 
 
 
-                            <th rowSpan={2} className="p-3 w-28 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">R$ Unitário</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('unitPrice')}><span>R$ Unitário</span>{renderResizeHandle('unitPrice')}</th>
 
 
 
-                            <th colSpan={2} className="p-3 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700">Bases Contratuais</th>
+                            <th
+                                colSpan={2}
+                                className="p-3 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700"
+                                style={{ boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                Bases Contratuais
+                            </th>
 
 
 
-                            {activeAddendums.length > 0 && (
+                            {visibleActiveAddendums.length > 0 && (
 
 
 
-                                <th colSpan={activeAddendums.length * 2} className="p-3 text-center bg-amber-100/70 border-l border-gray-300 border-r border-gray-300 text-amber-700">Aditivos</th>
+                                <th colSpan={visibleActiveAddendums.length * 2} className="p-3 text-center bg-amber-100/70 border-l border-gray-300 border-r border-gray-300 text-amber-700">Aditivos</th>
 
 
 
@@ -1688,11 +2269,17 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                            <th colSpan={2} className="p-3 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700">Ativo</th>
+                            <th
+                                colSpan={2}
+                                className="p-3 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700"
+                                style={{ boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                Ativo
+                            </th>
 
 
 
-                            <th rowSpan={2} className="p-3 w-24 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300">Ações</th>
+                            <th rowSpan={2} className="p-3 text-center text-xs font-bold uppercase tracking-wider text-gray-600 border-r border-gray-300 relative" style={getColumnStyle('actions')}><span>Ações</span>{renderResizeHandle('actions')}</th>
 
 
 
@@ -1704,15 +2291,27 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                            <th className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700">Qtd.</th>
+                            <th
+                                className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700 relative"
+                                style={{ ...getColumnStyle('baseQty'), boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                <span>Qtd.</span>
+                                {renderResizeHandle('baseQty')}
+                            </th>
 
 
 
-                            <th className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700">Valor</th>
+                            <th
+                                className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-blue-700 relative"
+                                style={{ ...getColumnStyle('baseValue'), boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                <span>Valor</span>
+                                {renderResizeHandle('baseValue')}
+                            </th>
 
 
 
-                            {activeAddendums.map((add: any) => (
+                            {visibleActiveAddendums.map((add: any) => (
 
 
 
@@ -1736,11 +2335,23 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                            <th className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700">Qtd.</th>
+                            <th
+                                className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700 relative"
+                                style={{ ...getColumnStyle('activeQty'), boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                <span>Qtd.</span>
+                                {renderResizeHandle('activeQty')}
+                            </th>
 
 
 
-                            <th className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700">Valor</th>
+                            <th
+                                className="px-3 py-2 text-center bg-[#f6efe4] border-l border-gray-300 border-r border-gray-300 text-emerald-700 relative"
+                                style={{ ...getColumnStyle('activeValue'), boxShadow: 'inset 0 -1px 0 #d1d5db' }}
+                            >
+                                <span>Valor</span>
+                                {renderResizeHandle('activeValue')}
+                            </th>
 
 
 
@@ -1762,27 +2373,9 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
                                 {flatItems.filter((item: any) => {
 
-
-
-                                    if (!searchFilter.trim()) return true;
-
-
-
-                                    const search = searchFilter.toLowerCase();
-
-
-
-                                    const matchesCode = item.code.toLowerCase().includes(search);
-
-
-
-                                    const matchesDescription = item.description.toLowerCase().includes(search);
-
-
-
-                                    return matchesCode || matchesDescription;
-
-
+                                    if (!anyFilterActive) return true;
+                                    if (!visibleItemIds) return true;
+                                    return visibleItemIds.has(String(item.id));
 
                                 }).map((item: any, idx: number) => {
 
@@ -1904,7 +2497,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 border-r border-gray-300 text-center">
+                                            <td className="p-2 border-r border-gray-300 text-center" style={getColumnStyle('type')}>
 
 
 
@@ -1934,7 +2527,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className={`p-2 border-r border-gray-300 whitespace-nowrap text-center relative ${textColor} sticky left-10 bg-inherit z-10`}>
+                                            <td className={`p-2 border-r border-gray-300 whitespace-nowrap text-center relative ${textColor}`} style={getColumnStyle('code')}>
 
 
 
@@ -1946,7 +2539,8 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleCollapse(item.id); }}
+                                                        onClick={(e) => { e.preventDefault();
+        if (!ensureEditable()) return; e.stopPropagation(); toggleCollapse(item.id); }}
 
 
 
@@ -1986,7 +2580,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className={`p-2 border-r border-gray-300 max-w-xs text-left ${textColor}`} title={item.description}>
+                                            <td className={`p-2 border-r border-gray-300 text-left ${textColor} overflow-hidden`} style={getColumnStyle('description')} title={item.description}>
                                                 <div className="flex flex-col">
                                                     <span className="truncate">{item.description}</span>
                                                     {item.type === 'ITEM' && (
@@ -2043,7 +2637,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 text-center text-gray-700 border-l border-gray-300 border-r border-gray-300 font-mono">
+                                            <td className="p-2 text-center text-gray-700 border-l border-gray-300 border-r border-gray-300 font-mono" style={getColumnStyle('baseQty')}>
 
 
 
@@ -2055,7 +2649,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 text-center text-gray-700 border-r border-gray-300 font-mono">
+                                            <td className="p-2 text-center text-gray-700 border-r border-gray-300 font-mono" style={getColumnStyle('baseValue')}>
 
 
 
@@ -2075,7 +2669,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            {activeAddendums.map((add: any) => {
+                                            {visibleActiveAddendums.map((add: any) => {
 
 
 
@@ -2203,7 +2797,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 text-center text-gray-800 font-bold border-l border-gray-300 border-r border-gray-300 font-mono">
+                                            <td className="p-2 text-center text-gray-800 font-bold border-l border-gray-300 border-r border-gray-300 font-mono" style={getColumnStyle('activeQty')}>
 
 
 
@@ -2215,7 +2809,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 text-center text-gray-700 font-bold font-mono border-r border-gray-300">
+                                            <td className="p-2 text-center text-gray-700 font-bold font-mono border-r border-gray-300" style={getColumnStyle('activeValue')}>
 
 
 
@@ -2231,7 +2825,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                            <td className="p-2 text-center text-xs">
+                                            <td className="p-2 text-center text-xs" style={getColumnStyle('actions')}>
 
 
 
@@ -2383,7 +2977,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isAddedByAddendum).reduce((s: number, i: any) => s + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0)), 0))}
+                                {formatCurrency(allFlatItems.filter((i: any) => i.type === 'ITEM' && !i.isAddedByAddendum).reduce((s: number, i: any) => s + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0)), 0))}
 
 
 
@@ -2391,7 +2985,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                            {activeAddendums.map((add: any) => (
+                            {visibleActiveAddendums.map((add: any) => (
 
 
 
@@ -2431,7 +3025,7 @@ export function ContractSpreadsheet({ contractId, onContractUpdate }: ContractSp
 
 
 
-                                {formatCurrency(flatItems.filter((i: any) => i.type === 'ITEM' && !i.isSuppressed).reduce((s: number, i: any) => s + (Number(i.vigentTotalValue) || ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))), 0))}
+                                {formatCurrency(allFlatItems.filter((i: any) => i.type === 'ITEM' && !i.isSuppressed).reduce((s: number, i: any) => s + (Number(i.vigentTotalValue) || ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0))), 0))}
 
 
 

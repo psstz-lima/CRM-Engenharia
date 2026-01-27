@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 
 
@@ -560,6 +560,8 @@ export function ContractDetails() {
 
 
     const [printing, setPrinting] = useState(false);
+    const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
+    const [timelineLoading, setTimelineLoading] = useState(true);
 
 
 
@@ -623,6 +625,10 @@ export function ContractDetails() {
 
 
 
+    }, [id]);
+    useEffect(() => {
+        if (!id) return;
+        loadTimeline();
     }, [id]);
 
 
@@ -815,6 +821,18 @@ export function ContractDetails() {
 
 
 
+    };
+    const loadTimeline = async () => {
+        if (!id) return;
+        setTimelineLoading(true);
+        try {
+            const { data } = await api.get(`/contracts/${id}/events`);
+            setTimelineEvents(Array.isArray(data) ? data : []);
+        } catch {
+            setTimelineEvents([]);
+        } finally {
+            setTimelineLoading(false);
+        }
     };
 
 
@@ -3279,7 +3297,7 @@ export function ContractDetails() {
 
 
 
-                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-gray-900 flex items-center gap-2">
+                        <button onClick={handleExport} className="btn bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
 
 
 
@@ -3391,7 +3409,7 @@ export function ContractDetails() {
 
 
 
-                            className="btn bg-slate-700 hover:bg-slate-800 text-gray-100 flex items-center gap-2"
+                            className="btn bg-slate-800 hover:bg-slate-900 text-white flex items-center gap-2"
 
 
 
@@ -3487,7 +3505,7 @@ export function ContractDetails() {
 
 
 
-                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-gray-900 flex items-center gap-2">
+                        <button onClick={handleDownloadTemplate} className="btn bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
 
 
 
@@ -3567,7 +3585,7 @@ export function ContractDetails() {
 
 
 
-                        <label className="btn bg-amber-600 hover:bg-amber-700 text-gray-900 cursor-pointer flex items-center gap-2">
+                        <label className="btn bg-amber-500 hover:bg-amber-600 text-slate-900 cursor-pointer flex items-center gap-2">
 
 
 
@@ -5684,6 +5702,37 @@ export function ContractDetails() {
 
 
 
+                                                <Card className="p-4 mb-4 border border-gray-200/70 bg-white/80">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="font-semibold text-gray-800">Linha do tempo (últimos eventos)</div>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(`/contracts/${id}/timeline`)}
+                                    className="btn btn-xs btn-secondary"
+                                >
+                                    Ver timeline
+                                </button>
+                            </div>
+                            {timelineLoading ? (
+                                <div className="text-sm text-gray-500">Carregando eventos...</div>
+                            ) : timelineEvents.length === 0 ? (
+                                <div className="text-sm text-gray-500">Nenhum evento registrado.</div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {timelineEvents.slice(0, 5).map((ev: any) => (
+                                        <div key={ev.id} className="text-sm border-b border-gray-100 pb-2 last:border-0">
+                                            <div className="text-xs text-gray-500">
+                                                {new Date(ev.createdAt).toLocaleString('pt-BR')}
+                                                {ev.createdBy?.fullName ? ` · ${ev.createdBy.fullName}` : ''}
+                                            </div>
+                                            <div className="font-medium text-gray-800">{ev.message}</div>
+                                            <div className="text-[11px] uppercase tracking-wide text-gray-400">{ev.type}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </Card>
+
                         <ContractSpreadsheet
 
 
@@ -6251,6 +6300,9 @@ export function ContractDetails() {
 
 
 }
+
+
+
 
 
 

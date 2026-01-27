@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
-import { Plus, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, CheckCircle, AlertCircle, ClipboardList } from 'lucide-react';
 
 export function Tasks() {
     const [tasks, setTasks] = useState<any[]>([]);
@@ -15,6 +15,7 @@ export function Tasks() {
     const [priority, setPriority] = useState('MEDIUM');
     const [assignedToId, setAssignedToId] = useState('');
     const [contractId, setContractId] = useState('');
+    const [dueDate, setDueDate] = useState('');
 
     useEffect(() => {
         loadData();
@@ -27,7 +28,14 @@ export function Tasks() {
                 api.get('/users')
             ]);
             setTasks(tasksRes.data);
-            setUsers(usersRes.data);
+            const usersData = usersRes.data;
+            if (Array.isArray(usersData)) {
+                setUsers(usersData);
+            } else if (Array.isArray(usersData?.data)) {
+                setUsers(usersData.data);
+            } else {
+                setUsers([]);
+            }
         } catch { }
         finally { setLoading(false); }
     };
@@ -40,7 +48,8 @@ export function Tasks() {
                 description,
                 priority,
                 assignedToId: assignedToId || null,
-                contractId: contractId || null
+                contractId: contractId || null,
+                dueDate: dueDate || null
             });
             setShowModal(false);
             setTitle('');
@@ -48,6 +57,7 @@ export function Tasks() {
             setPriority('MEDIUM');
             setAssignedToId('');
             setContractId('');
+            setDueDate('');
             loadData();
         } catch (err: any) {
             alert(err.response?.data?.error || 'Erro ao criar tarefa');
@@ -70,7 +80,7 @@ export function Tasks() {
             <PageHeader
                 title="Tarefas"
                 subtitle="Acompanhe e distribua pendências do projeto"
-                icon="✅"
+                icon={<ClipboardList className="text-" />}
                 actions={
                     <button onClick={() => setShowModal(true)} className="btn btn-primary flex items-center gap-2">
                         <Plus size={16} />
@@ -86,6 +96,7 @@ export function Tasks() {
                             <th className="p-4 text-left">Título</th>
                             <th className="p-4 text-left">Responsável</th>
                             <th className="p-4 text-left">Prioridade</th>
+                            <th className="p-4 text-left">Prazo</th>
                             <th className="p-4 text-left">Status</th>
                             <th className="p-4 text-right">Ações</th>
                         </tr>
@@ -93,7 +104,7 @@ export function Tasks() {
                     <tbody className="divide-y divide-">
                         {tasks.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="p-8 text-center text-">
+                                <td colSpan={6} className="p-8 text-center text-">
                                     <AlertCircle size={32} className="mx-auto mb-2 opacity-50" />
                                     Nenhuma tarefa cadastrada
                                 </td>
@@ -106,6 +117,9 @@ export function Tasks() {
                                 </td>
                                 <td className="p-4">{task.assignedTo?.fullName || '-'}</td>
                                 <td className="p-4">{task.priority}</td>
+                                <td className="p-4">
+                                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString('pt-BR') : '-'}
+                                </td>
                                 <td className="p-4">{task.status}</td>
                                 <td className="p-4 text-right">
                                     {task.status !== 'DONE' && (
@@ -125,36 +139,42 @@ export function Tasks() {
             </Card>
 
             {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content w-full max-w-lg" onClick={e => e.stopPropagation()}>
+                <div
+                    className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={() => setShowModal(false)}
+                >
+                    <div
+                        className="w-full max-w-lg rounded-2xl border border- bg-white shadow-2xl overflow-hidden"
+                        onClick={e => e.stopPropagation()}
+                    >
                         <div className="p-6 border-b border- flex justify-between items-center bg-">
                             <h3 className="text-xl font-bold text-">Nova Tarefa</h3>
-                            <button onClick={() => setShowModal(false)} className="text- hover:text-">×</button>
+                            <button onClick={() => setShowModal(false)} className="text- hover:text-">X</button>
                         </div>
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div>
-                                <label className="label">Título *</label>
+                                <label className="label">Titulo *</label>
                                 <input className="input" value={title} onChange={e => setTitle(e.target.value)} required />
                             </div>
                             <div>
                                 <label className="label">Descrição</label>
                                 <textarea className="input" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="label">Prioridade</label>
                                     <select className="input" value={priority} onChange={e => setPriority(e.target.value)}>
                                         <option value="LOW">Baixa</option>
-                                        <option value="MEDIUM">Média</option>
+                                        <option value="MEDIUM">Media</option>
                                         <option value="HIGH">Alta</option>
                                         <option value="URGENT">Urgente</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="label">Responsável</label>
+                                    <label className="label">Responsavel</label>
                                     <select className="input" value={assignedToId} onChange={e => setAssignedToId(e.target.value)}>
-                                        <option value="">Não atribuir</option>
-                                        {users.map(u => (
+                                        <option value="">Nao atribuir</option>
+                                        {Array.isArray(users) && users.map(u => (
                                             <option key={u.id} value={u.id}>{u.fullName}</option>
                                         ))}
                                     </select>
@@ -163,6 +183,15 @@ export function Tasks() {
                             <div>
                                 <label className="label">Contrato (opcional)</label>
                                 <input className="input" value={contractId} onChange={e => setContractId(e.target.value)} placeholder="ID do contrato" />
+                            </div>
+                            <div>
+                                <label className="label">Data do alerta (prazo)</label>
+                                <input
+                                    type="date"
+                                    className="input"
+                                    value={dueDate}
+                                    onChange={e => setDueDate(e.target.value)}
+                                />
                             </div>
                             <div className="flex justify-end gap-3 pt-4 border-t border-">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancelar</button>
@@ -175,3 +204,5 @@ export function Tasks() {
         </div>
     );
 }
+
+

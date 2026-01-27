@@ -6,6 +6,7 @@ interface CardProps {
     variant?: 'default' | 'glass' | 'glow';
     padding?: 'none' | 'sm' | 'md' | 'lg';
     hover?: boolean;
+    onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 const paddingClasses = {
@@ -26,10 +27,12 @@ export function Card({
     className = '',
     variant = 'default',
     padding = 'md',
-    hover = false
+    hover = false,
+    onClick
 }: CardProps) {
     return (
         <div
+            onClick={onClick}
             className={`
                 ${variantClasses[variant]} 
                 ${paddingClasses[padding]}
@@ -57,7 +60,7 @@ export function CardHeader({ children, className = '' }: CardHeaderProps) {
 
 interface CardTitleProps {
     children: ReactNode;
-    icon?: string;
+    icon?: ReactNode;
     className?: string;
 }
 

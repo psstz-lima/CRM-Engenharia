@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+﻿import { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, FileText, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 import { DraggableModal } from '../common/DraggableModal';
@@ -290,3 +290,5 @@ export default function DocumentUpload({ contractId, categories, onSuccess, onCl
         </DraggableModal>
     );
 }
+
+

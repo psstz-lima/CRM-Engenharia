@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Plus, ShieldAlert } from 'lucide-react';
 
@@ -82,7 +82,7 @@ export function ContractAlerts({ contractId }: ContractAlertsProps) {
                     onChange={e => setThresholdDays(e.target.value)}
                     placeholder="Dias limite (opcional)"
                     type="number"
-                    className="input w-[180px]"
+                    className="input w-[220px]"
                 />
                 <button type="submit" className="btn btn-primary flex items-center gap-2">
                     <Plus size={16} />
@@ -103,7 +103,7 @@ export function ContractAlerts({ contractId }: ContractAlertsProps) {
                                 <div>
                                     <div className="text-sm font-semibold text-gray-800">{rule.name}</div>
                                     <div className="text-xs text-gray-500">
-                                        {alertTypes.find(t => t.value === rule.type).label || rule.type}
+                                        {alertTypes.find(t => t.value === rule.type)?.label || rule.type}
                                         {rule.thresholdDays ? ` · ${rule.thresholdDays} dias` : ''}
                                     </div>
                                 </div>
@@ -121,3 +121,5 @@ export function ContractAlerts({ contractId }: ContractAlertsProps) {
         </div>
     );
 }
+
+

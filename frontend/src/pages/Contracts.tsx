@@ -1,9 +1,9 @@
-import { useState, useEffect, FormEvent } from 'react';
+﻿import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
-import { FileText, Plus, Eye, Edit2, Trash2, Building2, Calendar, AlertCircle, Info, ClipboardList, Search, Filter } from 'lucide-react';
+import { FileText, Plus, Eye, Edit2, Trash2, Building2, Calendar, AlertCircle, Info, Search, Filter } from 'lucide-react';
 import { FavoriteToggle } from '../components/common/FavoriteToggle';
 
 export function Contracts() {
@@ -90,12 +90,12 @@ export function Contracts() {
 
     const handleDelete = async (id: string) => {
         const confirmed = confirm(
-            '⚠️ ATENÇÃO: Ação Irreversível!\n\n' +
-            'Ao excluir este contrato, serão PERMANENTEMENTE removidos:\n\n' +
-            '• Todos os itens do contrato\n' +
-            '• Todas as medições vinculadas\n' +
-            '• Todas as memórias de cálculo\n' +
-            '• Todos os aditivos\n\n' +
+            '[!] ATENCAO: Acao Irreversivel!\n\n' +
+            'Ao excluir este contrato, serao PERMANENTEMENTE removidos:\n\n' +
+            '- Todos os itens do contrato\n' +
+            '- Todas as medicoes vinculadas\n' +
+            '- Todas as memorias de calculo\n' +
+            '- Todos os aditivos\n\n' +
             'Deseja realmente excluir?'
         );
         if (!confirmed) return;
@@ -113,8 +113,7 @@ export function Contracts() {
             <PageHeader
                 title="Gestão de Contratos"
                 subtitle="Gerencie os contratos de obras, serviços e seus prazos."
-                icon={<ClipboardList className="text-" />}
-                center
+                icon={<FileText className="text-" />}
                 actions={
                     <button onClick={() => openModal()} className="btn btn-primary flex items-center gap-2">
                         <Plus size={16} />
@@ -132,7 +131,7 @@ export function Contracts() {
                             type="text"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            placeholder="Buscar por número ou objeto..."
+                            placeholder="Buscar por numero ou objeto..."
                             className="input pl-10 w-full"
                         />
                     </div>
@@ -172,12 +171,12 @@ export function Contracts() {
                         <thead className="bg- text- text-xs uppercase font-semibold border-b border-">
                             <tr>
                                 <th className="p-4 text-center w-16">Fav</th>
-                                <th className="p-4 text-center">Número</th>
+                                <th className="p-4 text-center">Numero</th>
                                 <th className="p-4 text-left">Empresa</th>
-                                <th className="p-4 text-center">Período</th>
+                                <th className="p-4 text-center">Periodo</th>
                                 <th className="p-4 text-center">Valor Total</th>
                                 <th className="p-4 text-center">Status</th>
-                                <th className="p-4 text-center">Ações</th>
+                                <th className="p-4 text-center">Acoes</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-">
@@ -291,12 +290,12 @@ export function Contracts() {
                                 {editingId ? <Edit2 size={20} className="text-amber-500" /> : <Plus size={20} className="text-" />}
                                 {editingId ? 'Editar Contrato' : 'Novo Contrato'}
                             </h3>
-                            <button onClick={() => setShowModal(false)} className="text- hover:text-">✕</button>
+                            <button onClick={() => setShowModal(false)} className="text- hover:text-">X</button>
                         </div>
                         <form onSubmit={handleSave} className="p-6 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="label">Número do Contrato *</label>
+                                    <label className="label">Numero do Contrato *</label>
                                     <div className="relative">
                                         <FileText size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
                                         <input
@@ -337,7 +336,7 @@ export function Contracts() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="label">Data Início *</label>
+                                    <label className="label">Data Inicio *</label>
                                     <input
                                         type="date"
                                         className="input"
@@ -362,7 +361,7 @@ export function Contracts() {
                                 <div className="p-4 bg- border border-/20 rounded-lg flex items-start gap-3">
                                     <Info size={20} className="text- shrink-0 mt-0.5" />
                                     <p className="text-sm text-">
-                                        O valor total do contrato será calculado automaticamente conforme você adicionar itens à planilha contratual na próxima tela.
+                                        O valor total do contrato sera calculado automaticamente conforme voce adicionar itens a planilha contratual na proxima tela.
                                     </p>
                                 </div>
                             )}
@@ -378,3 +377,7 @@ export function Contracts() {
         </div>
     );
 }
+
+
+
+

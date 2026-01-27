@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     FileCode2,
@@ -220,6 +220,18 @@ export default function Documents({ embedded = false, contractIdOverride }: Docu
                             </button>
                         </div>
                     </div>
+
+                    {embedded && (
+                        <div className="ml-auto">
+                            <button
+                                onClick={() => setShowUploadModal(true)}
+                                className="btn btn-primary flex items-center gap-2"
+                            >
+                                <Upload size={16} />
+                                Upload
+                            </button>
+                        </div>
+                    )}
                 </div>
             </Card>
 
@@ -349,7 +361,7 @@ export default function Documents({ embedded = false, contractIdOverride }: Docu
 
             {showUploadModal && (
                 <DocumentUpload
-                    contractId={contractId}
+                    contractId={resolvedContractId}
                     categories={categories}
                     onSuccess={() => { setShowUploadModal(false); loadData(); }}
                     onClose={() => setShowUploadModal(false)}
@@ -358,3 +370,5 @@ export default function Documents({ embedded = false, contractIdOverride }: Docu
         </div>
     );
 }
+
+
