@@ -1,10 +1,14 @@
-# Script de Instalação Completa do Módulo SSO
-# Execute este arquivo para criar toda a estrutura do projeto
+﻿# Script de instalacao/bootstrapping do modulo SSO
+# Observacao: este repositorio ja possui estrutura; este script apenas garante pastas basicas.
 
-Write-Host "🚀 Instalando CRM Engenharia - Módulo SSO..." -ForegroundColor Cyan
+chcp 65001 | Out-Null
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
-# Criar estrut folders backend
-Write-Host "`n📁 Criando estrutura de pastas..." -ForegroundColor Yellow
+Write-Host "Iniciando bootstrap de pastas do CRM Engenharia (SSO)..." -ForegroundColor Cyan
+
+Write-Host "" 
+Write-Host "Criando/garantindo estrutura de pastas..." -ForegroundColor Yellow
 
 $backendDirs = @(
     "backend\src\modules\auth\controllers",
@@ -58,14 +62,15 @@ foreach ($dir in $frontendDirs) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
 }
 
-Write-Host "✅ Estrutura de pastas criada!" -ForegroundColor Green
+Write-Host "OK - Estrutura de pastas garantida." -ForegroundColor Green
 
-Write-Host "`n📦 Próximos passos:" -ForegroundColor Cyan
-Write-Host "1. cd backend && npm install" -ForegroundColor White
-Write-Host "2. Configure o arquivo backend\.env com suas credenciais" -ForegroundColor White
-Write-Host "3. npm run prisma:generate && npm run prisma:migrate" -ForegroundColor White
-Write-Host "4. npm run prisma:seed" -ForegroundColor White
-Write-Host "5. npm run dev" -ForegroundColor White
-Write-Host "`n6. Em outro terminal: cd frontend && npm install && npm run dev" -ForegroundColor White
+Write-Host ""
+Write-Host "Proximos passos sugeridos:" -ForegroundColor Cyan
+Write-Host "1. cd backend; npm install" -ForegroundColor White
+Write-Host "2. Configure backend\.env com suas credenciais" -ForegroundColor White
+Write-Host "3. npm run db:generate; npm run db:migrate; npm run db:seed" -ForegroundColor White
+Write-Host "4. npm run dev" -ForegroundColor White
+Write-Host "5. Em outro terminal: cd frontend; npm install; npm run dev" -ForegroundColor White
 
-Write-Host "`n✨ Estrutura criada com sucesso!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Bootstrap concluido." -ForegroundColor Green

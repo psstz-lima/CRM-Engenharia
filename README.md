@@ -1,6 +1,15 @@
 ﻿# CRM Engenharia
 
-Sistema de gerenciamento de contratos de engenharia com controle de medições, aditivos, documentos, tarefas e permissões granulares.
+Estamos construindo o cockpit operacional de contratos de engenharia: um lugar unico para enxergar risco, progresso e responsabilidade com clareza — e agir rapido.
+
+Hoje, o que costuma estar espalhado em planilhas, e-mails e memoria das pessoas vira um fluxo rastreavel e auditavel, com dono, prazo e contexto.
+
+Na pratica, queremos que a plataforma ajude voce a:
+- saber o que esta em risco antes de virar problema,
+- transformar pendencias em tarefas acionaveis,
+- comprovar execucao com evidencia (medicoes, fotos, historico),
+- reduzir retrabalho e discussao sobre "qual e o numero certo",
+- dar confianca para decisao com trilha e governanca.
 
 > **Política de estilo (frontend):** use classes utilitárias e `frontend/src/index.css`. Evite CSS global novo; prefira estilos locais por componente e documente exceções. Exceção atual: o tema premium define tokens e componentes base em `frontend/src/index.css`.
 
@@ -10,23 +19,13 @@ Sistema de gerenciamento de contratos de engenharia com controle de medições, 
 ![Prisma](https://img.shields.io/badge/Prisma-5-purple)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 
-## Stack e arquitetura
+## O que estamos construindo (na pratica)
 
-- Backend: Node.js + Express + TypeScript + Prisma + PostgreSQL
-- Frontend: React 18 + Vite + TypeScript + React Router
-- Padrão: camadas por domínio (`routes` → `controllers` → `services`)
-- Documentação da API: Swagger em `/api/docs`
-
-Pontos de entrada:
-- Backend: `backend/src/server.ts`
-- Frontend: `frontend/src/main.tsx`
-
-## Funcionalidades principais
-
-- Contratos: cadastro, itens hierárquicos, importação Excel, aditivos
-- Medições: workflow, lançamentos, fotos, cálculos
-- Documentos: categorias, SLA, visualização e uploads
-- Governança: permissões, perfis, auditoria, notificações, tarefas
+- Contratos como fonte de verdade (estrutura, valores, prazos e acessos)
+- Medicoes como evidencia (workflow, memoria, fotos e revisoes)
+- Documentos como compromisso (SLA, categorias, pendencias e historico)
+- Alertas e tarefas como motor operacional (o que precisa acontecer agora)
+- Auditoria e permissoes como base de confianca (quem fez o que, e por que)
 
 ## Pré-requisitos
 
@@ -61,11 +60,12 @@ Na raiz do repositório:
 ```
 
 O script:
-- encerra processos anteriores nas portas 3000/3001,
+- encerra processos anteriores com seguranca,
 - gera o Prisma Client,
 - aplica migrações,
-- instala dependências do frontend,
-- sobe backend e frontend.
+- instala dependências do frontend (apenas se precisar),
+- sobe backend e frontend,
+- salva PIDs em `scripts/.pids.json` para encerramento preciso.
 
 URLs padrão:
 - Frontend: `http://localhost:3000`
@@ -103,7 +103,7 @@ npm run dev
 
 Na raiz:
 - `scripts/start.ps1`: sobe o sistema completo
-- `scripts/stop.ps1`: encerra processos nas portas 3000 e 3001
+- `scripts/stop.ps1`: encerra processos com PIDs rastreados + fallback seguro
 - `scripts/backup.ps1` e `scripts/restore.ps1`: utilitários de banco
 
 No backend (`backend/package.json`):
