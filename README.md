@@ -106,6 +106,19 @@ Na raiz:
 - `scripts/stop.ps1`: encerra processos com PIDs rastreados + fallback seguro
 - `scripts/backup.ps1` e `scripts/restore.ps1`: utilitários de banco
 
+## Hooks locais (PowerShell)
+
+Este repo usa hooks locais em `.githooks` para validar scripts PowerShell.
+
+Para ativar (caso nao esteja ativo):
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+O hook `pre-commit` valida `scripts/start.ps1` e `scripts/stop.ps1` com PSScriptAnalyzer.
+Se o modulo nao estiver instalado, o hook nao bloqueia o commit.
+
 No backend (`backend/package.json`):
 - `npm run dev`: servidor em modo watch (`tsx watch`)
 - `npm run db:generate`: gera Prisma Client
