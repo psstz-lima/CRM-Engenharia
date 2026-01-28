@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 
 // Types
@@ -167,7 +167,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
 
         // Only draw annotations in edit mode
         if (mode === 'edit') {
-            annotations.forEach(ann => drawAnnotation(ctx, ann));
+            annotations.forEach((ann) => drawAnnotation(ctx, ann));
             if (currentAnnotation) {
                 drawAnnotation(ctx, currentAnnotation);
             }
@@ -187,7 +187,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                 if (ann.points.length < 2) return;
                 ctx.beginPath();
                 ctx.moveTo(ann.points[0].x, ann.points[0].y);
-                ann.points.forEach(p => ctx.lineTo(p.x, p.y));
+                ann.points.forEach((p) => ctx.lineTo(p.x, p.y));
                 ctx.stroke();
                 break;
 
@@ -284,7 +284,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                 number: numberCounter
             };
             saveAnnotation(newAnn);
-            setNumberCounter(prev => prev + 1);
+            setNumberCounter((prev) => prev + 1);
             return;
         }
 
@@ -303,9 +303,9 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
         const pos = getMousePos(e);
 
         if (currentAnnotation.type === 'freehand') {
-            setCurrentAnnotation(prev => prev ? { ...prev, points: [...prev.points, pos] } : null);
+            setCurrentAnnotation((prev) => (prev ? { ...prev, points: [...prev.points, pos] } : null));
         } else {
-            setCurrentAnnotation(prev => prev ? { ...prev, points: [prev.points[0], pos] } : null);
+            setCurrentAnnotation((prev) => (prev ? { ...prev, points: [prev.points[0], pos] } : null));
         }
     };
 
@@ -440,7 +440,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
             const croppedUrl = URL.createObjectURL(croppedBlob);
 
             // Add to image history before changing
-            setImageHistory(prev => [...prev, croppedUrl]);
+            setImageHistory((prev) => [...prev, croppedUrl]);
 
             setCurrentImageSrc(croppedUrl);
             setImageLoaded(false);
@@ -462,7 +462,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
     const handleUndoCrop = () => {
         if (imageHistory.length > 1) {
             const newHistory = [...imageHistory];
-            newHistory.pop(); // Remove current
+            newHistory.pop();
             const previousImage = newHistory[newHistory.length - 1];
             setImageHistory(newHistory);
             setCurrentImageSrc(previousImage);
@@ -494,13 +494,13 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
 
     // Tools config
     const tools: { type: ToolType; icon: string; label: string }[] = [
-        { type: 'freehand', icon: '✏️', label: 'Desenho Livre' },
-        { type: 'line', icon: '📏', label: 'Linha' },
-        { type: 'arrow', icon: '➡️', label: 'Seta' },
-        { type: 'rect', icon: '🔲', label: 'Retângulo' },
-        { type: 'circle', icon: '⭕', label: 'Círculo' },
-        { type: 'text', icon: '📝', label: 'Texto' },
-        { type: 'number', icon: '🔢', label: 'Numeração' },
+        { type: 'freehand', icon: 'DL', label: 'Desenho livre' },
+        { type: 'line', icon: 'LN', label: 'Linha' },
+        { type: 'arrow', icon: 'SE', label: 'Seta' },
+        { type: 'rect', icon: 'RT', label: 'Retângulo' },
+        { type: 'circle', icon: 'CI', label: 'Círculo' },
+        { type: 'text', icon: 'TX', label: 'Texto' },
+        { type: 'number', icon: 'N#', label: 'Numeração' },
     ];
 
     const colors = ['#ef4444', '#22c55e', '#3b82f6', '#eab308', '#d946ef', '#06b6d4', '#ffffff', '#000000'];
@@ -508,65 +508,62 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-[1200] bg-black/95 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[1200] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
             <div
-                className="bg-gray-100 border border-gray-300 rounded-lg w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-slate-50 border border-slate-200 rounded-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="px-5 py-3 border-b border-gray-300 flex justify-between items-center bg-gray-50">
-                    <h3 className="text-gray-900 text-lg font-medium flex items-center gap-2">
-                        🎨 Editor de Imagens
-                        {mode === 'crop' && <span className="text-sm bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded border border-blue-500/20">Modo Recorte</span>}
-                    </h3>
-                    <button onClick={onClose} className="text-gray-600 hover:text-gray-900 text-2xl transition-colors">×</button>
+                <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-100">
+                    <h3 className="text-slate-900 text-lg font-medium">Editor de imagens</h3>
+                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 text-xl transition-colors">X</button>
                 </div>
 
                 {/* Toolbar */}
-                <div className="p-3 bg-dark-950 border-b border-dark-800 flex gap-2 flex-wrap items-center justify-center">
+                <div className="p-3 bg-slate-100 border-b border-slate-200 flex gap-2 flex-wrap items-center justify-center">
                     {/* Crop button */}
                     <button
                         onClick={() => setMode(mode === 'crop' ? 'edit' : 'crop')}
                         title="Recortar"
                         className={`p-2 rounded transition-colors ${mode === 'crop'
-                                ? 'bg-green-600 text-gray-900 shadow-lg shadow-green-900/20'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                             }`}
-                    >✂️</button>
+                    >RC</button>
 
-                    <div className="w-px h-8 bg-gray-200 mx-2" />
+                    <div className="w-px h-8 bg-slate-200 mx-2" />
 
                     {/* Drawing tools */}
-                    {tools.map(t => (
+                    {tools.map((t) => (
                         <button
                             key={t.type}
                             onClick={() => { setMode('edit'); setTool(t.type); }}
                             title={t.label}
                             disabled={mode === 'crop'}
                             className={`p-2 rounded transition-all ${mode === 'edit' && tool === t.type
-                                    ? 'bg-primary-600 text-gray-900 shadow-lg shadow-primary-900/20'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    ? 'bg-slate-800 text-white shadow-lg shadow-slate-900/20'
+                                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                                 } ${mode === 'crop' ? 'opacity-30 cursor-not-allowed' : ''}`}
                         >
                             {t.icon}
                         </button>
                     ))}
 
-                    <div className="w-px h-8 bg-gray-200 mx-2" />
+                    <div className="w-px h-8 bg-slate-200 mx-2" />
 
                     {/* Transform tools */}
-                    <div className="flex bg-gray-50 rounded p-1 gap-1">
-                        <button onClick={handleRotateLeft} title="Girar Esquerda" className="p-1.5 rounded hover:bg-gray-300 text-gray-700">↺</button>
-                        <button onClick={handleRotateRight} title="Girar Direita" className="p-1.5 rounded hover:bg-gray-300 text-gray-700">↻</button>
-                        <button onClick={handleFlipHorizontal} title="Inverter Horizontal" className={`p-1.5 rounded hover:bg-gray-300 ${flipH ? 'text-primary-400 bg-primary-900/20' : 'text-gray-700'}`}>↔️</button>
-                        <button onClick={handleFlipVertical} title="Inverter Vertical" className={`p-1.5 rounded hover:bg-gray-300 ${flipV ? 'text-primary-400 bg-primary-900/20' : 'text-gray-700'}`}>↕️</button>
+                    <div className="flex bg-slate-50 rounded p-1 gap-1 border border-slate-200">
+                        <button onClick={handleRotateLeft} title="Girar esquerda" className="p-1.5 rounded hover:bg-slate-200 text-slate-700">GL</button>
+                        <button onClick={handleRotateRight} title="Girar direita" className="p-1.5 rounded hover:bg-slate-200 text-slate-700">GR</button>
+                        <button onClick={handleFlipHorizontal} title="Inverter horizontal" className={`p-1.5 rounded hover:bg-slate-200 ${flipH ? 'text-emerald-700 bg-emerald-100' : 'text-slate-700'}`}>IH</button>
+                        <button onClick={handleFlipVertical} title="Inverter vertical" className={`p-1.5 rounded hover:bg-slate-200 ${flipV ? 'text-emerald-700 bg-emerald-100' : 'text-slate-700'}`}>IV</button>
                     </div>
 
-                    <div className="w-px h-8 bg-gray-200 mx-2" />
+                    <div className="w-px h-8 bg-slate-200 mx-2" />
 
                     {/* Colors */}
-                    <div className="flex gap-1 bg-gray-50 p-1 rounded">
-                        {colors.map(c => (
+                    <div className="flex gap-1 bg-slate-50 p-1 rounded border border-slate-200">
+                        {colors.map((c) => (
                             <button
                                 key={c}
                                 onClick={() => setColor(c)}
@@ -578,39 +575,39 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                         ))}
                     </div>
 
-                    <div className="w-px h-8 bg-gray-200 mx-2" />
+                    <div className="w-px h-8 bg-slate-200 mx-2" />
 
                     {/* Stroke Width */}
-                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded">
-                        <span className="text-xs text-gray-600">Espessura</span>
+                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
+                        <span className="text-xs text-slate-600">Espessura</span>
                         <input
                             type="range"
                             min="1"
                             max="10"
                             value={strokeWidth}
-                            onChange={e => setStrokeWidth(Number(e.target.value))}
-                            className="w-20 accent-primary-500"
+                            onChange={(e) => setStrokeWidth(Number(e.target.value))}
+                            className="w-20 accent-slate-600"
                             disabled={mode === 'crop'}
                         />
                     </div>
                 </div>
 
                 {/* Canvas Area / Crop Area */}
-                <div className="flex-1 overflow-hidden relative bg-gray-200 flex items-center justify-center p-4">
+                <div className="flex-1 overflow-hidden relative bg-slate-200 flex items-center justify-center p-4">
                     {mode === 'crop' ? (
                         <>
                             {/* Crop Type Toggle */}
-                            <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1 bg-gray-50/90 p-1 rounded-lg backdrop-blur shadow-xl border border-gray-400 z-10">
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1 bg-slate-50/90 p-1 rounded-lg backdrop-blur shadow-xl border border-slate-300 z-10">
                                 <button
                                     onClick={() => setCropType('selection')}
-                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'selection' ? 'bg-primary-600 text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'selection' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:text-slate-900'
                                         }`}
-                                >📐 Seleção</button>
+                                >Seleção</button>
                                 <button
                                     onClick={() => setCropType('zoom')}
-                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'zoom' ? 'bg-primary-600 text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${cropType === 'zoom' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:text-slate-900'
                                         }`}
-                                >🔍 Zoom</button>
+                                >Zoom</button>
                             </div>
 
                             {cropType === 'zoom' ? (
@@ -631,16 +628,16 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                         />
                                     </div>
                                     {/* Zoom slider */}
-                                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-gray-50/90 px-4 py-2 rounded-lg backdrop-blur shadow-xl border border-gray-400 z-10">
-                                        <span className="text-gray-700 text-sm font-medium">Zoom</span>
+                                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-50/90 px-4 py-2 rounded-lg backdrop-blur shadow-xl border border-slate-300 z-10">
+                                        <span className="text-slate-700 text-sm font-medium">Zoom</span>
                                         <input
                                             type="range"
                                             min="1"
                                             max="3"
                                             step="0.1"
                                             value={cropZoom}
-                                            onChange={e => setCropZoom(Number(e.target.value))}
-                                            className="w-40 accent-primary-500"
+                                            onChange={(e) => setCropZoom(Number(e.target.value))}
+                                            className="w-40 accent-slate-600"
                                         />
                                     </div>
                                 </>
@@ -657,7 +654,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                     {/* Selection overlay */}
                                     {selectionStart && selectionEnd && (
                                         <div
-                                            className="absolute border-2 border-primary-500 bg-primary-500/20 pointer-events-none"
+                                            className="absolute border-2 border-slate-600 bg-slate-500/20 pointer-events-none"
                                             style={{
                                                 left: Math.min(selectionStart.x, selectionEnd.x) + (canvasRef.current ? (canvasRef.current.parentElement!.clientWidth - canvasRef.current.width) / 2 : 0),
                                                 top: Math.min(selectionStart.y, selectionEnd.y),
@@ -666,7 +663,7 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                             }}
                                         />
                                     )}
-                                    <p className="absolute bottom-20 text-gray-600 text-sm bg-gray-100/50 px-3 py-1 rounded">
+                                    <p className="absolute bottom-20 text-slate-600 text-sm bg-slate-100/70 px-3 py-1 rounded-full border border-slate-200">
                                         Clique e arraste para selecionar a área de corte
                                     </p>
                                 </div>
@@ -678,25 +675,25 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
                                     onClick={handleApplyCrop}
                                     disabled={cropType === 'selection' && (!selectionStart || !selectionEnd)}
                                     className={`px-5 py-2.5 rounded font-medium shadow-lg transition-all ${cropType === 'selection' && (!selectionStart || !selectionEnd)
-                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                            : 'bg-green-600 hover:bg-green-500 text-gray-900 hover:scale-105'
+                                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                                            : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105'
                                         }`}
                                 >
-                                    ✓ Aplicar Recorte
+                                    Aplicar recorte
                                 </button>
                                 <button
                                     onClick={handleCancelCrop}
-                                    className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-gray-900 rounded font-medium shadow-lg hover:scale-105 transition-all"
+                                    className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded font-medium shadow-lg hover:scale-105 transition-all"
                                 >
-                                    ✗ Cancelar
+                                    Cancelar
                                 </button>
                             </div>
                         </>
                     ) : (
                         !imageLoaded ? (
                             <div className="flex flex-col items-center gap-3">
-                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
-                                <p className="text-gray-600">Carregando imagem...</p>
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-600"></div>
+                                <p className="text-slate-600">Carregando imagem...</p>
                             </div>
                         ) : (
                             <canvas
@@ -713,15 +710,14 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
 
                 {/* Text Input Overlay */}
                 {textPosition && mode === 'edit' && (
-                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-300 flex gap-3 items-center animate-slideUp">
-                        <span className="text-xl">📝</span>
+                    <div className="px-4 py-3 bg-slate-100 border-t border-slate-200 flex gap-3 items-center animate-slideUp">
                         <input
                             type="text"
                             value={textInput}
-                            onChange={e => setTextInput(e.target.value)}
+                            onChange={(e) => setTextInput(e.target.value)}
                             placeholder="Digite o texto..."
                             autoFocus
-                            className="flex-1 bg-gray-100 border border-gray-400 rounded px-3 py-2 text-gray-900 focus:border-primary-500 outline-none"
+                            className="flex-1 bg-white border border-slate-300 rounded px-3 py-2 text-slate-900 focus:border-slate-500 outline-none"
                             onKeyDown={(e) => { if (e.key === 'Enter') handleAddText(); }}
                         />
                         <button onClick={handleAddText} className="btn btn-primary px-4 py-2">Adicionar</button>
@@ -731,33 +727,33 @@ export function ImageEditorModal({ show, imageSrc, onClose, onSave }: ImageEdito
 
                 {/* Adjustments Bar */}
                 {mode === 'edit' && (
-                    <div className="px-4 py-3 bg-gray-100 border-t border-dark-800 flex gap-6 overflow-x-auto items-center">
-                        <label className="flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap">
-                            <span>☀️ Brilho</span>
-                            <span className="bg-gray-50 px-1.5 rounded min-w-[30px] text-center">{brightness}%</span>
-                            <input type="range" min="50" max="150" value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="w-24 accent-primary-500" />
+                    <div className="px-4 py-3 bg-slate-100 border-t border-slate-200 flex gap-6 overflow-x-auto items-center">
+                        <label className="flex items-center gap-2 text-xs text-slate-600 whitespace-nowrap">
+                            <span>Brilho</span>
+                            <span className="bg-white px-1.5 rounded min-w-[30px] text-center border border-slate-200">{brightness}%</span>
+                            <input type="range" min="50" max="150" value={brightness} onChange={(e) => setBrightness(Number(e.target.value))} className="w-24 accent-slate-600" />
                         </label>
-                        <label className="flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap">
-                            <span>🌗 Contraste</span>
-                            <span className="bg-gray-50 px-1.5 rounded min-w-[30px] text-center">{contrast}%</span>
-                            <input type="range" min="50" max="150" value={contrast} onChange={e => setContrast(Number(e.target.value))} className="w-24 accent-primary-500" />
+                        <label className="flex items-center gap-2 text-xs text-slate-600 whitespace-nowrap">
+                            <span>Contraste</span>
+                            <span className="bg-white px-1.5 rounded min-w-[30px] text-center border border-slate-200">{contrast}%</span>
+                            <input type="range" min="50" max="150" value={contrast} onChange={(e) => setContrast(Number(e.target.value))} className="w-24 accent-slate-600" />
                         </label>
                     </div>
                 )}
 
                 {/* Footer Controls */}
-                <div className="px-5 py-4 border-t border-gray-300 bg-gray-50 flex justify-between items-center">
+                <div className="px-5 py-4 border-t border-slate-200 bg-slate-100 flex justify-between items-center">
                     <div className="flex gap-2">
-                        <button onClick={handleUndo} disabled={historyIndex === 0 || mode === 'crop'} title="Desfazer desenho" className={`p-2 rounded ${historyIndex === 0 || mode === 'crop' ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-gray-300 text-gray-900 hover:bg-dark-500'}`}>↩️</button>
-                        <button onClick={handleRedo} disabled={historyIndex >= history.length - 1 || mode === 'crop'} title="Refazer desenho" className={`p-2 rounded ${historyIndex >= history.length - 1 || mode === 'crop' ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-gray-300 text-gray-900 hover:bg-dark-500'}`}>↪️</button>
-                        <div className="w-px h-8 bg-gray-200 mx-2" />
-                        <button onClick={handleUndoCrop} disabled={imageHistory.length <= 1 || mode === 'crop'} title="Desfazer recorte" className={`p-2 rounded flex items-center gap-2 ${imageHistory.length <= 1 || mode === 'crop' ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30'}`}>🔙 <span className="text-xs">Desfazer Crop</span></button>
-                        <button onClick={handleClear} disabled={mode === 'crop'} title="Limpar tudo" className={`p-2 rounded flex items-center gap-2 ${mode === 'crop' ? 'opacity-30' : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'}`}>🗑️ <span className="text-xs">Limpar</span></button>
+                        <button onClick={handleUndo} disabled={historyIndex === 0 || mode === 'crop'} title="Desfazer desenho" className={`px-3 py-2 rounded ${historyIndex === 0 || mode === 'crop' ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'}`}>Desfazer</button>
+                        <button onClick={handleRedo} disabled={historyIndex >= history.length - 1 || mode === 'crop'} title="Refazer desenho" className={`px-3 py-2 rounded ${historyIndex >= history.length - 1 || mode === 'crop' ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'}`}>Refazer</button>
+                        <div className="w-px h-8 bg-slate-200 mx-2" />
+                        <button onClick={handleUndoCrop} disabled={imageHistory.length <= 1 || mode === 'crop'} title="Desfazer recorte" className={`px-3 py-2 rounded flex items-center gap-2 ${imageHistory.length <= 1 || mode === 'crop' ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}>Desfazer recorte</button>
+                        <button onClick={handleClear} disabled={mode === 'crop'} title="Limpar tudo" className={`px-3 py-2 rounded flex items-center gap-2 ${mode === 'crop' ? 'opacity-30' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}>Limpar</button>
                     </div>
 
                     <div className="flex gap-3">
                         <button onClick={onClose} className="btn btn-secondary px-5">Cancelar</button>
-                        <button onClick={handleSave} disabled={mode === 'crop'} className={`btn btn-primary px-5 ${mode === 'crop' ? 'opacity-50 cursor-not-allowed' : ''}`}>💾 Salvar Edição</button>
+                        <button onClick={handleSave} disabled={mode === 'crop'} className={`btn btn-primary px-5 ${mode === 'crop' ? 'opacity-50 cursor-not-allowed' : ''}`}>Salvar edição</button>
                     </div>
                 </div>
             </div>

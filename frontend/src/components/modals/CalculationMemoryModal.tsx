@@ -1,4 +1,4 @@
-
+﻿
 import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { ManageUnitsModal, ColumnDef } from './ManageUnitsModal';
@@ -48,7 +48,7 @@ function SortableFormItem({ id, children, style }: { id: string; children: React
                 }}
                 title="Arrastar para mover"
             >
-                â‹®â‹®
+                ⋮⋮
             </div>
             {children}
         </div>
@@ -899,7 +899,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     if (item.type === 'operator') {
                         if (item.value === '×' || item.value === '?' || item.value === 'x') return '*';
                         if (item.value === '÷' || item.value === '?') return '/';
-                        if (item.value === '−' || item.value === 'âˆ’') return '-';
+                        if (item.value === '−') return '-';
                         if (item.value === '^') return '**';
                         return item.value;
                     } else {
@@ -1072,59 +1072,59 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
             <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center gap-3">
-                    {saveStatus === 'saving' && <span className="text-amber-600 text-sm">â³ Salvando...</span>}
-                    {saveStatus === 'saved' && <span className="text-emerald-500 text-sm">âœ”ï¸ Configuração salva</span>}
-                    {saveStatus === 'error' && <span className="text-red-500 text-sm">âŒ Erro ao salvar</span>}
+                    {saveStatus === 'saving' && <span className="text-amber-600 text-sm">⏳ Salvando...</span>}
+                    {saveStatus === 'saved' && <span className="text-emerald-500 text-sm">✓ Configuração salva</span>}
+                    {saveStatus === 'error' && <span className="text-red-500 text-sm">✖ Erro ao salvar</span>}
                 </div>
                 <div className="flex gap-3">
                     <button
                         onClick={() => setShowManageUnits(true)}
-                        className="btn btn-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none"
+                        className="btn btn-sm bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200"
                     >
                         Configurar Colunas / Medidas
                     </button>
                     <button
                         onClick={() => setShowLinkModal(true)}
-                        className="btn btn-sm bg-green-100 text-green-800 hover:bg-green-200 border-none"
+                        className="btn btn-sm bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200"
                     >
-                        ðŸ”— Vincular Item
+                        🔗 Vincular Item
                     </button>
                     {/* Distance Calculator Button - only for km unit items */}
                     {contractItemUnit?.toLowerCase().includes('km') && (
                         <button
                             type="button"
                             onClick={() => setShowDistanceCalculator(true)}
-                            className="btn btn-sm bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-400 font-bold"
+                            className="btn btn-sm bg-amber-200 text-amber-900 hover:bg-amber-300 border border-amber-300 font-bold"
                         >
-                            ðŸ“ Calcular Distância
+                            📍 Calcular Distância
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Formula Builder */}
-            <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-400">
+            <div className="mb-4 p-3 bg-slate-50/40 rounded-lg border border-slate-200">
                 <div className="flex items-center gap-3 mb-3">
-                    <span className="text-sm text-amber-700 font-bold">Fórmula de Cálculo:</span>
+                    <span className="text-sm text-slate-700 font-bold">Fórmula de Cálculo:</span>
                     <button
                         type="button"
                         onClick={() => setFormula([])}
-                        className="ml-auto px-2 py-1 bg-red-50 border border-red-300 rounded text-xs text-red-600 hover:bg-red-100"
+                        className="ml-auto px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 hover:bg-slate-100"
                     >
                         Limpar
                     </button>
                 </div>
 
                 {/* Current Formula Display */}
-                <div className="flex gap-1.5 flex-wrap min-h-[40px] p-3 bg-amber-50/50 rounded mb-3 items-center border border-amber-200">
+                <div className="flex gap-1.5 flex-wrap min-h-[40px] p-3 bg-white/70 rounded mb-3 items-center border border-slate-200">
                     {formula.length === 0 ?(
-                        <span className="text-amber-800 text-sm">Clique nos campos e operadores abaixo para construir a fórmula</span>
+                        <span className="text-slate-700 text-sm">Clique nos campos e operadores abaixo para construir a fórmula</span>
                     ) : (
                         formula.map((item, idx) => (
                             <div
                                 key={idx}
                                 onClick={() => setFormula(formula.filter((_, i) => i !== idx))}
-                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-gray-900 ${item.type === 'operator' ?'bg-amber-500' : (item.isLinked ?'bg-violet-500' : 'bg-blue-500')
+                                className={`px-3 py-1.5 rounded cursor-pointer font-bold text-sm text-slate-900 ${item.type === 'operator' ?'bg-slate-300' : (item.isLinked ?'bg-slate-200' : 'bg-slate-100')
                                     }`}
                                 title="Clique para remover"
                             >
@@ -1136,25 +1136,25 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                 {/* Linked Variables Section */}
                 {linkedVariables.length > 0 && (
-                    <div className="mb-4 pb-2 border-b border-dashed border-gray-300">
-                        <span className="text-sm text-sky-700 font-bold block mb-2">Itens Vinculados:</span>
+                    <div className="mb-4 pb-2 border-b border-dashed border-slate-200">
+                        <span className="text-sm text-slate-700 font-bold block mb-2">Itens Vinculados:</span>
 
-                        <div className="overflow-x-auto border border-gray-200 rounded">
+                        <div className="overflow-x-auto border border-slate-200 rounded">
                             <table className="w-full text-xs border-collapse text-left">
-                                <thead className="bg-sky-50 text-sky-900">
+                                <thead className="bg-slate-50 text-slate-700">
                                     <tr>
-                                        <th className="px-2 py-1.5 border-b border-sky-100">Item</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100">Origem</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Linha</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100">Propriedade</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Unid.</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100 text-right">Valor</th>
-                                        <th className="px-2 py-1.5 border-b border-sky-100 text-center">Ações</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200">Item</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200">Origem</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200 text-center">Linha</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200">Propriedade</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200 text-center">Unid.</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200 text-right">Valor</th>
+                                        <th className="px-2 py-1.5 border-b border-slate-200 text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {linkedVariables.map(v => (
-                                        <tr key={v.id} className="border-b border-gray-100">
+                                        <tr key={v.id} className="border-b border-slate-100">
                                             <td className="px-2 py-1.5 max-w-[150px] truncate" title={v.itemName}>
                                                 {v.itemName || '-'}
                                             </td>
@@ -1164,7 +1164,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                             <td className="px-2 py-1.5 text-center text-gray-500">
                                                 {v.line || '-'}
                                             </td>
-                                            <td className="px-2 py-1.5 font-bold text-sky-700">
+                                            <td className="px-2 py-1.5 font-bold text-slate-700">
                                                 {v.property || v.label}
                                             </td>
                                             <td className="px-2 py-1.5 text-center text-slate-600 text-xs">
@@ -1185,7 +1185,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                                 return [...prev, { id, label: v.label, visible: true, isLinked: true }];
                                                             });
                                                         }}
-                                                        className="px-2 py-0.5 bg-blue-500 text-gray-900 rounded text-xs hover:bg-blue-600"
+                                                        className="px-2 py-0.5 bg-slate-200 text-slate-800 rounded text-xs hover:bg-slate-300"
                                                         title="Adicionar ? Fórmula"
                                                     >
                                                         Usar
@@ -1196,7 +1196,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                         className="px-1.5 py-0.5 bg-red-100 text-red-700 border border-red-300 rounded hover:bg-red-200"
                                                         title="Remover Item Vinculado"
                                                     >
-                                                        âœ•
+                                                        ✕
                                                     </button>
                                                 </div>
                                             </td>
@@ -1216,7 +1216,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             key={col.id}
                             type="button"
                             onClick={() => setFormula([...formula, { type: 'field', value: col.label }])}
-                            className="px-2.5 py-1 bg-blue-500 text-gray-900 rounded text-sm hover:bg-blue-600"
+                            className="px-2.5 py-1 bg-amber-300 text-amber-900 rounded text-sm hover:bg-amber-400"
                         >
                             {col.label}
                         </button>
@@ -1226,16 +1226,16 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                 {/* Operators - Extended */}
                 <div className="flex gap-2 flex-wrap">
                     <span className="text-xs text-slate-600 w-full">Operadores:</span>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">+</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">âˆ’</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">?</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-amber-400 rounded font-bold hover:bg-amber-500">?</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">^</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'âˆš' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">âˆš</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-orange-500 text-gray-900 rounded font-bold hover:bg-orange-600">%</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">(</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} className="px-3 py-1 bg-slate-400 rounded font-bold hover:bg-slate-500">)</button>
-                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'Ï€' }])} className="px-3 py-1 bg-violet-500 text-gray-900 rounded font-bold hover:bg-violet-600">Ï€</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '+' }])} className="px-3 py-1 bg-slate-100 text-slate-800 rounded font-bold hover:bg-slate-200">+</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '-' }])} className="px-3 py-1 bg-slate-100 text-slate-800 rounded font-bold hover:bg-slate-200">−</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-slate-100 text-slate-800 rounded font-bold hover:bg-slate-200">?</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '?' }])} className="px-3 py-1 bg-slate-100 text-slate-800 rounded font-bold hover:bg-slate-200">?</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '^' }])} className="px-3 py-1 bg-slate-200 text-slate-800 rounded font-bold hover:bg-slate-300">^</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '√' }])} className="px-3 py-1 bg-slate-200 text-slate-800 rounded font-bold hover:bg-slate-300">√</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '%' }])} className="px-3 py-1 bg-slate-200 text-slate-800 rounded font-bold hover:bg-slate-300">%</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: '(' }])} className="px-3 py-1 bg-slate-50 text-slate-800 rounded font-bold hover:bg-slate-100">(</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: ')' }])} className="px-3 py-1 bg-slate-50 text-slate-800 rounded font-bold hover:bg-slate-100">)</button>
+                    <button type="button" onClick={() => setFormula([...formula, { type: 'operator', value: 'π' }])} className="px-3 py-1 bg-slate-200 text-slate-800 rounded font-bold hover:bg-slate-300">π</button>
                 </div>
 
                 {/* Engineering Formulas */}
@@ -1252,7 +1252,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                 setEditingColumnId(null);
                                 setShowFormulaCalc(true);
                             }}
-                            className="px-2.5 py-1 bg-emerald-600 text-gray-900 rounded text-xs hover:bg-emerald-700"
+                            className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded text-xs hover:bg-slate-200"
                             title={f.title}
                         >
                             {f.name}
@@ -1478,7 +1478,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                     {/* Render Linked Variables used in Formula */}
 
 
-                    <button type="submit" className="btn btn-primary h-[35px] px-4">Adicionar</button>
+                    <button type="submit" className="btn h-[35px] px-5 bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm">Adicionar</button>
 
                     {/* Preview Calc */}
                     <div style={{ fontSize: '0.9em', color: '#666', gridColumn: '1 / -1', marginTop: '5px' }}>
@@ -1503,7 +1503,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                     if (item.type === 'operator') {
                                         if (item.value === '×' || item.value === '?' || item.value === 'x') return '*';
                                         if (item.value === '÷' || item.value === '?') return '/';
-                                        if (item.value === '−' || item.value === 'âˆ’') return '-';
+                                        if (item.value === '−') return '-';
                                         if (item.value === '^') return '**';
                                         return item.value;
                                     } else {
@@ -1632,7 +1632,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontSize: '1em' }}
                                                             title="Editar"
                                                         >
-                                                            âœï¸
+                                                            ✏️
                                                         </button>
                                                         <button
                                                             type="button"
@@ -1640,7 +1640,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontSize: '1em' }}
                                                             title="Remover"
                                                         >
-                                                            âŒ
+                                                            ✖
                                                         </button>
                                                     </div>
                                                 )}
@@ -1663,9 +1663,9 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                             return null;
                         })}
-                        <th className="p-2 text-right bg-sky-100">Qtd. Parcial</th>
-                        <th className="p-2 text-right bg-blue-100">Qtd. Acum.</th>
-                        <th className="p-2 text-left">Descrição</th>
+                        <th className="p-2 text-center bg-sky-100">Qtd. Parcial</th>
+                        <th className="p-2 text-center bg-blue-100">Qtd. Acum.</th>
+                        <th className="p-2 text-center">Descrição</th>
                         <th className="p-2 text-center bg-amber-100">Medição</th>
                         <th className="p-2"></th>
                     </tr>
@@ -2058,7 +2058,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                                         if (!val) allFilled = false;
                                         calculationVars[v.key] = val ?Number(val.replace(/\./g, '').replace(',', '.')) : 0;
                                     });
-                                    if (!allFilled) return 'â€”';
+                                    if (!allFilled) return '—';
                                     const result = activeFormula.calculate(calculationVars);
                                     return isNaN(result) ?'Erro' : result.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
                                 })()}
@@ -2151,7 +2151,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
                             id: `route_${Date.now()}`,
                             label: 'Distância de Transporte',
                             value: distanceKm,
-                            itemName: `${origin.split(',')[0]} â†’ ${destination.split(',')[0]}`,
+                            itemName: `${origin.split(',')[0]} → ${destination.split(',')[0]}`,
                             sourceBM: 'Maps',
                             property: 'Distância',
                             unit: 'km',
@@ -2161,7 +2161,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
 
                         // Also set description with route info
                         setDescription(prev => {
-                            const routeInfo = `Transporte: ${origin.split(',')[0]} â†’ ${destination.split(',')[0]} (${distanceKm.toFixed(2)} km)`;
+                            const routeInfo = `Transporte: ${origin.split(',')[0]} → ${destination.split(',')[0]} (${distanceKm.toFixed(2)} km)`;
                             return prev ?`${prev} | ${routeInfo}` : routeInfo;
                         });
                     }}
@@ -2171,6 +2171,7 @@ export function CalculationMemoryModal({ show, onClose, measurementId, measureme
         </DraggableModal >
     );
 }
+
 
 
 

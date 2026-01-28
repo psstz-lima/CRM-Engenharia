@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -33,8 +33,8 @@ export function MeasurementContracts() {
 
     if (loading) return (
         <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2 text-">
-                <div className="w-6 h-6 border-2 border- border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex flex-col items-center gap-2 text-gray-600">
+                <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
                 <p>Carregando contratos...</p>
             </div>
         </div>
@@ -45,11 +45,11 @@ export function MeasurementContracts() {
             <PageHeader
                 title="Módulo de Medições"
                 subtitle="Selecione um contrato para gerenciar e lançar medições físicas e financeiras."
-                icon={<Ruler className="text-" />}
+                icon={<Ruler className="text-amber-600" />}
             />
 
             <div className="relative max-w-md">
-                <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
+                <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                     type="text"
                     placeholder="Buscar contrato, obra ou empresa..."
@@ -61,14 +61,14 @@ export function MeasurementContracts() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map(contract => (
-                    <Card key={contract.id} variant="default" hover className="flex flex-col h-full bg- border- hover:border- hover:shadow-lg transition-all">
+                    <Card key={contract.id} variant="default" hover className="flex flex-col h-full bg-white border border-gray-200 hover:border-amber-300 hover:shadow-lg transition-all">
                         <div className="p-5 flex flex-col h-full">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-2">
-                                    <div className="p-2 rounded-lg bg- text-">
+                                    <div className="p-2 rounded-lg bg-amber-50 text-amber-700">
                                         <Briefcase size={20} />
                                     </div>
-                                    <h3 className="text-lg font-bold text-">{contract.number}</h3>
+                                    <h3 className="text-lg font-bold text-gray-900">{contract.number}</h3>
                                 </div>
                                 <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${contract.isActive
                                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
@@ -79,16 +79,16 @@ export function MeasurementContracts() {
                             </div>
 
                             <div className="space-y-3 flex-1">
-                                <p className="text- text-sm flex items-center gap-2">
-                                    <Building2 size={14} className="opacity-70" />
-                                    <span className="font-semibold text-">{contract.company?.name}</span>
+                                <p className="text-gray-600 text-sm flex items-center gap-2">
+                                    <Building2 size={14} className="opacity-70 text-gray-500" />
+                                    <span className="font-semibold text-gray-800">{contract.company?.name}</span>
                                 </p>
-                                <p className="text- text-sm line-clamp-2 h-10 leading-relaxed">
+                                <p className="text-gray-600 text-sm line-clamp-2 h-10 leading-relaxed">
                                     {contract.object}
                                 </p>
                             </div>
 
-                            <div className="mt-6 pt-4 border-t border-">
+                            <div className="mt-6 pt-4 border-t border-gray-200">
                                 <Link
                                     to={`/contracts/${contract.id}/measurements`}
                                     className="btn btn-primary w-full flex items-center justify-center gap-2 group"
@@ -103,8 +103,8 @@ export function MeasurementContracts() {
             </div>
 
             {filtered.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text- gap-4">
-                    <div className="w-16 h-16 rounded-full bg- flex items-center justify-center opacity-50">
+                <div className="flex flex-col items-center justify-center py-16 text-gray-500 gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center opacity-70">
                         <AlertCircle size={32} />
                     </div>
                     <p className="text-lg">Nenhum contrato encontrado para a busca.</p>
@@ -113,3 +113,4 @@ export function MeasurementContracts() {
         </div>
     );
 }
+

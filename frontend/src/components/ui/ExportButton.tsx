@@ -1,4 +1,5 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { Download, Loader2, FileSpreadsheet } from 'lucide-react';
 import api from '../../services/api';
 
 interface ExportButtonProps {
@@ -47,12 +48,12 @@ export function ExportButton({ type, id, label = 'Exportar' }: ExportButtonProps
             >
                 {loading ? (
                     <>
-                        <span className="animate-spin">⏳</span>
+                        <Loader2 size={16} className="animate-spin" />
                         Gerando...
                     </>
                 ) : (
                     <>
-                        <span>📥</span>
+                        <Download size={16} />
                         {label}
                     </>
                 )}
@@ -64,15 +65,15 @@ export function ExportButton({ type, id, label = 'Exportar' }: ExportButtonProps
                         className="fixed inset-0 z-10"
                         onClick={() => setShowMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg border border-gray-200 z-30 overflow-hidden">
                         <button
                             onClick={() => handleExport('excel')}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
+                            className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-3 transition-colors"
                         >
-                            <span className="text-xl">📊</span>
+                            <span className="text-xl text-emerald-600"><FileSpreadsheet size={18} /></span>
                             <div>
-                                <p className="font-medium">Excel</p>
-                                <p className="text-xs opacity-60">Planilha .xlsx</p>
+                                <p className="font-medium text-gray-800">Excel</p>
+                                <p className="text-xs text-gray-500">Planilha .xlsx</p>
                             </div>
                         </button>
                         {/* PDF pode ser adicionado futuramente */}
@@ -92,3 +93,7 @@ export function ExportButton({ type, id, label = 'Exportar' }: ExportButtonProps
         </div>
     );
 }
+
+
+
+

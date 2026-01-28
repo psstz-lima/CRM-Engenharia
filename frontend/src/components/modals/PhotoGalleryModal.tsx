@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { ImageEditorModal } from './ImageEditorModal';
+import { DraggableModal } from '../common/DraggableModal';
 
 interface PhotoGalleryModalProps {
     show: boolean;
@@ -193,16 +194,16 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-gray-100 border border-gray-300 rounded-xl w-[90%] max-w-[900px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-slate-50 border border-slate-200 rounded-xl w-[90%] max-w-[900px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="p-5 border-b border-gray-300 flex justify-between items-center bg-gray-50">
+                <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">📷 Fotos do Item</h2>
-                        <p className="text-gray-600 text-sm mt-1">{itemName}</p>
+                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">Fotos do Item</h2>
+                        <p className="text-slate-600 text-sm mt-1">{itemName}</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-600 hover:text-gray-900 text-2xl">×</button>
+                    <button onClick={onClose} className="text-slate-600 hover:text-slate-900 text-xl">✕</button>
                 </div>
 
                 {/* Upload Area */}
@@ -212,17 +213,17 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                         onDragLeave={() => setDragOver(false)}
                         className={`m-5 p-8 border-2 border-dashed rounded-lg text-center transition-all ${dragOver
-                                ? 'border-primary-500 bg-primary-900/10'
-                                : 'border-gray-400 bg-gray-50/50 hover:bg-gray-50 hover:border-dark-500'
+                                ? 'border-slate-400 bg-slate-100/60'
+                                : 'border-slate-300 bg-slate-50 hover:bg-slate-50 hover:border-slate-300'
                             }`}
                     >
                         {uploading ? (
-                            <p className="text-gray-600">⏳ Enviando...</p>
+                            <p className="text-slate-600">Enviando...</p>
                         ) : (
                             <>
-                                <p className="text-gray-700">
-                                    📁 Arraste fotos aqui ou{' '}
-                                    <label className="text-primary-400 hover:text-primary-300 cursor-pointer hover:underline font-medium">
+                                <p className="text-slate-700">
+                                    Arraste fotos aqui ou{' '}
+                                    <label className="text-slate-700 hover:text-slate-900 cursor-pointer hover:underline font-medium">
                                         selecione arquivos
                                         <input
                                             type="file"
@@ -233,7 +234,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                         />
                                     </label>
                                 </p>
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-xs text-slate-500 mt-2">
                                     JPG, PNG, WebP, GIF (máx. 10MB cada)
                                 </p>
                             </>
@@ -245,11 +246,11 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 <div className="flex-1 overflow-y-auto p-5 pt-0 custom-scrollbar">
                     {loading ? (
                         <div className="text-center py-10">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
-                            <p className="text-gray-600">Carregando...</p>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 mx-auto mb-2"></div>
+                            <p className="text-slate-600">Carregando...</p>
                         </div>
                     ) : photos.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
+                        <div className="text-center py-10 text-slate-500">
                             <p className="text-4xl mb-2">🖼️</p>
                             <p>Nenhuma foto cadastrada</p>
                         </div>
@@ -258,9 +259,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                             {photos.map(photo => (
                                 <div
                                     key={photo.id}
-                                    className="group relative border border-gray-300 rounded-lg overflow-hidden bg-gray-50 hover:border-dark-500 transition-all hover:shadow-lg"
+                                    className="group relative border border-slate-200 rounded-lg overflow-hidden bg-white hover:border-slate-300 transition-all hover:shadow-lg"
                                 >
-                                    <div className="aspect-square relative overflow-hidden bg-gray-100">
+                                    <div className="aspect-square relative overflow-hidden bg-slate-100">
                                         <img
                                             src={getPhotoUrl(photo)}
                                             alt={photo.filename}
@@ -276,9 +277,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                         handleOpenEditor(photo);
                                                     }}
                                                     title="Editar"
-                                                    className="w-7 h-7 flex items-center justify-center bg-purple-600 hover:bg-purple-500 text-gray-900 rounded-full shadow-lg"
+                                                    className="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-white rounded-full shadow-lg"
                                                 >
-                                                    🎨
+                                                    ✎
                                                 </button>
                                                 <button
                                                     onClick={(e) => {
@@ -286,9 +287,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                         handleDelete(photo.id);
                                                     }}
                                                     title="Excluir"
-                                                    className="w-7 h-7 flex items-center justify-center bg-red-600 hover:bg-red-500 text-gray-900 rounded-full shadow-lg"
+                                                    className="w-7 h-7 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg"
                                                 >
-                                                    ×
+                                                    ✕
                                                 </button>
                                             </div>
                                         )}
@@ -302,12 +303,12 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                                     value={descriptionText}
                                                     onChange={e => setDescriptionText(e.target.value)}
                                                     placeholder="Descrição..."
-                                                    className="flex-1 bg-gray-200 border border-gray-400 rounded px-1.5 py-1 text-gray-900 focus:border-primary-500 outline-none"
+                                                    className="flex-1 bg-white border border-slate-200 rounded px-1.5 py-1 text-slate-900 focus:border-slate-400 outline-none"
                                                     autoFocus
                                                 />
                                                 <button
                                                     onClick={() => handleSaveDescription(photo.id)}
-                                                    className="bg-green-600 hover:bg-green-500 text-gray-900 rounded px-1.5"
+                                                    className="bg-emerald-600 hover:bg-emerald-500 text-white rounded px-1.5"
                                                 >
                                                     ✓
                                                 </button>
@@ -315,7 +316,7 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                         ) : (
                                             <p
                                                 onClick={() => { if (!isClosed) { setEditingDescription(photo.id); setDescriptionText(photo.description || ''); } }}
-                                                className={`mb-1 truncate cursor-pointer ${photo.description ? 'text-gray-700' : 'text-gray-600 italic'}`}
+                                                className={`mb-1 truncate cursor-pointer ${photo.description ? 'text-slate-700' : 'text-slate-500 italic'}`}
                                                 title={photo.description || 'Clique para adicionar descrição'}
                                             >
                                                 {photo.description || 'Sem descrição'}
@@ -323,16 +324,16 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                         )}
 
                                         {(photo.photoDate || photo.location) && (
-                                            <div className="flex flex-col gap-0.5 text-gray-500 mb-1 scale-90 origin-left">
+                                            <div className="flex flex-col gap-0.5 text-slate-500 mb-1 scale-90 origin-left">
                                                 {photo.photoDate && (
-                                                    <span>📅 {new Date(photo.photoDate).toLocaleDateString('pt-BR')}</span>
+                                                    <span>Data: {new Date(photo.photoDate).toLocaleDateString('pt-BR')}</span>
                                                 )}
                                                 {photo.location && (
-                                                    <span>📍 {photo.location}</span>
+                                                    <span>Local: {photo.location}</span>
                                                 )}
                                             </div>
                                         )}
-                                        <div className="text-gray-600 text-[10px] flex justify-between">
+                                        <div className="text-slate-600 text-[10px] flex justify-between">
                                             <span>{formatSize(photo.size)}</span>
                                         </div>
                                     </div>
@@ -343,9 +344,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-300 bg-gray-50 flex justify-between items-center">
-                    <span className="text-gray-600 text-sm">{photos.length} foto(s)</span>
-                    <button onClick={onClose} className="btn btn-secondary text-sm">
+                <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <span className="text-slate-600 text-sm">{photos.length} foto(s)</span>
+                    <button onClick={onClose} className="btn bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 text-sm">
                         Fechar
                     </button>
                 </div>
@@ -366,9 +367,9 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
 
                     <button
                         onClick={() => setSelectedPhoto(null)}
-                        className="absolute top-5 right-5 text-gray-900/50 hover:text-gray-900 bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
+                        className="absolute top-5 right-5 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center transition-all"
                     >
-                        ×
+                        ✕
                     </button>
 
                     {!isClosed && (
@@ -381,17 +382,17 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
                                     handleOpenEditor(selectedPhoto);
                                     setSelectedPhoto(null);
                                 }}
-                                className="btn btn-primary flex items-center gap-2"
+                                className="btn bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-200 flex items-center gap-2"
                             >
-                                🎨 Editar
+                                Editar
                             </button>
                             <button
                                 onClick={() => {
                                     handleDelete(selectedPhoto.id);
                                 }}
-                                className="btn bg-red-600 hover:bg-red-500 text-gray-900 border-none flex items-center gap-2"
+                                className="btn bg-red-600 hover:bg-red-500 text-white border-none flex items-center gap-2"
                             >
-                                🗑️ Excluir
+                                Excluir
                             </button>
                         </div>
                     )}
@@ -401,61 +402,61 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
             {/* Upload Form Modal */}
             {showUploadForm && pendingFiles && (
                 <div className="modal-overlay z-[1002]" onClick={handleCancelUpload}>
-                    <div className="modal-content max-w-md" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            📸 Informações da Foto
-                            <span className="text-sm font-normal text-gray-500">
-                                ({pendingFiles.length} arquivos)
-                            </span>
-                        </h3>
+                    <DraggableModal
+                        isOpen={showUploadForm}
+                        onClose={handleCancelUpload}
+                        title={`Informações da Foto (${pendingFiles.length} arquivo${pendingFiles.length > 1 ? 's' : ''})`}
+                        className="w-[560px] max-w-[92vw]"
+                    >
+                        <div onClick={e => e.stopPropagation()} className="space-y-4">
+                            <p className="text-slate-600 text-sm">
+                                Preencha os campos opcionais abaixo para aplicar a todas as fotos selecionadas.
+                            </p>
 
-                        <p className="text-gray-600 text-sm mb-6">
-                            Preencha os campos opcionais abaixo para aplicar a todas as fotos selecionadas.
-                        </p>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="label">Descrição</label>
+                                    <input
+                                        type="text"
+                                        value={uploadMetadata.description}
+                                        onChange={e => setUploadMetadata(prev => ({ ...prev, description: e.target.value }))}
+                                        placeholder="Ex: Vista geral do trecho"
+                                        className="input"
+                                    />
+                                </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="label">📝 Descrição</label>
-                                <input
-                                    type="text"
-                                    value={uploadMetadata.description}
-                                    onChange={e => setUploadMetadata(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Ex: Vista geral do trecho"
-                                    className="input"
-                                />
+                                <div>
+                                    <label className="label">Data da Foto</label>
+                                    <input
+                                        type="date"
+                                        value={uploadMetadata.photoDate}
+                                        onChange={e => setUploadMetadata(prev => ({ ...prev, photoDate: e.target.value }))}
+                                        className="input"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="label">Local / Estaca / Km</label>
+                                    <input
+                                        type="text"
+                                        value={uploadMetadata.location}
+                                        onChange={e => setUploadMetadata(prev => ({ ...prev, location: e.target.value }))}
+                                        placeholder="Ex: Estaca 120+5 ou Km 45"
+                                        className="input"
+                                    />
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="label">📅 Data da Foto</label>
-                                <input
-                                    type="date"
-                                    value={uploadMetadata.photoDate}
-                                    onChange={e => setUploadMetadata(prev => ({ ...prev, photoDate: e.target.value }))}
-                                    className="input"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="label">📍 Local / Estaca / Km</label>
-                                <input
-                                    type="text"
-                                    value={uploadMetadata.location}
-                                    onChange={e => setUploadMetadata(prev => ({ ...prev, location: e.target.value }))}
-                                    placeholder="Ex: Estaca 120+5 ou Km 45"
-                                    className="input"
-                                />
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button onClick={handleCancelUpload} className="btn bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200">
+                                    Cancelar
+                                </button>
+                                <button onClick={handleConfirmUpload} className="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none">
+                                    Enviar
+                                </button>
                             </div>
                         </div>
-
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button onClick={handleCancelUpload} className="btn btn-secondary">
-                                Cancelar
-                            </button>
-                            <button onClick={handleConfirmUpload} className="btn btn-primary">
-                                📤 Enviar
-                            </button>
-                        </div>
-                    </div>
+                    </DraggableModal>
                 </div>
             )}
 
@@ -471,3 +472,4 @@ export function PhotoGalleryModal({ show, onClose, measurementId, contractItemId
         </div>
     );
 }
+

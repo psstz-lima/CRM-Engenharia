@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { DraggableModal } from '../common/DraggableModal';
 import api from '../../services/api';
@@ -65,10 +65,10 @@ function SortableColumnItem({
             <div
                 ref={setNodeRef}
                 style={style}
-                className="grid grid-cols-[auto_1fr_60px] items-center p-2 mb-1 bg-yellow-900/10 border border-dashed border-yellow-600/50 rounded"
+                className="grid grid-cols-[auto_1fr_60px] items-center p-2 mb-1 bg-slate-50 border border-dashed border-slate-200 rounded"
             >
-                <div {...attributes} {...listeners} className="cursor-grab mr-2 text-yellow-600 flex items-center">⋮⋮</div>
-                <span className="font-bold text-yellow-500">
+                <div {...attributes} {...listeners} className="cursor-grab mr-2 text-slate-500 flex items-center">⋮⋮</div>
+                <span className="font-bold text-slate-700">
                     {column.operator === '+' && '➕ Adição'}
                     {column.operator === '-' && '➖ Subtração'}
                     {column.operator === '*' && '✖️ Multiplicação'}
@@ -91,9 +91,9 @@ function SortableColumnItem({
         <div
             ref={setNodeRef}
             style={style}
-            className="grid grid-cols-[auto_30px_1fr_100px_60px] items-center p-2 bg-gray-50 border-b border-gray-300 hover:bg-gray-200 transition-colors"
+            className="grid grid-cols-[auto_30px_1fr_100px_60px] items-center p-2 bg-white border-b border-slate-200 hover:bg-slate-50 transition-colors"
         >
-            <div {...attributes} {...listeners} className="cursor-grab mr-2 text-gray-500 flex items-center w-5 text-lg">⋮⋮</div>
+            <div {...attributes} {...listeners} className="cursor-grab mr-2 text-slate-500 flex items-center w-5 text-lg">⋮⋮</div>
             <input
                 type="checkbox"
                 checked={column.visible}
@@ -113,7 +113,7 @@ function SortableColumnItem({
                                     onRename(column.id, newName.trim());
                                 }
                             }}
-                            className="text-gray-600 hover:text-gray-900"
+                            className="text-slate-600 hover:text-slate-900"
                             title="Editar"
                         >
                             ✎
@@ -124,7 +124,7 @@ function SortableColumnItem({
                                     onDelete(column.id);
                                 }
                             }}
-                            className="text-red-500 hover:text-red-400 text-lg leading-none"
+                            className="text-red-600 hover:text-red-500 text-lg leading-none"
                             title="Excluir"
                         >
                             &times;
@@ -216,9 +216,9 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
             <div className="flex flex-col gap-5">
 
                 {/* Settings Section (Sortable) */}
-                <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-300">
+                <div className="bg-slate-50/40 p-4 rounded-lg border border-slate-200">
                     <div className="flex justify-between items-center mb-3">
-                        <h4 className="m-0 text-sm font-bold text-gray-100">Campos disponíveis</h4>
+                        <h4 className="m-0 text-sm font-bold text-slate-800">Campos disponíveis</h4>
                         <button
                             onClick={() => {
                                 if (confirm('Restaurar colunas padrão?')) {
@@ -233,14 +233,14 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                                     ]);
                                 }
                             }}
-                            className="text-xs text-primary-400 hover:text-primary-300 border border-primary-500/30 hover:bg-primary-500/10 rounded px-2 py-1 transition-colors"
+                            className="text-xs text-slate-700 hover:text-slate-900 border border-slate-300 hover:bg-slate-100 rounded px-2 py-1 transition-colors"
                         >
                             Restaurar Padrão
                         </button>
                     </div>
 
                     {/* Table Header */}
-                    <div className="grid grid-cols-[auto_30px_1fr_100px_60px] p-2 bg-gray-200 text-gray-600 font-bold text-xs uppercase border-b border-gray-400 rounded-t">
+                    <div className="grid grid-cols-[auto_30px_1fr_100px_60px] p-2 bg-slate-100 text-slate-700 font-bold text-xs uppercase border-b border-slate-200 rounded-t">
                         <div></div>
                         <div></div>
                         <div>Descrição</div>
@@ -248,7 +248,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                         <div></div>
                     </div>
 
-                    <div className="border border-gray-300 bg-gray-100 rounded-b max-h-[400px] overflow-y-auto custom-scrollbar">
+                    <div className="border border-slate-200 bg-white rounded-b max-h-[400px] overflow-y-auto custom-scrollbar">
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
@@ -297,7 +297,7 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                     </div>
 
                     {/* Add New Field Form */}
-                    <div className="flex gap-3 items-end mt-4 p-3 bg-gray-200/30 rounded border border-gray-300">
+                    <div className="flex gap-3 items-end mt-4 p-3 bg-slate-50 rounded border border-slate-200">
                         <div className="flex-2">
                             <label className="label">Descrição do Campo</label>
                             <input
@@ -320,8 +320,8 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                         </div>
                         <button
                             onClick={handleSaveUnit}
-                            disabled={!newUnitCode}
-                            className={`btn ${!newUnitCode ? 'bg-gray-600 cursor-not-allowed' : 'btn-primary'} h-[38px]`}
+                            disabled={!newUnitDesc}
+                            className={`btn h-[38px] whitespace-nowrap ${!newUnitDesc ? 'bg-slate-100 text-slate-500 cursor-not-allowed border border-slate-200' : 'bg-emerald-500 hover:bg-emerald-600 text-white border-none'}`}
                         >
                             + Adicionar
                         </button>
@@ -330,11 +330,13 @@ export const ManageUnitsModal: React.FC<ManageUnitsModalProps> = ({ open, onClos
                 </div>
             </div>
 
-            <div className="mt-5 text-right border-t border-gray-300 pt-3">
-                <button onClick={onClose} className="btn btn-secondary">
+            <div className="mt-5 text-right border-t border-slate-200 pt-3">
+                <button onClick={onClose} className="btn bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
                     Fechar
                 </button>
             </div>
         </DraggableModal >
     );
 };
+
+

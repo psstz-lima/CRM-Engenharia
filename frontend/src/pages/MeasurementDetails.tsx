@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 import { useParams, Link, useNavigate } from 'react-router-dom';
 
@@ -332,9 +332,9 @@ export function MeasurementDetails() {
 
         <div className="flex items-center justify-center h-screen">
 
-            <div className="flex flex-col items-center gap-2 text-">
+            <div className="flex flex-col items-center gap-2 text-gray-600">
 
-                <div className="w-8 h-8 border-2 border- border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
 
                 <p>Carregando planilha...</p>
 
@@ -348,7 +348,7 @@ export function MeasurementDetails() {
 
     if (!measurement || !contract) return (
 
-        <div className="flex flex-col items-center justify-center h-screen text- gap-4">
+        <div className="flex flex-col items-center justify-center h-screen text-gray-600 gap-4">
 
             <AlertCircle size={48} className="opacity-50" />
 
@@ -376,7 +376,7 @@ export function MeasurementDetails() {
 
                 subtitle={`Período: ${new Date(measurement.periodStart).toLocaleDateString()} a ${new Date(measurement.periodEnd).toLocaleDateString()}`}
 
-                icon={<Ruler className="text-" />}
+                icon={<Ruler className="text-slate-700" />}
 
                 breadcrumb={[
 
@@ -396,7 +396,7 @@ export function MeasurementDetails() {
 
                         <ExportButton type="measurement" id={measurement.id} label="Exportar" />
 
-                        <Link to={`/contracts/${contract.id}/measurements`} className="btn btn-secondary flex items-center gap-2">
+                        <Link to={`/contracts/${contract.id}/measurements`} className="btn bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 flex items-center gap-2">
 
                             <ArrowLeft size={16} />
 
@@ -406,7 +406,7 @@ export function MeasurementDetails() {
 
                         {!isClosed ? (
 
-                            <button onClick={handleClose} className="btn bg-emerald-600 hover:bg-emerald-500 text-gray-900 border-none shadow-lg shadow-emerald-900/20 flex items-center gap-2">
+                            <button onClick={handleClose} className="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm flex items-center gap-2">
 
                                 <Lock size={16} />
 
@@ -418,7 +418,7 @@ export function MeasurementDetails() {
 
                             <>
 
-                                <span className="flex items-center gap-2 px-4 py-2 bg- border border- rounded-lg text- text-sm font-medium">
+                                <span className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm font-medium">
 
                                     <Lock size={14} /> Medição Fechada
 
@@ -462,11 +462,11 @@ export function MeasurementDetails() {
 
             {/* Toolbar */}
 
-            <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg- p-4 rounded-xl border border- shadow-sm">
+            <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
 
                 <div className="relative w-full max-w-md">
 
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-" />
+                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
 
                     <input
 
@@ -488,7 +488,7 @@ export function MeasurementDetails() {
 
                             onClick={() => setSearchFilter('')}
 
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text- hover:text-"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
 
                         >
 
@@ -504,15 +504,15 @@ export function MeasurementDetails() {
 
                 <div className="flex items-center gap-2">
 
-                    <span className="text-sm text- mr-2 font-medium">Visualização:</span>
+                    <span className="text-sm text-gray-600 mr-2 font-medium">Visualização:</span>
 
-                    <button onClick={expandAll} className="btn btn-xs bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20 flex items-center gap-1">
+                    <button onClick={expandAll} className="btn btn-xs bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200 flex items-center gap-1">
 
                         <Plus size={12} /> Expandir Tudo
 
                     </button>
 
-                    <button onClick={() => collapseAll(contract.items || [])} className="btn btn-xs bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border-amber-500/20 flex items-center gap-1">
+                    <button onClick={() => collapseAll(contract.items || [])} className="btn btn-xs bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200 flex items-center gap-1">
 
                         <Minus size={12} /> Recolher
 
@@ -524,37 +524,37 @@ export function MeasurementDetails() {
 
 
 
-            <Card className="overflow-hidden border-none shadow-xl">
+            <Card className="overflow-hidden border border-gray-200 shadow-md">
 
-                <div className="overflow-x-auto max-h-[75vh] scrollbar-thin scrollbar-thumb- scrollbar-track-transparent">
+                <div className="overflow-x-auto max-h-[75vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
 
                     <table className="w-full text-left border-collapse text-sm">
 
-                        <thead className="sticky top-0 z-10 bg- shadow-sm text- uppercase font-semibold text-xs border-b border-">
+                        <thead className="sticky top-0 z-10 text-gray-600 uppercase font-semibold text-xs border-b border-gray-300" style={{ backgroundColor: '#f6efe4' }}>
 
                             <tr>
 
-                                <th className="p-3 w-20">Item</th>
+                                <th className="p-3 w-20 border-r border-gray-300 text-center">Item</th>
 
-                                <th className="p-3 min-w-[300px]">Descrição</th>
+                                <th className="p-3 min-w-[300px] border-r border-gray-300 text-center">Descrição</th>
 
-                                <th className="p-3 text-center w-16">Un</th>
+                                <th className="p-3 text-center w-16 border-r border-gray-300">Un</th>
 
-                                <th className="p-3 text-right bg-blue-500/5 border-l border- text-blue-400">Qtd. Vigente</th>
+                                <th className="p-3 text-center border-l border-gray-300 border-r border-gray-300 text-blue-700">Qtd. Vigente</th>
 
-                                <th className="p-3 text-right bg-amber-500/5 border-l border- text-amber-400">Acum. Anterior</th>
+                                <th className="p-3 text-center border-l border-gray-300 border-r border-gray-300 text-amber-700">Acum. Anterior</th>
 
-                                <th className="p-3 text-right bg-emerald-500/5 border-l border- text-emerald-400">Saldo Atual</th>
+                                <th className="p-3 text-center border-l border-gray-300 border-r border-gray-300 text-emerald-700">Saldo Atual</th>
 
-                                <th className="p-3 text-center bg- border-l border-r border- w-48 text- font-bold shadow-inner">A Medir (Atual)</th>
+                                <th className="p-3 text-center border-l border-r border-gray-300 w-48 text-amber-800 font-bold shadow-inner">A Medir (Atual)</th>
 
-                                <th className="p-3 text-right w-20">%</th>
+                                <th className="p-3 w-20 text-center">%</th>
 
                             </tr>
 
                         </thead>
 
-                        <tbody className="divide-y divide-">
+                        <tbody className="divide-y divide-gray-200">
 
                             {flatItems.filter(item => {
 
@@ -580,9 +580,9 @@ export function MeasurementDetails() {
 
                                     return (
 
-                                        <tr key={item.id} className="bg- text- font-semibold text-xs hover:bg- transition-colors">
+                                        <tr key={item.id} className="bg-white text-gray-700 font-semibold text-xs hover:bg-amber-50/40 transition-colors">
 
-                                            <td className="p-2 pl-4 whitespace-nowrap">
+                                        <td className="p-2 pl-4 whitespace-nowrap text-center border-r border-gray-200">
 
                                                 {item.hasChildren && (
 
@@ -590,7 +590,7 @@ export function MeasurementDetails() {
 
                                                         onClick={() => toggleCollapse(item.id)}
 
-                                                        className="mr-2 text- hover:text- focus:outline-none transition-colors"
+                                                        className="mr-2 text-gray-500 hover:text-gray-800 focus:outline-none transition-colors"
 
                                                     >
 
@@ -604,7 +604,7 @@ export function MeasurementDetails() {
 
                                             </td>
 
-                                            <td className="p-2" colSpan={7} style={{ paddingLeft: `${paddingLeft}px` }}>
+                                        <td className="p-2 text-left" colSpan={7} style={{ paddingLeft: `${paddingLeft}px` }}>
 
                                                 {item.description}
 
@@ -646,11 +646,11 @@ export function MeasurementDetails() {
 
                                 return (
 
-                                    <tr key={item.id} className={`hover:bg- transition-colors ${isSuppressed ? 'opacity-50 line-through decoration-red-500/50' : ''}`}>
+                                    <tr key={item.id} className={`hover:bg-amber-50/40 transition-colors ${isSuppressed ? 'opacity-50 line-through decoration-red-500/50' : ''}`}>
 
-                                        <td className="p-3 text- font-mono text-center border-r border- text-xs">{item.code}</td>
+                                        <td className="p-3 text-gray-600 font-mono text-center border-r border-gray-200 text-xs">{item.code}</td>
 
-                                        <td className="p-3 text- border-r border-">
+                                        <td className="p-3 text-gray-700 border-r border-gray-200 text-left">
 
                                             <div style={{ paddingLeft: `${item.depth * 20}px` }} className="flex items-center">
 
@@ -662,23 +662,23 @@ export function MeasurementDetails() {
 
                                         </td>
 
-                                        <td className="p-3 text-center text- border-r border- text-xs">{item.unit}</td>
+                                        <td className="p-3 text-center text-gray-700 border-r border-gray-200 text-xs">{item.unit}</td>
 
 
 
-                                        <td className="p-3 text-right font-mono text-blue-400 bg-blue-500/5 border-r border-">
+                                        <td className="p-3 text-center font-mono text-blue-700 border-r border-gray-200">
 
                                             {vigentQty.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
 
                                         </td>
 
-                                        <td className="p-3 text-right font-mono text-amber-400 bg-amber-500/5 border-r border-">
+                                        <td className="p-3 text-center font-mono text-amber-700 border-r border-gray-200">
 
                                             {prevAccum.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
 
                                         </td>
 
-                                        <td className="p-3 text-right font-mono text-emerald-400 bg-emerald-500/5 border-r border- font-bold">
+                                        <td className="p-3 text-center font-mono text-emerald-700 border-r border-gray-200 font-bold">
 
                                             {balance.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
 
@@ -686,7 +686,7 @@ export function MeasurementDetails() {
 
 
 
-                                        <td className="p-2 bg- border-r border- shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
+                                        <td className="p-2 border-r border-gray-200 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]">
 
                                             <div className="flex items-center gap-2 justify-center">
 
@@ -716,9 +716,9 @@ export function MeasurementDetails() {
 
                                                         : hasMemory
 
-                                                            ? 'bg- border- text- cursor-not-allowed italic'
+                                                            ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed italic'
 
-                                                            : 'bg- border- text- focus:border- focus:shadow-[0_0_0_2px_rgba(var(--accent-primary-rgb),0.2)]'
+                                                            : 'bg-white border-gray-300 text-gray-800 focus:border-amber-400 focus:shadow-[0_0_0_2px_rgba(217,119,6,0.2)]'
 
                                                         }`}
 
@@ -732,7 +732,7 @@ export function MeasurementDetails() {
 
                                                     title="Memória de Cálculo"
 
-                                                    className={`p-1.5 rounded transition-all ${hasMemory ? 'bg- text-gray-900 shadow-lg shadow-/30' : 'bg- text- hover:bg- hover:text-gray-900 border border-'
+                                                    className={`p-1.5 rounded transition-all ${hasMemory ? 'bg-amber-100 text-gray-900 shadow-lg shadow-amber-900/20' : 'bg-white text-gray-600 hover:bg-amber-50 hover:text-gray-900 border border-gray-200'
 
                                                         }`}
 
@@ -748,7 +748,7 @@ export function MeasurementDetails() {
 
                                                     title="Fotos do Item"
 
-                                                    className="p-1.5 rounded bg- text- hover:bg-purple-600 hover:text-gray-900 border border- transition-all"
+                                                    className="p-1.5 rounded bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-gray-900 border border-purple-200 transition-all"
 
                                                 >
 
@@ -760,7 +760,7 @@ export function MeasurementDetails() {
 
                                         </td>
 
-                                        <td className="p-3 text-right text- font-mono text-xs">
+                                        <td className="p-3 text-center text-gray-600 font-mono text-xs">
 
                                             {percentage > 0 ? `${percentage.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : '-'}
 
@@ -844,7 +844,7 @@ export function MeasurementDetails() {
 
             <Card className="mt-6">
 
-                <div className="p-4 border-b border-">
+                <div className="p-4 border-b border-gray-200">
 
                     <div className="flex gap-4">
 
@@ -852,7 +852,7 @@ export function MeasurementDetails() {
 
                             onClick={() => setActiveTab('approval')}
 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'approval' ? 'bg-emerald-500/20 text-emerald-500' : 'text- hover:bg-'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'approval' ? 'bg-emerald-500/20 text-emerald-500' : 'text-gray-600 hover:bg-amber-50/60'
 
                                 }`}
 
@@ -868,7 +868,7 @@ export function MeasurementDetails() {
 
                             onClick={() => setActiveTab('comments')}
 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'comments' ? 'bg-blue-500/20 text-blue-500' : 'text- hover:bg-'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'comments' ? 'bg-blue-500/20 text-blue-500' : 'text-gray-600 hover:bg-amber-50/60'
 
                                 }`}
 
@@ -884,7 +884,7 @@ export function MeasurementDetails() {
 
                             onClick={() => setActiveTab('attachments')}
 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'attachments' ? 'bg-purple-500/20 text-purple-500' : 'text- hover:bg-'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'attachments' ? 'bg-purple-500/20 text-purple-500' : 'text-gray-600 hover:bg-amber-50/60'
 
                                 }`}
 
@@ -900,7 +900,7 @@ export function MeasurementDetails() {
 
                             onClick={() => setActiveTab('revisions')}
 
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'revisions' ? 'bg-amber-500/20 text-amber-500' : 'text- hover:bg-'
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'revisions' ? 'bg-amber-500/20 text-amber-500' : 'text-gray-600 hover:bg-amber-50/60'
 
                                 }`}
 
@@ -984,9 +984,9 @@ export function MeasurementDetails() {
 
                     <div className="modal-content w-full max-w-lg" onClick={e => e.stopPropagation()}>
 
-                        <div className="p-6 border-b border- flex justify-between items-center bg-">
+                        <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-amber-50/60">
 
-                            <h3 className="text-xl font-bold text- flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
 
                                 <RotateCcw size={20} className="text-amber-500" />
 
@@ -994,7 +994,7 @@ export function MeasurementDetails() {
 
                             </h3>
 
-                            <button onClick={() => setShowReopenModal(false)} className="text- hover:text-">✕</button>
+                            <button onClick={() => setShowReopenModal(false)} className="text-gray-500 hover:text-gray-800">✕</button>
 
                         </div>
 
@@ -1096,7 +1096,7 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
 
 
 
-    if (loading) return <div className="text-center py-8 text-">Carregando revisões...</div>;
+    if (loading) return <div className="text-center py-8 text-gray-600">Carregando revisões...</div>;
 
 
 
@@ -1104,7 +1104,7 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
 
         return (
 
-            <div className="text-center py-8 text-">
+            <div className="text-center py-8 text-gray-600">
 
                 <History size={32} className="mx-auto mb-2 opacity-50" />
 
@@ -1126,7 +1126,7 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
 
             {revisions.map((rev) => (
 
-                <div key={rev.id} className="p-4 border border- rounded-lg bg-">
+                <div key={rev.id} className="p-4 border border-gray-200 rounded-lg bg-white">
 
                     <div className="flex items-center justify-between mb-2">
 
@@ -1136,7 +1136,7 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
 
                         </span>
 
-                        <span className="text-xs text-">
+                        <span className="text-xs text-gray-600">
 
                             {new Date(rev.createdAt).toLocaleString()}
 
@@ -1144,9 +1144,9 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
 
                     </div>
 
-                    <p className="text- mb-2">{rev.reason}</p>
+                    <p className="text-gray-700 mb-2">{rev.reason}</p>
 
-                    <p className="text-xs text-">Por: {rev.createdByName}</p>
+                    <p className="text-xs text-gray-600">Por: {rev.createdByName}</p>
 
                 </div>
 
@@ -1157,4 +1157,9 @@ function RevisionHistory({ measurementId }: { measurementId: string }) {
     );
 
 }
+
+
+
+
+
 

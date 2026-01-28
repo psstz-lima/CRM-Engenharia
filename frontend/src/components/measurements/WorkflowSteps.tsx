@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Check, Clock, FileText, Lock } from 'lucide-react';
 
 interface WorkflowStepsProps {
@@ -43,7 +43,7 @@ export function WorkflowSteps({ currentStatus }: WorkflowStepsProps) {
                     const isCurrent = index === currentIndex;
 
                     return (
-                        <div key={step.id} className="flex flex-col items-center bg-white px-2">
+                        <div key={step.id} className="flex flex-col items-center px-2">
                             <div
                                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isCompleted
                                         ? 'bg-green-500 border-green-500 text-white shadow-lg shadow-green-200'
@@ -67,3 +67,4 @@ export function WorkflowSteps({ currentStatus }: WorkflowStepsProps) {
         </div>
     );
 }
+

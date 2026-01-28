@@ -822,12 +822,66 @@ export function ContractDetails() {
 
 
     };
+    const fixMojibake = (value: string) => {
+        if (!value) return value;
+        const applyMap = (input: string) => input
+            .replace(/ÃƒÂ§/g, 'ç')
+            .replace(/ÃƒÂ£/g, 'ã')
+            .replace(/ÃƒÂ¡/g, 'á')
+            .replace(/ÃƒÂ¢/g, 'â')
+            .replace(/ÃƒÂª/g, 'ê')
+            .replace(/ÃƒÂ©/g, 'é')
+            .replace(/ÃƒÂ­/g, 'í')
+            .replace(/ÃƒÂ³/g, 'ó')
+            .replace(/ÃƒÂ´/g, 'ô')
+            .replace(/ÃƒÂµ/g, 'õ')
+            .replace(/ÃƒÂº/g, 'ú')
+            .replace(/ÃƒÂ¼/g, 'ü')
+            .replace(/ÃƒÂ‡/g, 'Ç')
+            .replace(/ÃƒÂ‰/g, 'É')
+            .replace(/ÃƒÂ“/g, 'Ó')
+            .replace(/ÃƒÂš/g, 'Ú')
+            .replace(/ÃƒÂ°/g, '°')
+            .replace(/Ã§/g, 'ç')
+            .replace(/Ã£/g, 'ã')
+            .replace(/Ã¡/g, 'á')
+            .replace(/Ã¢/g, 'â')
+            .replace(/Ãª/g, 'ê')
+            .replace(/Ã©/g, 'é')
+            .replace(/Ã­/g, 'í')
+            .replace(/Ã³/g, 'ó')
+            .replace(/Ã´/g, 'ô')
+            .replace(/Ãµ/g, 'õ')
+            .replace(/Ãº/g, 'ú')
+            .replace(/Ã¼/g, 'ü')
+            .replace(/Ã‡/g, 'Ç')
+            .replace(/Ã‰/g, 'É')
+            .replace(/Ã“/g, 'Ó')
+            .replace(/Ãš/g, 'Ú')
+            .replace(/Âº/g, 'º')
+            .replace(/Âª/g, 'ª')
+            .replace(/Â°/g, '°')
+            .replace(/Â·/g, '·')
+            .replace(/â€“/g, '–')
+            .replace(/â€”/g, '—')
+            .replace(/â€œ/g, '“')
+            .replace(/â€\u009d/g, '”')
+            .replace(/â€˜/g, '‘')
+            .replace(/â€™/g, '’')
+            .replace(/â€¦/g, '…');
+        return applyMap(applyMap(value));
+    };
+
     const loadTimeline = async () => {
         if (!id) return;
         setTimelineLoading(true);
         try {
             const { data } = await api.get(`/contracts/${id}/events`);
-            setTimelineEvents(Array.isArray(data) ? data : []);
+            const list = Array.isArray(data) ? data : [];
+            setTimelineEvents(list.map((ev: any) => ({
+                ...ev,
+                message: fixMojibake(String(ev?.message ?? ''))
+            })));
         } catch {
             setTimelineEvents([]);
         } finally {
@@ -5725,7 +5779,7 @@ export function ContractDetails() {
                                                 {new Date(ev.createdAt).toLocaleString('pt-BR')}
                                                 {ev.createdBy?.fullName ? ` · ${ev.createdBy.fullName}` : ''}
                                             </div>
-                                            <div className="font-medium text-gray-800">{ev.message}</div>
+                                            <div className="font-medium text-gray-800">{fixMojibake(String(ev.message ?? ''))}</div>
                                             <div className="text-[11px] uppercase tracking-wide text-gray-400">{ev.type}</div>
                                         </div>
                                     ))}
