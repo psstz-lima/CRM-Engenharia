@@ -1,4 +1,4 @@
-﻿# Script para parar o sistema com seguranca
+# Script para parar o sistema com seguranca
 # Encerra preferencialmente os PIDs salvos pelo start.ps1 e, como fallback,
 # apenas processos deste repositorio nas portas 3000 (frontend) e 3001 (backend).
 
@@ -10,10 +10,10 @@ $rootPath = (Split-Path -Parent $PSScriptRoot)
 $rootPathNorm = $rootPath.ToLowerInvariant()
 $pidFile = Join-Path $rootPath "scripts\.pids.json"
 
-Write-Host "========================================" -ForegroundColor Magenta
-Write-Host "  PARANDO CRM ENGENHARIA               " -ForegroundColor Magenta
-Write-Host "========================================" -ForegroundColor Magenta
-Write-Host ""
+Write-Information "========================================"
+Write-Information "  PARANDO CRM ENGENHARIA               "
+Write-Information "========================================"
+Write-Information ""
 
 function Get-ProcessCommandLine {
     param([int]$ProcessId)
@@ -26,7 +26,7 @@ function Get-ProcessCommandLine {
     }
 }
 
-function Is-RepoProcess {
+function Test-RepoProcess {
     param(
         [int]$ProcessId,
         [string]$ExpectedSegment
@@ -39,20 +39,22 @@ function Is-RepoProcess {
     return $cmdNorm.Contains($rootPathNorm) -and $cmdNorm.Contains($ExpectedSegment)
 }
 
-function Stop-TrackedProcesses {
+function Stop-TrackedProcess {
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([bool])]
     param([string]$TrackedPidFile)
 
     if (-not (Test-Path $TrackedPidFile)) {
         return $false
     }
 
-    Write-Host "Encontrado arquivo de PIDs: $TrackedPidFile" -ForegroundColor DarkGray
+    Write-Information "Encontrado arquivo de PIDs: $TrackedPidFile"
 
     try {
         $tracked = Get-Content $TrackedPidFile -Raw | ConvertFrom-Json
     }
     catch {
-        Write-Host "Aviso: nao foi possivel ler $TrackedPidFile" -ForegroundColor Yellow
+        Write-Warning "Aviso: nao foi possivel ler $TrackedPidFile"
         return $false
     }
 
@@ -68,22 +70,24 @@ function Stop-TrackedProcesses {
 
         $proc = Get-Process -Id $t.Pid -ErrorAction SilentlyContinue
         if (-not $proc) {
-            Write-Host "$($t.Name): PID $($t.Pid) ja nao existe" -ForegroundColor Gray
+            Write-Information "$($t.Name): PID $($t.Pid) ja nao existe"
             continue
         }
 
-        if (Is-RepoProcess -ProcessId $t.Pid -ExpectedSegment $t.Segment) {
-            try {
-                Stop-Process -Id $t.Pid -Force -ErrorAction Stop
-                Write-Host "$($t.Name): encerrado via PID rastreado ($($t.Pid))" -ForegroundColor Green
-                $killedAny = $true
-            }
-            catch {
-                Write-Host "$($t.Name): erro ao encerrar PID $($t.Pid)" -ForegroundColor Red
+        if (Test-RepoProcess -ProcessId $t.Pid -ExpectedSegment $t.Segment) {
+            if ($PSCmdlet.ShouldProcess("$($t.Name) PID $($t.Pid)", "Encerrar processo")) {
+                try {
+                    Stop-Process -Id $t.Pid -Force -ErrorAction Stop
+                    Write-Information "$($t.Name): encerrado via PID rastreado ($($t.Pid))"
+                    $killedAny = $true
+                }
+                catch {
+                    Write-Warning "$($t.Name): erro ao encerrar PID $($t.Pid)"
+                }
             }
         }
         else {
-            Write-Host "$($t.Name): PID $($t.Pid) nao parece ser deste repo (ignorado)" -ForegroundColor Yellow
+            Write-Warning "$($t.Name): PID $($t.Pid) nao parece ser deste repo (ignorado)"
         }
     }
 
@@ -91,20 +95,21 @@ function Stop-TrackedProcesses {
         Remove-Item $TrackedPidFile -Force -ErrorAction SilentlyContinue
     }
     catch {
-        # sem impacto funcional
+        Write-Verbose "Nao foi possivel remover o arquivo de PIDs: $TrackedPidFile"
     }
 
     return $killedAny
 }
 
-function Kill-Port {
+function Stop-PortProcess {
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [int]$Port,
         [string]$Name,
         [string]$ExpectedSegment
     )
 
-    Write-Host "Verificando $Name (Porta $Port)..." -NoNewline
+    Write-Information "Verificando $Name (Porta $Port)..."
 
     $pidsToKill = @()
     try {
@@ -112,11 +117,11 @@ function Kill-Port {
         $pidsToKill = $connections | Select-Object -ExpandProperty OwningProcess -Unique
     }
     catch {
-        # Nenhuma conexao encontrada na porta
+        Write-Verbose "Nenhuma conexao encontrada na porta $Port"
     }
 
     if (-not $pidsToKill) {
-        Write-Host " [NAO RODANDO]" -ForegroundColor Gray
+        Write-Information " [NAO RODANDO]"
         return
     }
 
@@ -127,39 +132,41 @@ function Kill-Port {
         $process = Get-Process -Id $procId -ErrorAction SilentlyContinue
         if (-not $process) { continue }
 
-        if (Is-RepoProcess -ProcessId $procId -ExpectedSegment $ExpectedSegment) {
-            try {
-                Stop-Process -Id $procId -Force -ErrorAction Stop
-                Write-Host " [ENCERRADO] (PID: $procId - $($process.ProcessName))" -ForegroundColor Green
-                $killed = $true
-            }
-            catch {
-                Write-Host " [ERRO] (PID: $procId - $($process.ProcessName))" -ForegroundColor Red
+        if (Test-RepoProcess -ProcessId $procId -ExpectedSegment $ExpectedSegment) {
+            if ($PSCmdlet.ShouldProcess("PID $procId - $($process.ProcessName)", "Encerrar processo")) {
+                try {
+                    Stop-Process -Id $procId -Force -ErrorAction Stop
+                    Write-Information " [ENCERRADO] (PID: $procId - $($process.ProcessName))"
+                    $killed = $true
+                }
+                catch {
+                    Write-Warning " [ERRO] (PID: $procId - $($process.ProcessName))"
+                }
             }
         }
         else {
-            Write-Host " [IGNORADO] (PID: $procId - $($process.ProcessName))" -ForegroundColor Yellow
+            Write-Warning " [IGNORADO] (PID: $procId - $($process.ProcessName))"
         }
     }
 
     if (-not $killed) {
-        Write-Host " [NENHUM PROCESSO DO REPO ENCONTRADO]" -ForegroundColor Gray
+        Write-Information " [NENHUM PROCESSO DO REPO ENCONTRADO]"
     }
 }
 
 # 1) Tentar encerrar processos rastreados
-$killedTracked = Stop-TrackedProcesses -TrackedPidFile $pidFile
+$killedTracked = Stop-TrackedProcess -TrackedPidFile $pidFile
 
 # 2) Fallback: verificar por porta de forma seletiva
-Kill-Port -Port 3000 -Name "Frontend" -ExpectedSegment "\\frontend"
-Kill-Port -Port 3001 -Name "Backend" -ExpectedSegment "\\backend"
+Stop-PortProcess -Port 3000 -Name "Frontend" -ExpectedSegment "\\frontend"
+Stop-PortProcess -Port 3001 -Name "Backend" -ExpectedSegment "\\backend"
 
-Write-Host ""
+Write-Information ""
 if ($killedTracked) {
-    Write-Host "Processos rastreados foram encerrados. Fallback por porta tambem foi verificado." -ForegroundColor Green
+    Write-Information "Processos rastreados foram encerrados. Fallback por porta tambem foi verificado."
 }
 else {
-    Write-Host "Processos do CRM nas portas 3000/3001 foram verificados." -ForegroundColor Green
+    Write-Information "Processos do CRM nas portas 3000/3001 foram verificados."
 }
-Write-Host "Nota: outros servicos nessas portas foram preservados." -ForegroundColor Gray
+Write-Information "Nota: outros servicos nessas portas foram preservados."
 Start-Sleep -Seconds 1
