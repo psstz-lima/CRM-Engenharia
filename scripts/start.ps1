@@ -11,84 +11,85 @@ param(
 chcp 65001 | Out-Null
 $OutputEncoding = [System.Text.UTF8Encoding]::new()
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$InformationPreference = 'Continue'
 
-Write-Host "========================================" -ForegroundColor Magenta
-Write-Host "  INICIALIZANDO CRM ENGENHARIA         " -ForegroundColor Magenta
-Write-Host "  Ambiente: PostgreSQL                  " -ForegroundColor Magenta
-Write-Host "========================================" -ForegroundColor Magenta
-Write-Host ""
+Write-Information "========================================"
+Write-Information "  INICIALIZANDO CRM ENGENHARIA         "
+Write-Information "  Ambiente: PostgreSQL                  "
+Write-Information "========================================"
+Write-Information ""
 
 $ErrorActionPreference = "Continue"
 $rootPath = Split-Path -Parent $PSScriptRoot
 $pidFile = Join-Path $rootPath "scripts\.pids.json"
 
-Write-Host "[1/5] Verificando ambiente..." -ForegroundColor Cyan
-Write-Host "      Sistema configurado para PostgreSQL" -ForegroundColor Green
+Write-Information "[1/5] Verificando ambiente..."
+Write-Information "      Sistema configurado para PostgreSQL"
 Start-Sleep -Seconds 1
 
-Write-Host ""
-Write-Host "[2/5] Gerando Prisma Client..." -ForegroundColor Cyan
+Write-Information ""
+Write-Information "[2/5] Gerando Prisma Client..."
 # Encerra processos anteriores para liberar o query_engine do Prisma
 & "$rootPath\scripts\stop.ps1" | Out-Null
 
 Set-Location "$rootPath\backend"
 npm run db:generate
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "      OK - Client gerado!" -ForegroundColor Green
+    Write-Information "      OK - Client gerado!"
 }
 else {
-    Write-Host "      Erro ao gerar client, tentando limpar cache Prisma..." -ForegroundColor Yellow
+    Write-Warning "      Erro ao gerar client, tentando limpar cache Prisma..."
     Remove-Item -Recurse -Force "$rootPath\backend\node_modules\.prisma" -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 1
     npm run db:generate
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "      OK - Client gerado apos limpeza!" -ForegroundColor Green
+        Write-Information "      OK - Client gerado apos limpeza!"
     }
     else {
-        Write-Host "      Erro ao gerar client" -ForegroundColor Red
+        Write-Warning "      Erro ao gerar client"
     }
 }
 
-Write-Host ""
-Write-Host "[3/5] Verificando banco de dados..." -ForegroundColor Cyan
+Write-Information ""
+Write-Information "[3/5] Verificando banco de dados..."
 npm run db:migrate
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "      OK - Banco atualizado!" -ForegroundColor Green
+    Write-Information "      OK - Banco atualizado!"
 }
 else {
-    Write-Host "      Aviso: Migracao com avisos (normal)" -ForegroundColor Yellow
+    Write-Warning "      Aviso: Migracao com avisos (normal)"
 }
 
-Write-Host ""
-Write-Host "[4/5] Verificando dependencias do frontend..." -ForegroundColor Cyan
+Write-Information ""
+Write-Information "[4/5] Verificando dependencias do frontend..."
 Set-Location "$rootPath\frontend"
 
 $nodeModulesPath = Join-Path $PWD "node_modules"
 if ($ForceInstall -or -not (Test-Path $nodeModulesPath)) {
-    Write-Host "      Instalando dependencias (npm install)..." -ForegroundColor Yellow
+    Write-Information "      Instalando dependencias (npm install)..."
     npm install --silent
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "      OK - Frontend pronto!" -ForegroundColor Green
+        Write-Information "      OK - Frontend pronto!"
     }
     else {
-        Write-Host "      Erro ao instalar dependencias do frontend" -ForegroundColor Red
+        Write-Warning "      Erro ao instalar dependencias do frontend"
     }
 }
 else {
-    Write-Host "      OK - node_modules ja existe (use -ForceInstall para reinstalar)" -ForegroundColor Green
+    Write-Information "      OK - node_modules ja existe (use -ForceInstall para reinstalar)"
 }
 
-Write-Host ""
-Write-Host "[5/5] Iniciando servidores..." -ForegroundColor Cyan
-Write-Host ""
+Write-Information ""
+Write-Information "[5/5] Iniciando servidores..."
+Write-Information ""
 
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "  SISTEMA PRONTO E INICIANDO!          " -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "Credenciais: ver README.md / seeds do banco" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Abrindo em 5 segundos..." -ForegroundColor Yellow
+Write-Information "========================================"
+Write-Information "  SISTEMA PRONTO E INICIANDO!          "
+Write-Information "========================================"
+Write-Information ""
+Write-Information "Credenciais: ver README.md / seeds do banco"
+Write-Information ""
+Write-Information "Abrindo em 5 segundos..."
 Start-Sleep -Seconds 5
 
 # Iniciar backend em nova janela
@@ -108,10 +109,10 @@ try {
         backendPid  = $backendProc.Id
         frontendPid = $frontendProc.Id
     } | ConvertTo-Json | Set-Content -Path $pidFile -Encoding UTF8
-    Write-Host "PIDs salvos em: $pidFile" -ForegroundColor DarkGray
+    Write-Information "PIDs salvos em: $pidFile"
 }
 catch {
-    Write-Host "Aviso: nao foi possivel salvar PIDs em $pidFile" -ForegroundColor Yellow
+    Write-Warning "Aviso: nao foi possivel salvar PIDs em $pidFile"
 }
 
 # Aguardar frontend iniciar
@@ -120,12 +121,12 @@ Start-Sleep -Seconds 5
 # Abrir navegador
 Start-Process "http://localhost:3000"
 
-Write-Host ""
-Write-Host "SISTEMA RODANDO!" -ForegroundColor Green
-Write-Host "Backend: http://localhost:3001" -ForegroundColor White
-Write-Host "Frontend: http://localhost:3000 (abrindo...)" -ForegroundColor White
-Write-Host ""
+Write-Information ""
+Write-Information "SISTEMA RODANDO!"
+Write-Information "Backend: http://localhost:3001"
+Write-Information "Frontend: http://localhost:3000 (abrindo...)"
+Write-Information ""
 if (-not $NoWait) {
-    Write-Host "Pressione qualquer tecla para sair..." -ForegroundColor Gray
+    Write-Information "Pressione qualquer tecla para sair..."
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
